@@ -2,6 +2,18 @@
 
 This package builds off of the GLobal airglOW model. The GLOW model is evaluated on an altitude grid at a location. For non-zenith observation geometries, the model requires evaluation at multiple points along the line of sight. The `glowraycast` library wraps the `ncarglow.no_precipitation()` function to generate the output on a 2D grid in a geocentric (GEO) coordinate system and in a local (ZA, R) coordinate system.
 
+## Installation
+Directly using `pip`:
+```sh
+$ pip install glowraycast @ git+https://github.com/sunipkm/glowraycast
+```
+
+Indirectly by `git clone`:
+```sh
+$ git clone https://github.com/sunipkm/glowraycast && cd glowraycast
+$ pip install .
+```
+
 For example:
 
 ```py
