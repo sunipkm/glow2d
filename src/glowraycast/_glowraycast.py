@@ -10,7 +10,7 @@ from geopy import Point
 from geopy.distance import GreatCircleDistance, EARTH_RADIUS
 from haversine import haversine, Unit
 import pandas as pd
-from tqdm.contrib.concurrent import process_map
+from tqdm.contrib.concurrent import thread_map
 from scipy.ndimage import geometric_transform
 from time import perf_counter_ns
 
@@ -63,7 +63,7 @@ class GLOWRaycast:
         self._iono = None
 
     @classmethod
-    def no_precipitation(cls, time: datetime, lat: float, lon: float, heading: float, max_alt: float = 1000, n_pts: int = 200, n_bins: int = 100, *, with_prodloss=False, n_threads: int = 24, full_output: bool = False) -> typing.Any:
+    def no_precipitation(cls, time: datetime, lat: float, lon: float, heading: float, max_alt: float = 1000, n_pts: int = 50, n_bins: int = 100, *, with_prodloss=False, n_threads: int = 24, full_output: bool = False) -> typing.Any:
         """Run GLOW model looking along heading from the current location and return the model output in
         (ZA, R) local coordinates where ZA is zenith angle in radians and R is distance in kilometers.
 
@@ -89,7 +89,7 @@ class GLOWRaycast:
             return (iono, bds)
 
     @classmethod
-    def no_precipitation_geo(cls, time: datetime, lat: float, lon: float, heading: float, max_alt: float = 1000, n_pts: int = 200, n_bins: int = 100, *, n_threads: int = 24) -> xr.Dataset:
+    def no_precipitation_geo(cls, time: datetime, lat: float, lon: float, heading: float, max_alt: float = 1000, n_pts: int = 50, n_bins: int = 100, *, n_threads: int = 24) -> xr.Dataset:
         """Run GLOW model looking along heading from the current location and return the model output in
         (T, R) geocentric coordinates where T is angle in radians from the current location along the great circle
         following current heading, and R is altitude in kilometers.
@@ -351,7 +351,7 @@ class GLOWRaycast:
         return glow.no_precipitation(self._time, d[0], d[1], self._nbins)
 
     def _calc_glow_noprecip(self) -> xr.Dataset:  # run glow model calculation
-        self._dss = process_map(self._calc_glow_single_noprecip, range(
+        self._dss = thread_map(self._calc_glow_single_noprecip, range(
             len(self._locs)), max_workers=self._nthr)
         # for dest in tqdm(self._locs):
         #     self._dss.append(glow.no_precipitation(time, dest[0], dest[1], self._nbins))
@@ -368,7 +368,7 @@ if __name__ == '__main__':
     time = datetime(2022, 2, 15, 6, 0).astimezone(pytz.utc)
     print(time)
     lat, lon = 42.64981361744372, -71.31681056737486
-    grobj = GLOWRaycast(time, 42.64981361744372, -71.31681056737486, 40)
+    grobj = GLOWRaycast(time, 42.64981361744372, -71.31681056737486, 40, n_threads=6)
     st = perf_counter_ns()
     bds = grobj.run_no_precipitation()
     end = perf_counter_ns()
