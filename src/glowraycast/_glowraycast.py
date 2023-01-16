@@ -10,9 +10,14 @@ from geopy import Point
 from geopy.distance import GreatCircleDistance, EARTH_RADIUS
 from haversine import haversine, Unit
 import pandas as pd
-from tqdm.contrib.concurrent import thread_map
+from tqdm.contrib.concurrent import thread_map, process_map
 from scipy.ndimage import geometric_transform
 from time import perf_counter_ns
+import platform
+
+MAP_FCN = process_map
+if platform.system() == 'Darwin':
+    MAP_FCN = thread_map
 
 __version__ = '0.1.0'
 
@@ -351,7 +356,7 @@ class GLOWRaycast:
         return glow.no_precipitation(self._time, d[0], d[1], self._nbins)
 
     def _calc_glow_noprecip(self) -> xr.Dataset:  # run glow model calculation
-        self._dss = thread_map(self._calc_glow_single_noprecip, range(
+        self._dss = MAP_FCN(self._calc_glow_single_noprecip, range(
             len(self._locs)), max_workers=self._nthr)
         # for dest in tqdm(self._locs):
         #     self._dss.append(glow.no_precipitation(time, dest[0], dest[1], self._nbins))
@@ -368,7 +373,7 @@ if __name__ == '__main__':
     time = datetime(2022, 2, 15, 6, 0).astimezone(pytz.utc)
     print(time)
     lat, lon = 42.64981361744372, -71.31681056737486
-    grobj = GLOWRaycast(time, 42.64981361744372, -71.31681056737486, 40, n_threads=6)
+    grobj = GLOWRaycast(time, 42.64981361744372, -71.31681056737486, 40, n_threads=6, n_pts=100)
     st = perf_counter_ns()
     bds = grobj.run_no_precipitation()
     end = perf_counter_ns()
@@ -377,3 +382,5 @@ if __name__ == '__main__':
     iono = grobj.transform_coord()
     end = perf_counter_ns()
     print('Time to convert:', (end - st)*1e-6, 'ms')
+
+# %%
