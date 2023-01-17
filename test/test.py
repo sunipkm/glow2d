@@ -14,7 +14,7 @@ from glowraycast import GLOWRaycast
 time = datetime(2022, 2, 15, 6, 0).astimezone(pytz.utc)
 print(time)
 lat, lon = 42.64981361744372, -71.31681056737486
-grobj = GLOWRaycast(time, 42.64981361744372, -71.31681056737486, 40, n_pts = 100)
+grobj = GLOWRaycast(time, 42.64981361744372, -71.31681056737486, 40, n_pts = 100, resamp=2)
 st = perf_counter_ns()
 bds = grobj.run_no_precipitation()
 end = perf_counter_ns()
@@ -24,15 +24,15 @@ iono = grobj.transform_coord()
 end = perf_counter_ns()
 print('Time to convert:', (end - st)*1e-6, 'ms')
 # %%
-from matplotlib.gridspec import GridSpec
-import matplotlib.ticker as mticker
-from matplotlib.ticker import AutoMinorLocator, MultipleLocator, LogLocator, FormatStrFormatter
-import matplotlib
-from matplotlib import rc
-from mpl_toolkits.axes_grid1 import make_axes_locatable
 from matplotlib.patches import Rectangle
-import datetime as dt
-
+from mpl_toolkits.axes_grid1 import make_axes_locatable
+from matplotlib import rc
+import matplotlib
+from matplotlib.ticker import AutoMinorLocator, MultipleLocator, LogLocator, FormatStrFormatter
+import matplotlib.ticker as mticker
+from matplotlib.gridspec import GridSpec
+import matplotlib.pyplot as plt
+import pylab as pl
 rc('font', **{'family': 'serif', 'serif': ['Times New Roman']})
 # for Palatino and other serif fonts use:
 # rc('font',**{'family':'serif','serif':['Palatino']})
@@ -55,7 +55,7 @@ ang = bds.angle.values
 r, t = (alt + ofst) / scale, ang  # np.meshgrid((alt + ofst), ang)
 print(r.shape, t.shape)
 # , extent=[0, 0, 7400 / EARTH_RADIUS, ang.max()])
-im = ax.contourf(t, r, tn.T, 100)
+im = ax.contourf(t, r, tn.T, 100, cmap='gist_ncar_r')
 cbar = fig.colorbar(im, cax=cax, shrink=0.6, orientation='horizontal')
 cbar.ax.tick_params(labelsize=8)
 cbar.set_label('Brightness (R)', fontsize=8)
@@ -85,11 +85,105 @@ ax.set_yticklabels(labels)
 ax.text(np.radians(-12), ax.get_rmax()/2, 'Distance from Earth center (km)',
         rotation=0, ha='center', va='center')
 ax.set_position([0.1, -0.45, 0.8, 2])
-fig.suptitle('GLOW Model Brightness of 557.7 nm feature (GEO coordinates)')
+fig.suptitle('GLOW Model Brightness of 557.7 nm feature')
 # ax.set_rscale('ofst_r_scale')
 # ax.set_rscale('symlog')
 # ax.set_rorigin(-1)
 plt.savefig('test_geo_5577.pdf')
+plt.show()
+# %%
+r, t = np.meshgrid((alt + EARTH_RADIUS), ang)
+tt, rr = grobj.get_local_coords(t, r)
+# %%
+fig, ax = plt.subplots(dpi=300, subplot_kw=dict(projection='polar'))
+tn = (bds.ver.loc[dict(wavelength='5577')].values)
+r, t = rr, tt  # np.meshgrid((alt + ofst) / ofst, ang)
+print(r.shape, t.shape)
+# , extent=[0, 0, 7400 / EARTH_RADIUS, ang.max()])
+im = ax.contourf(t, r, np.log10(tn), 100)
+# earth = pl.Circle((0, 0), 1, transform=ax.transData._b, color='k', alpha=0.4)
+# ax.add_artist(earth)
+ax.set_thetamax(90)
+ax.set_ylim(alt.min(), alt.max())
+# ax.set_rscale('symlog')
+ax.set_rorigin(-alt.min())
+plt.show()
+# %%
+fig, ax = plt.subplots(dpi=300, subplot_kw=dict(projection='polar'), figsize=(6.4, 4.8))
+tn = (bds.ver.loc[dict(wavelength='5577')].values).copy()
+vidx = np.where(t < 0)
+tn[vidx] = 0
+print(tn.sum())
+# np.meshgrid((alt + ofst) / ofst, ang)
+# , extent=[0, 0, 7400 / EARTH_RADIUS, ang.max()])
+im = ax.contourf(t, r, tn, 100, cmap='gist_ncar_r')
+cbar = fig.colorbar(im, shrink=0.6)
+cbar.set_label('Brightness (R)', fontsize=10)
+cbar.ax.tick_params(labelsize=8)
+ax.set_thetamax(90)
+ax.text(np.radians(-12), ax.get_rmax()/2, 'Distance from observation location (km)',
+        rotation=0, ha='center', va='center')
+fig.suptitle('GLOW Model Brightness of 557.7 nm feature (local coordinates)')
+ax.fill_between(np.deg2rad([12, 69]), 0, 10000, alpha=0.3, color='b')
+ax.plot(np.deg2rad([12, 12]), [0, 10000], lw=0.5, color='k', ls='--')
+ax.plot(np.deg2rad([69, 69]), [0, 10000], lw=0.5, color='k', ls='--')
+ax.text(np.deg2rad(37), 1600, 'HiT&MIS View Cone', fontsize=10, color='w', rotation=360-45)
+ax.tick_params(labelsize=10)
+# earth = pl.Circle((0, 0), 1, transform=ax.transData._b, color='k', alpha=0.4)
+# ax.add_artist(earth)
+# ax.set_thetamax(ang.max()*180/np.pi)
+ax.set_ylim(r.min(), r.max())
+# ax.set_rscale('symlog')
+ax.set_rorigin(-r.min())
+plt.savefig('test_loc_5577.pdf')
+plt.show()
+# %%
+res = np.histogram2d(rr.flatten(), tt.flatten(), range=([rr.min(), rr.max()], [0, np.pi / 2]))
+# %%
+# plt.imshow(tn[::20, ::20], extent=[res[0].min(), res[0].max(), res[1].min(), res[1].max()])
+# plt.show()# %%
+from scipy.signal import savgol_filter
+from skimage.transform import resize
+
+gd = resize(res[0], iono.ver.loc[dict(wavelength='5577')].values.shape, mode='edge')
+gd *= res[0].sum() / gd.sum()
+plt.imshow(gd)
+plt.colorbar()
+plt.show()
+# %%
+
+gd2 = savgol_filter(gd, 51, 5, mode='nearest')
+
+print(gd.sum(), gd2.sum())
+# %%
+fig, ax = plt.subplots(dpi=300, subplot_kw=dict(projection='polar'), figsize=(6.4, 4.8))
+tn = iono.ver.loc[dict(wavelength='5577')].values
+print('total:', tn.sum())
+# np.meshgrid((alt + ofst) / ofst, ang)
+r, t = iono.r.values, np.pi/2 - iono.za.values
+print(r.shape, t.shape)
+r, t = np.meshgrid(r, t)
+# , extent=[0, 0, 7400 / EARTH_RADIUS, ang.max()])
+im = ax.contourf(t, r, tn, 100, cmap='gist_ncar_r')
+cbar = fig.colorbar(im, shrink=0.6)
+cbar.set_label('Brightness (R)', fontsize=10)
+cbar.ax.tick_params(labelsize=8)
+ax.set_thetamax(90)
+ax.text(np.radians(-12), ax.get_rmax()/2, 'Distance from observation location (km)',
+        rotation=0, ha='center', va='center')
+fig.suptitle('GLOW Model Brightness of 557.7 nm feature (local coordinates, interpolated)')
+ax.fill_between(np.deg2rad([12, 69]), 0, 10000, alpha=0.3, color='b')
+ax.plot(np.deg2rad([12, 12]), [0, 10000], lw=0.5, color='k', ls='--')
+ax.plot(np.deg2rad([69, 69]), [0, 10000], lw=0.5, color='k', ls='--')
+ax.text(np.deg2rad(37), 1600, 'HiT&MIS View Cone', fontsize=10, color='w', rotation=360-45)
+ax.tick_params(labelsize=10)
+# earth = pl.Circle((0, 0), 1, transform=ax.transData._b, color='k', alpha=0.4)
+# ax.add_artist(earth)
+# ax.set_thetamax(ang.max()*180/np.pi)
+ax.set_ylim(0, r.max())
+# ax.set_rscale('symlog')
+# ax.set_rorigin(-1)
+plt.savefig('test_loc_5577_uniform.pdf')
 plt.show()
 # %%
 fig, ax = plt.subplots(dpi=300, subplot_kw=dict(projection='polar'), figsize=(6.4, 4.8))
@@ -99,19 +193,25 @@ r, t = iono.r.values, np.pi/2 - iono.za.values
 print(r.shape, t.shape)
 r, t = np.meshgrid(r, t)
 # , extent=[0, 0, 7400 / EARTH_RADIUS, ang.max()])
-im = ax.contourf(t, r, tn, 100)
-fig.colorbar(im)
+im = ax.contourf(t, r, gd2, 100, cmap='gist_ncar_r')
+cbar = fig.colorbar(im, shrink=0.6)
+cbar.set_label('Number Density', fontsize=10)
+cbar.ax.tick_params(labelsize=8)
 ax.set_thetamax(90)
 ax.text(np.radians(-12), ax.get_rmax()/2, 'Distance from observation location (km)',
         rotation=0, ha='center', va='center')
-fig.suptitle('GLOW Model Brightness of 557.7 nm feature (local coordinates)')
+fig.suptitle('Distribution of GEO coordinate points in local coordinates')
+ax.fill_between(np.deg2rad([12, 69]), 0, 10000, alpha=0.3, color='b')
+ax.plot(np.deg2rad([12, 12]), [0, 10000], lw=0.5, color='k', ls='--')
+ax.plot(np.deg2rad([69, 69]), [0, 10000], lw=0.5, color='k', ls='--')
+ax.text(np.deg2rad(37), 1600, 'HiT&MIS View Cone', fontsize=10, color='w', rotation=360-45)
+ax.tick_params(labelsize=10)
 # earth = pl.Circle((0, 0), 1, transform=ax.transData._b, color='k', alpha=0.4)
 # ax.add_artist(earth)
 # ax.set_thetamax(ang.max()*180/np.pi)
-# ax.set_ylim([0, (alt.max() + ofst) / ofst])
+ax.set_ylim(r.min(), r.max())
 # ax.set_rscale('symlog')
-# ax.set_rorigin(-1)
-plt.savefig('test_loc_5577.pdf')
+ax.set_rorigin(-60)
+plt.savefig('test_loc_geo_distrib.pdf')
 plt.show()
-
 # %%
