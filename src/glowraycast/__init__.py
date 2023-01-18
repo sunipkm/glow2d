@@ -1,5 +1,5 @@
-from ._glowraycast import GLOWRaycast
+from ._glowraycast import GLOWRaycast, GLOWRaycastXY
 
-__version__ = '1.0.0'
+__version__ = '1.1.0'
 
-__all__ = ['GLOWRaycast', '__version__']
+__all__ = ['GLOWRaycast', 'GLOWRaycastXY', '__version__']
