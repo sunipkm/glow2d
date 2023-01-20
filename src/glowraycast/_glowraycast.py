@@ -1,6 +1,6 @@
 # %% Imports
 from __future__ import annotations
-import typing
+from typing import SupportsFloat as Numeric
 import warnings
 import xarray as xr
 import numpy as np
@@ -27,21 +27,21 @@ N_CPUS = cpu_count()
 
 # %%
 class GLOWRaycast:
-    def __init__(self, time: datetime, lat: float, lon: float, heading: float, max_alt: float = 1000, n_pts: int = 50, n_bins: int = 100, *, with_prodloss: bool = False, n_threads: int = None, full_circ: bool = False, resamp: float = 1.5):
+    def __init__(self, time: datetime, lat: Numeric, lon: Numeric, heading: Numeric, max_alt: Numeric = 1000, n_pts: int = 50, n_bins: int = 100, *, with_prodloss: bool = False, n_threads: int = None, full_circ: bool = False, resamp: Numeric = 1.5):
         """Create a GLOWRaycast object.
 
         Args:
             time (datetime): Datetime of GLOW calculation.
-            lat (float): Latitude of starting location.
-            lon (float): Longitude of starting location.
-            heading (float): Heading (look direction).
-            max_alt (float, optional): Maximum altitude where intersection is considered (km). Defaults to 1000, i.e. exobase.
+            lat (Numeric): Latitude of starting location.
+            lon (Numeric): Longitude of starting location.
+            heading (Numeric): Heading (look direction).
+            max_alt (Numeric, optional): Maximum altitude where intersection is considered (km). Defaults to 1000, i.e. exobase.
             n_pts (int, optional): Number of GEO coordinate angular grid points (i.e. number of GLOW runs), must be even and > 20. Defaults to 50.
             n_bins (int, optional): Number of energy bins. Defaults to 100.
             with_prodloss (bool, optional): Calculate production and loss parameters in local coordinates. Defaults to False.
             n_threads (int, optional): Number of threads for parallel GLOW runs. Set to None to use all system threads. Defaults to None.
             full_circ (bool, optional): For testing only, do not use. Defaults to False.
-            resamp (float, optional): Number of R and ZA points in local coordinate output. ``len(R) = len(alt_km) * resamp`` and ``len(ZA) = n_pts * resamp``. Must be > 0.5. Defaults to 1.5.
+            resamp (Numeric, optional): Number of R and ZA points in local coordinate output. ``len(R) = len(alt_km) * resamp`` and ``len(ZA) = n_pts * resamp``. Must be > 0.5. Defaults to 1.5.
 
         Raises:
             ValueError: Number of position bins can not be odd.
@@ -134,22 +134,22 @@ class GLOWRaycast:
         return self._bds  # return the calculated
 
     @classmethod
-    def no_precipitation(cls, time: datetime, lat: float, lon: float, heading: float, max_alt: float = 1000, n_pts: int = 50, n_bins: int = 100, *, with_prodloss=False, n_threads: int = None, full_output: bool = False, resamp: float = 1.5) -> xr.Dataset | tuple(xr.Dataset, xr.Dataset):
+    def no_precipitation(cls, time: datetime, lat: Numeric, lon: Numeric, heading: Numeric, max_alt: Numeric = 1000, n_pts: int = 50, n_bins: int = 100, *, with_prodloss: bool = False, n_threads: int = None, full_output: bool = False, resamp: Numeric = 1.5) -> xr.Dataset | tuple(xr.Dataset, xr.Dataset):
         """Run GLOW model looking along heading from the current location and return the model output in
         (ZA, R) local coordinates where ZA is zenith angle in radians and R is distance in kilometers.
 
         Args:
             time (datetime): Datetime of GLOW calculation.
-            lat (float): Latitude of starting location.
-            lon (float): Longitude of starting location.
-            heading (float): Heading (look direction).
-            max_alt (float, optional): Maximum altitude where intersection is considered (km). Defaults to 1000, i.e. exobase.
+            lat (Numeric): Latitude of starting location.
+            lon (Numeric): Longitude of starting location.
+            heading (Numeric): Heading (look direction).
+            max_alt (Numeric, optional): Maximum altitude where intersection is considered (km). Defaults to 1000, i.e. exobase.
             n_pts (int, optional): Number of GEO coordinate angular grid points (i.e. number of GLOW runs), must be even and > 20. Defaults to 50.
             n_bins (int, optional): Number of energy bins. Defaults to 100.
             with_prodloss (bool, optional): Calculate production and loss parameters in local coordinates. Defaults to False.
             n_threads (int, optional):  Number of threads for parallel GLOW runs. Set to None to use all system threads. Defaults to None.
             full_output (bool, optional): Returns only local coordinate GLOW output if False, and a tuple of local and GEO outputs if True. Defaults to False.
-            resamp (float, optional): Number of R and ZA points in local coordinate output. ``len(R) = len(alt_km) * resamp`` and ``len(ZA) = n_pts * resamp``. Must be > 0.5. Defaults to 1.5.
+            resamp (Numeric, optional): Number of R and ZA points in local coordinate output. ``len(R) = len(alt_km) * resamp`` and ``len(ZA) = n_pts * resamp``. Must be > 0.5. Defaults to 1.5.
 
         Returns:
             iono (xarray.Dataset): Ionospheric parameters and brightnesses (with or without production and loss) in local coordinates.
@@ -178,21 +178,21 @@ class GLOWRaycast:
             return (iono, bds)
 
     @classmethod
-    def no_precipitation_geo(cls, time: datetime, lat: float, lon: float, heading: float, max_alt: float = 1000, n_pts: int = 50, n_bins: int = 100, *, n_threads: int = None, resamp: float = 1.5) -> xr.Dataset:
+    def no_precipitation_geo(cls, time: datetime, lat: Numeric, lon: Numeric, heading: Numeric, max_alt: Numeric = 1000, n_pts: int = 50, n_bins: int = 100, *, n_threads: int = None, resamp: Numeric = 1.5) -> xr.Dataset:
         """Run GLOW model looking along heading from the current location and return the model output in
         (T, R) geocentric coordinates where T is angle in radians from the current location along the great circle
         following current heading, and R is altitude in kilometers.
 
         Args:
             time (datetime): Datetime of GLOW calculation.
-            lat (float): Latitude of starting location.
-            lon (float): Longitude of starting location.
-            heading (float): Heading (look direction).
-            max_alt (float, optional): Maximum altitude where intersection is considered (km). Defaults to 1000, i.e. exobase.
+            lat (Numeric): Latitude of starting location.
+            lon (Numeric): Longitude of starting location.
+            heading (Numeric): Heading (look direction).
+            max_alt (Numeric, optional): Maximum altitude where intersection is considered (km). Defaults to 1000, i.e. exobase.
             n_pts (int, optional): Number of GEO coordinate angular grid points (i.e. number of GLOW runs). Defaults to 50.
             n_bins (int, optional): Number of energy bins. Defaults to 100.
             n_threads (int, optional):  Number of threads for parallel GLOW runs. Set to None to use all system threads. Defaults to None.
-            resamp (float, optional): Number of R and ZA points in local coordinate output. ``len(R) = len(alt_km) * resamp`` and ``len(ZA) = n_pts * resamp``. Must be > 0.5. Defaults to 1.5.
+            resamp (Numeric, optional): Number of R and ZA points in local coordinate output. ``len(R) = len(alt_km) * resamp`` and ``len(ZA) = n_pts * resamp``. Must be > 0.5. Defaults to 1.5.
 
 
         Returns:
@@ -454,13 +454,13 @@ class GLOWRaycast:
         return (float(self._ntt[tl*self._nr_num + rl]), float(self._nrr[tl*self._nr_num + rl]))
 
     @staticmethod
-    def get_global_coords(t: np.ndarray | float, r: np.ndarray | float, r0: float = EARTH_RADIUS, meshgrid: bool = True) -> tuple(np.ndarray, np.ndarray):
+    def get_global_coords(t: np.ndarray | Numeric, r: np.ndarray | Numeric, r0: Numeric = EARTH_RADIUS, meshgrid: bool = True) -> tuple(np.ndarray, np.ndarray):
         """Get GEO coordinates from local coordinates.
 
         Args:
-            t (np.ndarray): Angles in radians.
-            r (np.ndarray): Distance in km.
-            r0 (float, optional): Distance to origin. Defaults to geopy.distance.EARTH_RADIUS.
+            t (np.ndarray | Numeric): Angles in radians.
+            r (np.ndarray | Numeric): Distance in km.
+            r0 (Numeric, optional): Distance to origin. Defaults to geopy.distance.EARTH_RADIUS.
             meshgrid (bool, optional): Optionally convert 1-D inputs to a meshgrid. Defaults to True.
 
         Raises:
@@ -470,7 +470,7 @@ class GLOWRaycast:
         Returns:
             (np.ndarray, np.ndarray): (angles, distances) in GEO coordinates.
         """
-        if isinstance(r, np.ndarray) and (t, np.ndarray):  # if array
+        if isinstance(r, np.ndarray) and isinstance(t, np.ndarray):  # if array
             if r.ndim != t.ndim:  # if dims don't match get out
                 raise ValueError('r and t does not have the same dimensions')
             if r.ndim == 1 and meshgrid:
@@ -481,7 +481,7 @@ class GLOWRaycast:
                 _r, _t = r.copy(), t.copy()  # already a meshgrid?
                 r = _r[0]
                 t = _t[:, 0]
-        elif isinstance(r, float) and (t, float):  # floats
+        elif isinstance(r, Numeric) and isinstance(t, Numeric):  # floats
             _r = np.atleast_1d(r)
             _t = np.atleast_1d(t)
         else:
@@ -493,13 +493,13 @@ class GLOWRaycast:
         return tt, rr
 
     @staticmethod
-    def get_local_coords(t: np.ndarray | float, r: np.ndarray | float, r0: float = EARTH_RADIUS) -> tuple(np.ndarray, np.ndarray):
+    def get_local_coords(t: np.ndarray | Numeric, r: np.ndarray | Numeric, r0: Numeric = EARTH_RADIUS) -> tuple(np.ndarray, np.ndarray):
         """Get local coordinates from GEO coordinates.
 
         Args:
-            t (np.ndarray): Angles in radians.
-            r (np.ndarray): Distance in km.
-            r0 (float, optional): Distance to origin. Defaults to geopy.distance.EARTH_RADIUS.
+            t (np.ndarray | Numeric): Angles in radians.
+            r (np.ndarray | Numeric): Distance in km.
+            r0 (Numeric, optional): Distance to origin. Defaults to geopy.distance.EARTH_RADIUS.
 
         Raises:
             ValueError: ``r`` and ``t`` does not have the same dimensions
@@ -508,7 +508,7 @@ class GLOWRaycast:
         Returns:
             (np.ndarray, np.ndarray): (angles, distances) in local coordinates.
         """
-        if isinstance(r, np.ndarray) and (t, np.ndarray):
+        if isinstance(r, np.ndarray) and isinstance(t, np.ndarray):
             if r.ndim != t.ndim:
                 raise ValueError('r and t does not have the same dimensions')
             if r.ndim == 1:
@@ -517,7 +517,7 @@ class GLOWRaycast:
                 _r, _t = r.copy(), t.copy()
                 r = _r[0]
                 t = _t[:, 0]
-        elif isinstance(r, float) and (t, float):
+        elif isinstance(r, Numeric) and isinstance(t, Numeric):
             _r = np.atleast_1d(r)
             _t = np.atleast_1d(t)
         else:
@@ -528,21 +528,21 @@ class GLOWRaycast:
         return tt, rr
 
 class GLOWRaycastXY:
-    def __init__(self, time: datetime, lat: float, lon: float, heading: float, max_alt: float = 1000, n_pts: int = 50, n_bins: int = 100, *, with_prodloss: bool = False, n_threads: int = None, full_circ: bool = False, resamp: float = 1.5):
+    def __init__(self, time: datetime, lat: Numeric, lon: Numeric, heading: Numeric, max_alt: Numeric = 1000, n_pts: int = 50, n_bins: int = 100, *, with_prodloss: bool = False, n_threads: int = None, full_circ: bool = False, resamp: Numeric = 1.5):
         """Create a GLOWRaycastXY object.
 
         Args:
             time (datetime): Datetime of GLOW calculation.
-            lat (float): Latitude of starting location.
-            lon (float): Longitude of starting location.
-            heading (float): Heading (look direction).
-            max_alt (float, optional): Maximum altitude where intersection is considered (km). Defaults to 1000, i.e. exobase.
+            lat (Numeric): Latitude of starting location.
+            lon (Numeric): Longitude of starting location.
+            heading (Numeric): Heading (look direction).
+            max_alt (Numeric, optional): Maximum altitude where intersection is considered (km). Defaults to 1000, i.e. exobase.
             n_pts (int, optional): Number of GEO coordinate angular grid points (i.e. number of GLOW runs), must be even and > 20. Defaults to 50.
             n_bins (int, optional): Number of energy bins. Defaults to 100.
             with_prodloss (bool, optional): Calculate production and loss parameters in local coordinates. Defaults to False.
             n_threads (int, optional): Number of threads for parallel GLOW runs. Set to None to use all system threads. Defaults to None.
             full_circ (bool, optional): For testing only, do not use. Defaults to False.
-            resamp (float, optional): Number of X and Y points in local coordinate output. ``len(Y) = len(alt_km) * resamp`` and ``len(X) = n_pts * resamp``. Must be > 0.5. Defaults to 1.5.
+            resamp (Numeric, optional): Number of X and Y points in local coordinate output. ``len(Y) = len(alt_km) * resamp`` and ``len(X) = n_pts * resamp``. Must be > 0.5. Defaults to 1.5.
 
         Raises:
             ValueError: Number of position bins can not be odd.
@@ -592,22 +592,22 @@ class GLOWRaycastXY:
         self._iono = None
 
     @classmethod
-    def no_precipitation(cls, time: datetime, lat: float, lon: float, heading: float, max_alt: float = 1000, n_pts: int = 50, n_bins: int = 100, *, with_prodloss=False, n_threads: int = None, full_output: bool = False, resamp: float = 1.5) -> xr.Dataset | tuple(xr.Dataset, xr.Dataset):
+    def no_precipitation(cls, time: datetime, lat: Numeric, lon: Numeric, heading: Numeric, max_alt: Numeric = 1000, n_pts: int = 50, n_bins: int = 100, *, with_prodloss: bool = False, n_threads: int = None, full_output: bool = False, resamp: Numeric = 1.5) -> xr.Dataset | tuple(xr.Dataset, xr.Dataset):
         """Run GLOW model looking along heading from the current location and return the model output in
         (X, Y) local coordinates where X and Y are conventional axes in kilometers.
 
         Args:
             time (datetime): Datetime of GLOW calculation.
-            lat (float): Latitude of starting location.
-            lon (float): Longitude of starting location.
-            heading (float): Heading (look direction).
-            max_alt (float, optional): Maximum altitude where intersection is considered (km). Defaults to 1000, i.e. exobase.
+            lat (Numeric): Latitude of starting location.
+            lon (Numeric): Longitude of starting location.
+            heading (Numeric): Heading (look direction).
+            max_alt (Numeric, optional): Maximum altitude where intersection is considered (km). Defaults to 1000, i.e. exobase.
             n_pts (int, optional): Number of GEO coordinate angular grid points (i.e. number of GLOW runs), must be even and > 20. Defaults to 50.
             n_bins (int, optional): Number of energy bins. Defaults to 100.
             with_prodloss (bool, optional): Calculate production and loss parameters in local coordinates. Defaults to False.
             n_threads (int, optional):  Number of threads for parallel GLOW runs. Set to None to use all system threads. Defaults to None.
             full_output (bool, optional): Returns only local coordinate GLOW output if False, and a tuple of local and GEO outputs if True. Defaults to False.
-            resamp (float, optional): Number of X and Y points in local coordinate output. ``len(Y) = len(alt_km) * resamp`` and ``len(X) = n_pts * resamp``. Must be > 0.5. Defaults to 1.5.
+            resamp (Numeric, optional): Number of X and Y points in local coordinate output. ``len(Y) = len(alt_km) * resamp`` and ``len(X) = n_pts * resamp``. Must be > 0.5. Defaults to 1.5.
 
         Returns:
             iono (xarray.Dataset): Ionospheric parameters and brightnesses (with or without production and loss) in local coordinates.
@@ -636,21 +636,21 @@ class GLOWRaycastXY:
             return (iono, bds)
 
     @classmethod
-    def no_precipitation_geo(cls, time: datetime, lat: float, lon: float, heading: float, max_alt: float = 1000, n_pts: int = 50, n_bins: int = 100, *, n_threads: int = None, resamp: float = 1.5) -> xr.Dataset:
+    def no_precipitation_geo(cls, time: datetime, lat: Numeric, lon: Numeric, heading: Numeric, max_alt: Numeric = 1000, n_pts: int = 50, n_bins: int = 100, *, with_prodloss: bool = False, n_threads: int = None, resamp: Numeric = 1.5) -> xr.Dataset:
         """Run GLOW model looking along heading from the current location and return the model output in
         (T, R) geocentric coordinates where T is angle in radians from the current location along the great circle
         following current heading, and R is altitude in kilometers.
 
         Args:
             time (datetime): Datetime of GLOW calculation.
-            lat (float): Latitude of starting location.
-            lon (float): Longitude of starting location.
-            heading (float): Heading (look direction).
-            max_alt (float, optional): Maximum altitude where intersection is considered (km). Defaults to 1000, i.e. exobase.
+            lat (Numeric): Latitude of starting location.
+            lon (Numeric): Longitude of starting location.
+            heading (Numeric): Heading (look direction).
+            max_alt (Numeric, optional): Maximum altitude where intersection is considered (km). Defaults to 1000, i.e. exobase.
             n_pts (int, optional): Number of GEO coordinate angular grid points (i.e. number of GLOW runs). Defaults to 50.
             n_bins (int, optional): Number of energy bins. Defaults to 100.
             n_threads (int, optional):  Number of threads for parallel GLOW runs. Set to None to use all system threads. Defaults to None.
-            resamp (float, optional): Number of X and Y points in local coordinate output. ``len(Y) = len(alt_km) * resamp`` and ``len(X) = n_pts * resamp``. Must be > 0.5. Defaults to 1.5.
+            resamp (Numeric, optional): Number of X and Y points in local coordinate output. ``len(Y) = len(alt_km) * resamp`` and ``len(X) = n_pts * resamp``. Must be > 0.5. Defaults to 1.5.
 
 
         Returns:
@@ -930,13 +930,13 @@ class GLOWRaycastXY:
         return (float(self._ntt[tl*self._nr_num + rl]), float(self._nrr[tl*self._nr_num + rl]))
 
     @staticmethod
-    def get_global_coords_xy(x: np.ndarray | float, y: np.ndarray | float, r0: float = EARTH_RADIUS, meshgrid: bool = True) -> tuple(np.ndarray, np.ndarray):
+    def get_global_coords_xy(x: np.ndarray | Numeric, y: np.ndarray | Numeric, r0: Numeric = EARTH_RADIUS, meshgrid: bool = True) -> tuple(np.ndarray, np.ndarray):
         """Get GEO coordinates from local coordinates.
 
         Args:
-            x (np.ndarray): X distance in km.
-            y (np.ndarray): Y distance in km.
-            r0 (float, optional): Distance to origin. Defaults to geopy.distance.EARTH_RADIUS.
+            x (np.ndarray | Numeric): X distance in km.
+            y (np.ndarray | Numeric): Y distance in km.
+            r0 (Numeric, optional): Distance to origin. Defaults to geopy.distance.EARTH_RADIUS.
             meshgrid (bool, optional): Optionally convert 1-D inputs to a meshgrid. Defaults to True.
 
         Raises:
@@ -946,7 +946,7 @@ class GLOWRaycastXY:
         Returns:
             (np.ndarray, np.ndarray): (angles, distances) in GEO coordinates.
         """
-        if isinstance(y, np.ndarray) and (x, np.ndarray):  # if array
+        if isinstance(y, np.ndarray) and isinstance(x, np.ndarray):  # if array
             if y.ndim != x.ndim:  # if dims don't match get out
                 raise ValueError('x and y does not have the same dimensions')
             if y.ndim == 1 and meshgrid:
@@ -957,7 +957,7 @@ class GLOWRaycastXY:
                 _r, _t = y.copy(), x.copy()  # already a meshgrid?
                 y = _r[0]
                 x = _t[:, 0]
-        elif isinstance(y, float) and (x, float):  # floats
+        elif isinstance(y, Numeric) and isinstance(x, Numeric):  # floats
             _r = np.atleast_1d(y)
             _t = np.atleast_1d(x)
         else:
@@ -971,13 +971,13 @@ class GLOWRaycastXY:
         return tt, rr
 
     @staticmethod
-    def get_local_coords_xy(t: np.ndarray | float, r: np.ndarray | float, r0: float = EARTH_RADIUS) -> tuple(np.ndarray, np.ndarray):
+    def get_local_coords_xy(t: np.ndarray | Numeric, r: np.ndarray | Numeric, r0: Numeric = EARTH_RADIUS) -> tuple(np.ndarray, np.ndarray):
         """Get local coordinates from GEO coordinates.
 
         Args:
-            t (np.ndarray): Angles in radians.
-            r (np.ndarray): Distance in km.
-            r0 (float, optional): Distance to origin. Defaults to geopy.distance.EARTH_RADIUS.
+            t (np.ndarray | Numeric): Angles in radians.
+            r (np.ndarray | Numeric): Distance in km.
+            r0 (Numeric, optional): Distance to origin. Defaults to geopy.distance.EARTH_RADIUS.
 
         Raises:
             ValueError: ``r`` and ``t`` does not have the same dimensions
@@ -986,7 +986,7 @@ class GLOWRaycastXY:
         Returns:
             (np.ndarray, np.ndarray): (X, Y) in local coordinates.
         """
-        if isinstance(r, np.ndarray) and (t, np.ndarray):
+        if isinstance(r, np.ndarray) and isinstance(t, np.ndarray):
             if r.ndim != t.ndim:
                 raise ValueError('r and t does not have the same dimensions')
             if r.ndim == 1:
@@ -995,7 +995,7 @@ class GLOWRaycastXY:
                 _r, _t = r.copy(), t.copy()
                 r = _r[0]
                 t = _t[:, 0]
-        elif isinstance(r, float) and (t, float):
+        elif isinstance(r, Numeric) and isinstance(t, Numeric):
             _r = np.atleast_1d(r)
             _t = np.atleast_1d(t)
         else:
