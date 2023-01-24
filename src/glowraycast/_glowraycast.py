@@ -48,7 +48,7 @@ class GLOWRaycast:
             n_threads (int, optional): Number of threads for parallel GLOW runs. Set to None to use all system threads. Defaults to None.
             full_circ (bool, optional): For testing only, do not use. Defaults to False.
             resamp (Numeric, optional): Number of R and ZA points in local coordinate output. ``len(R) = len(alt_km) * resamp`` and ``len(ZA) = n_pts * resamp``. Must be > 0.5. Defaults to 1.5.
-            show_progress (bool, optional): Use TQDM to show progress of GLOW model calculations.
+            show_progress (bool, optional): Use TQDM to show progress of GLOW model calculations. Defaults to True.
 
         Raises:
             ValueError: Number of position bins can not be odd.
@@ -148,7 +148,7 @@ class GLOWRaycast:
         return self._bds  # return the calculated
 
     @classmethod
-    def no_precipitation(cls, time: datetime, lat: Numeric, lon: Numeric, heading: Numeric, max_alt: Numeric = 1000, n_pts: int = 50, n_bins: int = 100, *, with_prodloss: bool = False, n_threads: int = None, full_output: bool = False, resamp: Numeric = 1.5) -> xr.Dataset | tuple(xr.Dataset, xr.Dataset):
+    def no_precipitation(cls, time: datetime, lat: Numeric, lon: Numeric, heading: Numeric, max_alt: Numeric = 1000, n_pts: int = 50, n_bins: int = 100, *, with_prodloss: bool = False, n_threads: int = None, full_output: bool = False, resamp: Numeric = 1.5, show_progress: bool = True) -> xr.Dataset | tuple(xr.Dataset, xr.Dataset):
         """Run GLOW model looking along heading from the current location and return the model output in
         (ZA, R) local coordinates where ZA is zenith angle in radians and R is distance in kilometers.
 
@@ -164,6 +164,7 @@ class GLOWRaycast:
             n_threads (int, optional):  Number of threads for parallel GLOW runs. Set to None to use all system threads. Defaults to None.
             full_output (bool, optional): Returns only local coordinate GLOW output if False, and a tuple of local and GEO outputs if True. Defaults to False.
             resamp (Numeric, optional): Number of R and ZA points in local coordinate output. ``len(R) = len(alt_km) * resamp`` and ``len(ZA) = n_pts * resamp``. Must be > 0.5. Defaults to 1.5.
+            show_progress (bool, optional): Use TQDM to show progress of GLOW model calculations. Defaults to True.
 
         Returns:
             iono (xarray.Dataset): Ionospheric parameters and brightnesses (with or without production and loss) in local coordinates.
@@ -192,7 +193,7 @@ class GLOWRaycast:
             return (iono, bds)
 
     @classmethod
-    def no_precipitation_geo(cls, time: datetime, lat: Numeric, lon: Numeric, heading: Numeric, max_alt: Numeric = 1000, n_pts: int = 50, n_bins: int = 100, *, n_threads: int = None, resamp: Numeric = 1.5) -> xr.Dataset:
+    def no_precipitation_geo(cls, time: datetime, lat: Numeric, lon: Numeric, heading: Numeric, max_alt: Numeric = 1000, n_pts: int = 50, n_bins: int = 100, *, n_threads: int = None, resamp: Numeric = 1.5, show_progress: bool = True) -> xr.Dataset:
         """Run GLOW model looking along heading from the current location and return the model output in
         (T, R) geocentric coordinates where T is angle in radians from the current location along the great circle
         following current heading, and R is altitude in kilometers.
@@ -207,7 +208,7 @@ class GLOWRaycast:
             n_bins (int, optional): Number of energy bins. Defaults to 100.
             n_threads (int, optional):  Number of threads for parallel GLOW runs. Set to None to use all system threads. Defaults to None.
             resamp (Numeric, optional): Number of R and ZA points in local coordinate output. ``len(R) = len(alt_km) * resamp`` and ``len(ZA) = n_pts * resamp``. Must be > 0.5. Defaults to 1.5.
-
+            show_progress (bool, optional): Use TQDM to show progress of GLOW model calculations. Defaults to True.
 
         Returns:
             bds (xarray.Dataset): Ionospheric parameters and brightnesses (with production and loss) in GEO coordinates.
@@ -221,7 +222,7 @@ class GLOWRaycast:
             ResourceWarning: Number of threads requested is more than available system threads.
         """
         grobj = cls(time, lat, lon, heading, max_alt,
-                    n_pts, n_bins, n_threads=n_threads, resamp=resamp)
+                    n_pts, n_bins, n_threads=n_threads, resamp=resamp, show_progress=show_progress)
         bds = grobj.run_no_precipitation()
         return bds
 
@@ -567,7 +568,7 @@ class GLOWRaycastXY:
             n_threads (int, optional): Number of threads for parallel GLOW runs. Set to None to use all system threads. Defaults to None.
             full_circ (bool, optional): For testing only, do not use. Defaults to False.
             resamp (Numeric, optional): Number of X and Y points in local coordinate output. ``len(Y) = len(alt_km) * resamp`` and ``len(X) = n_pts * resamp``. Must be > 0.5. Defaults to 1.5.
-            show_progress (bool, optional): Use TQDM to show progress of GLOW model calculations.
+            show_progress (bool, optional): Use TQDM to show progress of GLOW model calculations. Defaults to True.
 
         Raises:
             ValueError: Number of position bins can not be odd.
@@ -618,7 +619,7 @@ class GLOWRaycastXY:
         self._iono = None
 
     @classmethod
-    def no_precipitation(cls, time: datetime, lat: Numeric, lon: Numeric, heading: Numeric, max_alt: Numeric = 1000, n_pts: int = 50, n_bins: int = 100, *, with_prodloss: bool = False, n_threads: int = None, full_output: bool = False, resamp: Numeric = 1.5) -> xr.Dataset | tuple(xr.Dataset, xr.Dataset):
+    def no_precipitation(cls, time: datetime, lat: Numeric, lon: Numeric, heading: Numeric, max_alt: Numeric = 1000, n_pts: int = 50, n_bins: int = 100, *, with_prodloss: bool = False, n_threads: int = None, full_output: bool = False, resamp: Numeric = 1.5, show_progress: bool = True) -> xr.Dataset | tuple(xr.Dataset, xr.Dataset):
         """Run GLOW model looking along heading from the current location and return the model output in
         (X, Y) local coordinates where X and Y are conventional axes in kilometers.
 
@@ -634,6 +635,7 @@ class GLOWRaycastXY:
             n_threads (int, optional):  Number of threads for parallel GLOW runs. Set to None to use all system threads. Defaults to None.
             full_output (bool, optional): Returns only local coordinate GLOW output if False, and a tuple of local and GEO outputs if True. Defaults to False.
             resamp (Numeric, optional): Number of X and Y points in local coordinate output. ``len(Y) = len(alt_km) * resamp`` and ``len(X) = n_pts * resamp``. Must be > 0.5. Defaults to 1.5.
+            show_progress (bool, optional): Use TQDM to show progress of GLOW model calculations. Defaults to True.
 
         Returns:
             iono (xarray.Dataset): Ionospheric parameters and brightnesses (with or without production and loss) in local coordinates.
@@ -653,7 +655,7 @@ class GLOWRaycastXY:
             ResourceWarning: Number of threads requested is more than available system threads.
         """
         grobj = cls(time, lat, lon, heading, max_alt, n_pts, n_bins,
-                    n_threads=n_threads, with_prodloss=with_prodloss, resamp=resamp)
+                    n_threads=n_threads, with_prodloss=with_prodloss, resamp=resamp, show_progress=show_progress)
         bds = grobj.run_no_precipitation()
         iono = grobj.transform_coord()
         if not full_output:
@@ -662,7 +664,7 @@ class GLOWRaycastXY:
             return (iono, bds)
 
     @classmethod
-    def no_precipitation_geo(cls, time: datetime, lat: Numeric, lon: Numeric, heading: Numeric, max_alt: Numeric = 1000, n_pts: int = 50, n_bins: int = 100, *, with_prodloss: bool = False, n_threads: int = None, resamp: Numeric = 1.5) -> xr.Dataset:
+    def no_precipitation_geo(cls, time: datetime, lat: Numeric, lon: Numeric, heading: Numeric, max_alt: Numeric = 1000, n_pts: int = 50, n_bins: int = 100, *, n_threads: int = None, resamp: Numeric = 1.5, show_progress: bool = True) -> xr.Dataset:
         """Run GLOW model looking along heading from the current location and return the model output in
         (T, R) geocentric coordinates where T is angle in radians from the current location along the great circle
         following current heading, and R is altitude in kilometers.
@@ -677,7 +679,7 @@ class GLOWRaycastXY:
             n_bins (int, optional): Number of energy bins. Defaults to 100.
             n_threads (int, optional):  Number of threads for parallel GLOW runs. Set to None to use all system threads. Defaults to None.
             resamp (Numeric, optional): Number of X and Y points in local coordinate output. ``len(Y) = len(alt_km) * resamp`` and ``len(X) = n_pts * resamp``. Must be > 0.5. Defaults to 1.5.
-
+            show_progress (bool, optional): Use TQDM to show progress of GLOW model calculations. Defaults to True.
 
         Returns:
             bds (xarray.Dataset): Ionospheric parameters and brightnesses (with production and loss) in GEO coordinates.
@@ -691,7 +693,7 @@ class GLOWRaycastXY:
             ResourceWarning: Number of threads requested is more than available system threads.
         """
         grobj = cls(time, lat, lon, heading, max_alt,
-                    n_pts, n_bins, n_threads=n_threads, resamp=resamp)
+                    n_pts, n_bins, n_threads=n_threads, resamp=resamp, show_progress=show_progress)
         bds = grobj.run_no_precipitation()
         return bds
 
