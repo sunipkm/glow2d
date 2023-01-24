@@ -27,6 +27,9 @@ N_CPUS = cpu_count()
 
 # %%
 class GLOWRaycast:
+    """Compute GLOW model on the great circle passing through the origin location along the specified bearing. 
+    The result is presented in a geocentric coordinate system, as well as in a ZA, R coordinate system at the origin location.
+    """
     def __init__(self, time: datetime, lat: Numeric, lon: Numeric, heading: Numeric, max_alt: Numeric = 1000, n_pts: int = 50, n_bins: int = 100, *, with_prodloss: bool = False, n_threads: int = None, full_circ: bool = False, resamp: Numeric = 1.5):
         """Create a GLOWRaycast object.
 
@@ -493,13 +496,14 @@ class GLOWRaycast:
         return tt, rr
 
     @staticmethod
-    def get_local_coords(t: np.ndarray | Numeric, r: np.ndarray | Numeric, r0: Numeric = EARTH_RADIUS) -> tuple(np.ndarray, np.ndarray):
+    def get_local_coords(t: np.ndarray | Numeric, r: np.ndarray | Numeric, r0: Numeric = EARTH_RADIUS, meshgrid: bool = True) -> tuple(np.ndarray, np.ndarray):
         """Get local coordinates from GEO coordinates.
 
         Args:
             t (np.ndarray | Numeric): Angles in radians.
             r (np.ndarray | Numeric): Distance in km.
             r0 (Numeric, optional): Distance to origin. Defaults to geopy.distance.EARTH_RADIUS.
+            meshgrid (bool, optional): Optionally convert 1-D inputs to a meshgrid. Defaults to True.
 
         Raises:
             ValueError: ``r`` and ``t`` does not have the same dimensions
@@ -509,12 +513,14 @@ class GLOWRaycast:
             (np.ndarray, np.ndarray): (angles, distances) in local coordinates.
         """
         if isinstance(r, np.ndarray) and isinstance(t, np.ndarray):
-            if r.ndim != t.ndim:
+            if r.ndim != t.ndim:  # if dims don't match get out
                 raise ValueError('r and t does not have the same dimensions')
-            if r.ndim == 1:
+            if r.ndim == 1 and meshgrid:
                 _r, _t = np.meshgrid(r, t)
+            elif r.ndim == 1 and not meshgrid:
+                _r, _t = r, t
             else:
-                _r, _t = r.copy(), t.copy()
+                _r, _t = r.copy(), t.copy()  # already a meshgrid?
                 r = _r[0]
                 t = _t[:, 0]
         elif isinstance(r, Numeric) and isinstance(t, Numeric):
@@ -528,6 +534,9 @@ class GLOWRaycast:
         return tt, rr
 
 class GLOWRaycastXY:
+    """Compute GLOW model on the great circle passing through the origin location along the specified bearing. 
+    The result is presented in a geocentric coordinate system, as well as in a X, Y coordinate system at the origin location.
+    """
     def __init__(self, time: datetime, lat: Numeric, lon: Numeric, heading: Numeric, max_alt: Numeric = 1000, n_pts: int = 50, n_bins: int = 100, *, with_prodloss: bool = False, n_threads: int = None, full_circ: bool = False, resamp: Numeric = 1.5):
         """Create a GLOWRaycastXY object.
 
@@ -971,13 +980,14 @@ class GLOWRaycastXY:
         return tt, rr
 
     @staticmethod
-    def get_local_coords_xy(t: np.ndarray | Numeric, r: np.ndarray | Numeric, r0: Numeric = EARTH_RADIUS) -> tuple(np.ndarray, np.ndarray):
+    def get_local_coords_xy(t: np.ndarray | Numeric, r: np.ndarray | Numeric, r0: Numeric = EARTH_RADIUS, meshgrid: bool = True) -> tuple(np.ndarray, np.ndarray):
         """Get local coordinates from GEO coordinates.
 
         Args:
             t (np.ndarray | Numeric): Angles in radians.
             r (np.ndarray | Numeric): Distance in km.
             r0 (Numeric, optional): Distance to origin. Defaults to geopy.distance.EARTH_RADIUS.
+            meshgrid (bool, optional): Optionally convert 1-D inputs to a meshgrid. Defaults to True.    
 
         Raises:
             ValueError: ``r`` and ``t`` does not have the same dimensions
@@ -986,15 +996,17 @@ class GLOWRaycastXY:
         Returns:
             (np.ndarray, np.ndarray): (X, Y) in local coordinates.
         """
-        if isinstance(r, np.ndarray) and isinstance(t, np.ndarray):
-            if r.ndim != t.ndim:
-                raise ValueError('r and t does not have the same dimensions')
-            if r.ndim == 1:
-                _r, _t = np.meshgrid(r, t)
+        if isinstance(y, np.ndarray) and isinstance(x, np.ndarray):  # if array
+            if y.ndim != x.ndim:  # if dims don't match get out
+                raise ValueError('x and y does not have the same dimensions')
+            if y.ndim == 1 and meshgrid:
+                _r, _t = np.meshgrid(y, x)
+            elif y.ndim == 1 and not meshgrid:
+                _r, _t = y, x
             else:
-                _r, _t = r.copy(), t.copy()
-                r = _r[0]
-                t = _t[:, 0]
+                _r, _t = y.copy(), x.copy()  # already a meshgrid?
+                y = _r[0]
+                x = _t[:, 0]
         elif isinstance(r, Numeric) and isinstance(t, Numeric):
             _r = np.atleast_1d(r)
             _t = np.atleast_1d(t)
