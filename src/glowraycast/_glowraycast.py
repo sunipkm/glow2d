@@ -17,7 +17,7 @@ from tqdm.contrib.concurrent import thread_map, process_map
 from scipy.ndimage import geometric_transform
 from time import perf_counter_ns
 import platform
-from multiprocessing import cpu_count
+from multiprocessing import Pool, cpu_count
 
 MAP_FCN = process_map
 if platform.system() == 'Darwin':
@@ -26,11 +26,14 @@ if platform.system() == 'Darwin':
 N_CPUS = cpu_count()
 
 # %%
+
+
 class GLOWRaycast:
     """Compute GLOW model on the great circle passing through the origin location along the specified bearing. 
     The result is presented in a geocentric coordinate system, as well as in a ZA, R coordinate system at the origin location.
     """
-    def __init__(self, time: datetime, lat: Numeric, lon: Numeric, heading: Numeric, max_alt: Numeric = 1000, n_pts: int = 50, n_bins: int = 100, *, with_prodloss: bool = False, n_threads: int = None, full_circ: bool = False, resamp: Numeric = 1.5):
+
+    def __init__(self, time: datetime, lat: Numeric, lon: Numeric, heading: Numeric, max_alt: Numeric = 1000, n_pts: int = 50, n_bins: int = 100, *, with_prodloss: bool = False, n_threads: int = None, full_circ: bool = False, resamp: Numeric = 1.5, show_progress: bool = True):
         """Create a GLOWRaycast object.
 
         Args:
@@ -45,6 +48,7 @@ class GLOWRaycast:
             n_threads (int, optional): Number of threads for parallel GLOW runs. Set to None to use all system threads. Defaults to None.
             full_circ (bool, optional): For testing only, do not use. Defaults to False.
             resamp (Numeric, optional): Number of R and ZA points in local coordinate output. ``len(R) = len(alt_km) * resamp`` and ``len(ZA) = n_pts * resamp``. Must be > 0.5. Defaults to 1.5.
+            show_progress (bool, optional): Use TQDM to show progress of GLOW model calculations.
 
         Raises:
             ValueError: Number of position bins can not be odd.
@@ -72,6 +76,7 @@ class GLOWRaycast:
             np.arccos(EARTH_RADIUS / (EARTH_RADIUS + max_alt)
                       )  # find maximum distance where LOS intersects exobase # 6400 * np.pi
         # points on the earth where we need to sample
+        self._show_prog = show_progress
         distpts = np.linspace(0, max_d, n_pts, endpoint=True)
         self._locs = []
         self._nbins = n_bins  # number of energy bins (for later)
@@ -106,8 +111,14 @@ class GLOWRaycast:
         return glow.no_precipitation(self._time, d[0], d[1], self._nbins)
 
     def _calc_glow_noprecip(self) -> xr.Dataset:  # run glow model calculation
-        self._dss = MAP_FCN(self._calc_glow_single_noprecip, range(
-            len(self._locs)), max_workers=self._nthr)
+        if self._show_prog:
+            self._dss = MAP_FCN(self._calc_glow_single_noprecip, range(
+                len(self._locs)), max_workers=self._nthr)
+        else:
+            ppool = Pool(self._nthr)
+            self._dss = ppool.map(self._calc_glow_single_noprecip, range(
+                len(self._locs)))
+
         # for dest in tqdm(self._locs):
         #     self._dss.append(glow.no_precipitation(time, dest[0], dest[1], self._nbins))
         bds: xr.Dataset = xr.concat(
@@ -127,13 +138,13 @@ class GLOWRaycast:
             return self._bds
         # calculate the GLOW model for each lat-lon point determined in init()
         self._bds = self._calc_glow_noprecip()
-        unit_desc_dict ={
+        unit_desc_dict = {
             'angle': ('radians', 'Angle of location w.r.t. radius vector at origin (starting location)'),
             'lat': ('degree', 'Latitude of locations'),
             'lon': ('degree', 'Longitude of location')
         }
         _ = list(map(lambda x: self._bds[x].attrs.update(
-        {'units': unit_desc_dict[x][0], 'description': unit_desc_dict[x][1]}), unit_desc_dict.keys()))
+            {'units': unit_desc_dict[x][0], 'description': unit_desc_dict[x][1]}), unit_desc_dict.keys()))
         return self._bds  # return the calculated
 
     @classmethod
@@ -234,13 +245,14 @@ class GLOWRaycast:
         self._nt_num = int(len(self._bds.angle.values) * self._resamp)   # resample to half density
         outp_shape = (self._nt_num, self._nr_num)
 
-        ttidx = np.where(tt < 0) # angle below horizon (LA < 0)
-        res = np.histogram2d(rr.flatten(), tt.flatten(), range=([rr.min(), rr.max()], [0, tt.max()])) # get distribution of global -> local points in local grid
-        gd = resize(res[0], outp_shape, mode='edge') # remap to right size
-        gd *= res[0].sum() / gd.sum() # conserve sum of points
-        window_length = int(25 * self._resamp) # smoothing window
-        window_length = window_length if window_length % 2 else window_length + 1 # must be odd
-        gd = savgol_filter(gd, window_length=window_length, polyorder=5, mode='nearest') # smooth the distribution
+        ttidx = np.where(tt < 0)  # angle below horizon (LA < 0)
+        # get distribution of global -> local points in local grid
+        res = np.histogram2d(rr.flatten(), tt.flatten(), range=([rr.min(), rr.max()], [0, tt.max()]))
+        gd = resize(res[0], outp_shape, mode='edge')  # remap to right size
+        gd *= res[0].sum() / gd.sum()  # conserve sum of points
+        window_length = int(25 * self._resamp)  # smoothing window
+        window_length = window_length if window_length % 2 else window_length + 1  # must be odd
+        gd = savgol_filter(gd, window_length=window_length, polyorder=5, mode='nearest')  # smooth the distribution
 
         self._altkm = altkm = self._bds.alt_km.values  # store the altkm
         self._theta = theta = self._bds.angle.values  # store the angles
@@ -308,11 +320,12 @@ class GLOWRaycast:
         for key in coord_wavelength:
             inp = bds['ver'].loc[dict(wavelength=key)].values.copy()
             inp[np.where(np.isnan(inp))] = 0
-            out = geometric_transform(inp, mapping=self._global_from_local, output_shape=outp_shape, mode='nearest') * gd # scaled by point distribution because flux is conserved, not brightness
+            # scaled by point distribution because flux is conserved, not brightness
+            out = geometric_transform(inp, mapping=self._global_from_local, output_shape=outp_shape, mode='nearest') * gd
             inp[ttidx] = 0
-            inpsum = inp.sum() # sum of input for valid angles
-            outpsum = out.sum() # sum of output 
-            out = out * (inpsum / outpsum) # scale the sum to conserve total flux
+            inpsum = inp.sum()  # sum of input for valid angles
+            outpsum = out.sum()  # sum of output
+            out = out * (inpsum / outpsum)  # scale the sum to conserve total flux
             ver.append(out.T)
         # end = perf_counter_ns()
         # print('VER eval: %.3f us'%((end - start)*1e-3))
@@ -377,46 +390,46 @@ class GLOWRaycast:
         iono.attrs.update(bds_attr)  # copy original attrs
 
         unit_dict = {'Tn': 'K',
-                 'O': 'cm^-3',
-                 'N2': 'cm^-3',
-                 'O2': 'cm^-3',
-                 'NO': 'cm^-3',
-                 'NeIn': 'cm^-3',
-                 'NeOut': 'cm^-3',
-                 'ionrate': 'cm^-3',
-                 'O+': 'cm^-3',
-                 'O2+': 'cm^-3',
-                 'NO+': 'cm^-3',
-                 'N2D': 'cm^-3',
-                 'pedersen': 'S m^-1',
-                 'hall': 'S m^-1',
-                 'Te': 'K',
-                 'Ti': 'K',
-                 'ver': 'R',
-                 'wavelength': 'angstrom',
-                 'energy': 'eV'
-                 }
+                     'O': 'cm^-3',
+                     'N2': 'cm^-3',
+                     'O2': 'cm^-3',
+                     'NO': 'cm^-3',
+                     'NeIn': 'cm^-3',
+                     'NeOut': 'cm^-3',
+                     'ionrate': 'cm^-3',
+                     'O+': 'cm^-3',
+                     'O2+': 'cm^-3',
+                     'NO+': 'cm^-3',
+                     'N2D': 'cm^-3',
+                     'pedersen': 'S m^-1',
+                     'hall': 'S m^-1',
+                     'Te': 'K',
+                     'Ti': 'K',
+                     'ver': 'R',
+                     'wavelength': 'angstrom',
+                     'energy': 'eV'
+                     }
 
         description_dict = {'Tn': 'Neutral temperature',
-                 'O': 'Number density',
-                 'N2': 'Number density',
-                 'O2': 'Number density',
-                 'NO': 'Number density',
-                 'NeIn': 'Number density',
-                 'NeOut': 'Number density',
-                 'ionrate': 'Number density',
-                 'O+': 'Number density',
-                 'O2+': 'Number density',
-                 'NO+': 'Number density',
-                 'N2D': 'Number density',
-                 'pedersen': 'Pedersen conductivity',
-                 'hall': 'Hall conductivity',
-                 'Te': 'Electron temperature',
-                 'Ti': 'Ion temperature',
-                 'ver': 'Volume (column) photon emission rate',
-                 'wavelength': 'Emission wavelength',
-                 'energy': 'Precipitation energy'
-                 }
+                            'O': 'Number density',
+                            'N2': 'Number density',
+                            'O2': 'Number density',
+                            'NO': 'Number density',
+                            'NeIn': 'Number density',
+                            'NeOut': 'Number density',
+                            'ionrate': 'Number density',
+                            'O+': 'Number density',
+                            'O2+': 'Number density',
+                            'NO+': 'Number density',
+                            'N2D': 'Number density',
+                            'pedersen': 'Pedersen conductivity',
+                            'hall': 'Hall conductivity',
+                            'Te': 'Electron temperature',
+                            'Ti': 'Ion temperature',
+                            'ver': 'Volume (column) photon emission rate',
+                            'wavelength': 'Emission wavelength',
+                            'energy': 'Precipitation energy'
+                            }
         if self._wprodloss:
             unit_dict['production'] = 'cm^-3 s^-1'
             unit_dict['loss'] = 's^-1'
@@ -424,15 +437,15 @@ class GLOWRaycast:
             description_dict['production'] = 'Volume production rate',
             description_dict['loss'] = 'Loss rate',
             description_dict['excitedDensity'] = 'Excited/ionized grid density',
-    
+
         _ = list(map(lambda x: iono[x].attrs.update(
-        {'units': unit_dict[x], 'description': description_dict[x]}), unit_dict.keys()))
-        unit_desc_dict ={
+            {'units': unit_dict[x], 'description': description_dict[x]}), unit_dict.keys()))
+        unit_desc_dict = {
             'za': ('radians', 'Zenith angle'),
             'r': ('km', 'Radial distance in km')
         }
         _ = list(map(lambda x: iono[x].attrs.update(
-        {'units': unit_desc_dict[x][0], 'description': unit_desc_dict[x][1]}), unit_desc_dict.keys()))
+            {'units': unit_desc_dict[x][0], 'description': unit_desc_dict[x][1]}), unit_desc_dict.keys()))
         # end = perf_counter_ns()
         # print('Merging: %.3f us'%((end - start)*1e-3))
         self._iono = iono
@@ -533,11 +546,13 @@ class GLOWRaycast:
         tt = np.pi/2 - np.arctan2(_r*np.sin(_t), _r*np.cos(_t) - r0)
         return tt, rr
 
+
 class GLOWRaycastXY:
     """Compute GLOW model on the great circle passing through the origin location along the specified bearing. 
     The result is presented in a geocentric coordinate system, as well as in a X, Y coordinate system at the origin location.
     """
-    def __init__(self, time: datetime, lat: Numeric, lon: Numeric, heading: Numeric, max_alt: Numeric = 1000, n_pts: int = 50, n_bins: int = 100, *, with_prodloss: bool = False, n_threads: int = None, full_circ: bool = False, resamp: Numeric = 1.5):
+
+    def __init__(self, time: datetime, lat: Numeric, lon: Numeric, heading: Numeric, max_alt: Numeric = 1000, n_pts: int = 50, n_bins: int = 100, *, with_prodloss: bool = False, n_threads: int = None, full_circ: bool = False, resamp: Numeric = 1.5, show_progress: bool = True):
         """Create a GLOWRaycastXY object.
 
         Args:
@@ -552,6 +567,7 @@ class GLOWRaycastXY:
             n_threads (int, optional): Number of threads for parallel GLOW runs. Set to None to use all system threads. Defaults to None.
             full_circ (bool, optional): For testing only, do not use. Defaults to False.
             resamp (Numeric, optional): Number of X and Y points in local coordinate output. ``len(Y) = len(alt_km) * resamp`` and ``len(X) = n_pts * resamp``. Must be > 0.5. Defaults to 1.5.
+            show_progress (bool, optional): Use TQDM to show progress of GLOW model calculations.
 
         Raises:
             ValueError: Number of position bins can not be odd.
@@ -580,6 +596,7 @@ class GLOWRaycastXY:
                       )  # find maximum distance where LOS intersects exobase # 6400 * np.pi
         # points on the earth where we need to sample
         distpts = np.linspace(0, max_d, n_pts, endpoint=True)
+        self._show_prog = show_progress
         self._locs = []
         self._nbins = n_bins  # number of energy bins (for later)
         self._nthr = n_threads  # number of threads (for later)
@@ -688,13 +705,13 @@ class GLOWRaycastXY:
             return self._bds
         # calculate the GLOW model for each lat-lon point determined in init()
         self._bds = self._calc_glow_noprecip()
-        unit_desc_dict ={
+        unit_desc_dict = {
             'angle': ('radians', 'Angle of location w.r.t. radius vector at origin (starting location)'),
             'lat': ('degree', 'Latitude of locations'),
             'lon': ('degree', 'Longitude of location')
         }
         _ = list(map(lambda x: self._bds[x].attrs.update(
-        {'units': unit_desc_dict[x][0], 'description': unit_desc_dict[x][1]}), unit_desc_dict.keys()))
+            {'units': unit_desc_dict[x][0], 'description': unit_desc_dict[x][1]}), unit_desc_dict.keys()))
         return self._bds  # return the calculated
 
     def transform_coord(self) -> xr.Dataset:
@@ -711,18 +728,19 @@ class GLOWRaycastXY:
             self._bds.angle.values, self._bds.alt_km.values + EARTH_RADIUS)  # get local coords from geocentric coords
         self._rmin, self._rmax = self._bds.alt_km.values.min(), self._bds.alt_km.values.max()  # nearest and farthest local pts
         # highest and lowest look angle (90 deg - za)
-        self._tmin, self._tmax = tt.min(), tt.max() # 60 to 1000 km, y
+        self._tmin, self._tmax = tt.min(), tt.max()  # 60 to 1000 km, y
         self._nr_num = int(len(self._bds.alt_km.values) * self._resamp)  # resample to half density
         self._nt_num = int(len(self._bds.angle.values) * self._resamp)   # resample to half density
         outp_shape = (self._nt_num, self._nr_num)
 
-        ttidx = np.where(tt < 0) # angle below horizon (LA < 0)
-        res = np.histogram2d(rr.flatten(), tt.flatten(), range=([self._rmin, self._rmax], [self._tmin, self._tmax])) # get distribution of global -> local points in local grid
-        gd = resize(res[0], outp_shape, mode='edge') # remap to right size
-        gd *= res[0].sum() / gd.sum() # conserve sum of points
-        window_length = int(25 * self._resamp) # smoothing window
-        window_length = window_length if window_length % 2 else window_length + 1 # must be odd
-        gd = savgol_filter(gd, window_length=window_length, polyorder=5, mode='nearest') # smooth the distribution
+        ttidx = np.where(tt < 0)  # angle below horizon (LA < 0)
+        # get distribution of global -> local points in local grid
+        res = np.histogram2d(rr.flatten(), tt.flatten(), range=([self._rmin, self._rmax], [self._tmin, self._tmax]))
+        gd = resize(res[0], outp_shape, mode='edge')  # remap to right size
+        gd *= res[0].sum() / gd.sum()  # conserve sum of points
+        window_length = int(25 * self._resamp)  # smoothing window
+        window_length = window_length if window_length % 2 else window_length + 1  # must be odd
+        gd = savgol_filter(gd, window_length=window_length, polyorder=5, mode='nearest')  # smooth the distribution
 
         self._altkm = altkm = self._bds.alt_km.values  # store the altkm
         self._theta = theta = self._bds.angle.values  # store the angles
@@ -790,11 +808,12 @@ class GLOWRaycastXY:
         for key in coord_wavelength:
             inp = bds['ver'].loc[dict(wavelength=key)].values.copy()
             inp[np.where(np.isnan(inp))] = 0
-            out = geometric_transform(inp, mapping=self._global_from_local, output_shape=outp_shape, mode='nearest') * gd # scaled by point distribution because flux is conserved, not brightness
+            # scaled by point distribution because flux is conserved, not brightness
+            out = geometric_transform(inp, mapping=self._global_from_local, output_shape=outp_shape, mode='nearest') * gd
             inp[ttidx] = 0
-            inpsum = inp.sum() # sum of input for valid angles
-            outpsum = out.sum() # sum of output 
-            out = out * (inpsum / outpsum) # scale the sum to conserve total flux
+            inpsum = inp.sum()  # sum of input for valid angles
+            outpsum = out.sum()  # sum of output
+            out = out * (inpsum / outpsum)  # scale the sum to conserve total flux
             ver.append(out.T)
         # end = perf_counter_ns()
         # print('VER eval: %.3f us'%((end - start)*1e-3))
@@ -857,48 +876,48 @@ class GLOWRaycastXY:
         # start = perf_counter_ns()
         iono = xr.merge((iono, ver, prodloss, precip))  # merge all datasets
         iono.attrs.update(bds_attr)  # copy original attrs
-        
+
         unit_dict = {'Tn': 'K',
-                 'O': 'cm^-3',
-                 'N2': 'cm^-3',
-                 'O2': 'cm^-3',
-                 'NO': 'cm^-3',
-                 'NeIn': 'cm^-3',
-                 'NeOut': 'cm^-3',
-                 'ionrate': 'cm^-3',
-                 'O+': 'cm^-3',
-                 'O2+': 'cm^-3',
-                 'NO+': 'cm^-3',
-                 'N2D': 'cm^-3',
-                 'pedersen': 'S m^-1',
-                 'hall': 'S m^-1',
-                 'Te': 'K',
-                 'Ti': 'K',
-                 'ver': 'R',
-                 'wavelength': 'angstrom',
-                 'energy': 'eV'
-                 }
+                     'O': 'cm^-3',
+                     'N2': 'cm^-3',
+                     'O2': 'cm^-3',
+                     'NO': 'cm^-3',
+                     'NeIn': 'cm^-3',
+                     'NeOut': 'cm^-3',
+                     'ionrate': 'cm^-3',
+                     'O+': 'cm^-3',
+                     'O2+': 'cm^-3',
+                     'NO+': 'cm^-3',
+                     'N2D': 'cm^-3',
+                     'pedersen': 'S m^-1',
+                     'hall': 'S m^-1',
+                     'Te': 'K',
+                     'Ti': 'K',
+                     'ver': 'R',
+                     'wavelength': 'angstrom',
+                     'energy': 'eV'
+                     }
 
         description_dict = {'Tn': 'Neutral temperature',
-                 'O': 'Number density',
-                 'N2': 'Number density',
-                 'O2': 'Number density',
-                 'NO': 'Number density',
-                 'NeIn': 'Number density',
-                 'NeOut': 'Number density',
-                 'ionrate': 'Number density',
-                 'O+': 'Number density',
-                 'O2+': 'Number density',
-                 'NO+': 'Number density',
-                 'N2D': 'Number density',
-                 'pedersen': 'Pedersen conductivity',
-                 'hall': 'Hall conductivity',
-                 'Te': 'Electron temperature',
-                 'Ti': 'Ion temperature',
-                 'ver': 'Volume (column) photon emission rate',
-                 'wavelength': 'Emission wavelength',
-                 'energy': 'Precipitation energy'
-                 }
+                            'O': 'Number density',
+                            'N2': 'Number density',
+                            'O2': 'Number density',
+                            'NO': 'Number density',
+                            'NeIn': 'Number density',
+                            'NeOut': 'Number density',
+                            'ionrate': 'Number density',
+                            'O+': 'Number density',
+                            'O2+': 'Number density',
+                            'NO+': 'Number density',
+                            'N2D': 'Number density',
+                            'pedersen': 'Pedersen conductivity',
+                            'hall': 'Hall conductivity',
+                            'Te': 'Electron temperature',
+                            'Ti': 'Ion temperature',
+                            'ver': 'Volume (column) photon emission rate',
+                            'wavelength': 'Emission wavelength',
+                            'energy': 'Precipitation energy'
+                            }
         if self._wprodloss:
             unit_dict['production'] = 'cm^-3 s^-1'
             unit_dict['loss'] = 's^-1'
@@ -906,15 +925,15 @@ class GLOWRaycastXY:
             description_dict['production'] = 'Volume production rate',
             description_dict['loss'] = 'Loss rate',
             description_dict['excitedDensity'] = 'Excited/ionized grid density',
-    
+
         _ = list(map(lambda x: iono[x].attrs.update(
-        {'units': unit_dict[x], 'description': description_dict[x]}), unit_dict.keys()))
-        unit_desc_dict ={
+            {'units': unit_dict[x], 'description': description_dict[x]}), unit_dict.keys()))
+        unit_desc_dict = {
             'x': ('km', 'Distance in X'),
             'y': ('km', 'Distance in Y')
         }
         _ = list(map(lambda x: iono[x].attrs.update(
-        {'units': unit_desc_dict[x][0], 'description': unit_desc_dict[x][1]}), unit_desc_dict.keys()))
+            {'units': unit_desc_dict[x][0], 'description': unit_desc_dict[x][1]}), unit_desc_dict.keys()))
         # end = perf_counter_ns()
         # print('Merging: %.3f us'%((end - start)*1e-3))
         self._iono = iono
@@ -996,17 +1015,17 @@ class GLOWRaycastXY:
         Returns:
             (np.ndarray, np.ndarray): (X, Y) in local coordinates.
         """
-        if isinstance(y, np.ndarray) and isinstance(x, np.ndarray):  # if array
-            if y.ndim != x.ndim:  # if dims don't match get out
-                raise ValueError('x and y does not have the same dimensions')
-            if y.ndim == 1 and meshgrid:
-                _r, _t = np.meshgrid(y, x)
-            elif y.ndim == 1 and not meshgrid:
-                _r, _t = y, x
+        if isinstance(r, np.ndarray) and isinstance(t, np.ndarray):
+            if r.ndim != t.ndim:  # if dims don't match get out
+                raise ValueError('r and t does not have the same dimensions')
+            if r.ndim == 1 and meshgrid:
+                _r, _t = np.meshgrid(r, t)
+            elif r.ndim == 1 and not meshgrid:
+                _r, _t = r, t
             else:
-                _r, _t = y.copy(), x.copy()  # already a meshgrid?
-                y = _r[0]
-                x = _t[:, 0]
+                _r, _t = r.copy(), t.copy()  # already a meshgrid?
+                r = _r[0]
+                t = _t[:, 0]
         elif isinstance(r, Numeric) and isinstance(t, Numeric):
             _r = np.atleast_1d(r)
             _t = np.atleast_1d(t)
@@ -1032,8 +1051,13 @@ class GLOWRaycastXY:
         return glow.no_precipitation(self._time, d[0], d[1], self._nbins)
 
     def _calc_glow_noprecip(self) -> xr.Dataset:  # run glow model calculation
-        self._dss = MAP_FCN(self._calc_glow_single_noprecip, range(
-            len(self._locs)), max_workers=self._nthr)
+        if self._show_prog:
+            self._dss = MAP_FCN(self._calc_glow_single_noprecip, range(
+                len(self._locs)), max_workers=self._nthr)
+        else:
+            ppool = Pool(self._nthr)
+            self._dss = ppool.map(self._calc_glow_single_noprecip, range(
+                len(self._locs)))
         # for dest in tqdm(self._locs):
         #     self._dss.append(glow.no_precipitation(time, dest[0], dest[1], self._nbins))
         bds: xr.Dataset = xr.concat(
@@ -1049,7 +1073,7 @@ if __name__ == '__main__':
     time = datetime(2022, 2, 15, 6, 0).astimezone(pytz.utc)
     print(time)
     lat, lon = 42.64981361744372, -71.31681056737486
-    grobj = GLOWRaycastXY(time, 42.64981361744372, -71.31681056737486, 40, n_threads=6, n_pts=100, resamp=1)
+    grobj = GLOWRaycastXY(time, 42.64981361744372, -71.31681056737486, 40, n_threads=6, n_pts=100, resamp=1, show_progress=True)
     st = perf_counter_ns()
     bds = grobj.run_no_precipitation()
     end = perf_counter_ns()
