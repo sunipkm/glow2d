@@ -306,6 +306,7 @@ class GLOWRaycast:
             inp = self._bds[key].values.copy()
             inp[np.where(np.isnan(inp))] = 0
             out = geometric_transform(inp, mapping=self._global_from_local, output_shape=outp_shape)
+            # out = warp(inp, inverse_map=(2, self._ntt, self._nrr), output_shape=outp_shape)
             data_vars[key] = (('za', 'r'), out)
         # end = perf_counter_ns()
         # print('Single_key conversion: %.3f us'%((end - start)*1e-3))
@@ -322,6 +323,7 @@ class GLOWRaycast:
             inp = bds['ver'].loc[dict(wavelength=key)].values.copy()
             inp[np.where(np.isnan(inp))] = 0
             # scaled by point distribution because flux is conserved, not brightness
+            # out = warp(inp, inverse_map=(2, self._ntt, self._nrr), output_shape=outp_shape, mode='nearest') * gd
             out = geometric_transform(inp, mapping=self._global_from_local, output_shape=outp_shape, mode='nearest') * gd
             inp[ttidx] = 0
             inpsum = inp.sum()  # sum of input for valid angles
@@ -351,6 +353,7 @@ class GLOWRaycast:
                     inp = bds[key].loc[dict(state=st)].values.copy()
                     inp[np.where(np.isnan(inp))] = 0
                     out = geometric_transform(inp, mapping=self._global_from_local, output_shape=outp_shape)
+                    # out = warp(inp, inverse_map=(2, self._ntt, self._nrr), output_shape=outp_shape)
                     return out.T
                 res = list(map(convert_state_stuff, coord_state))
                 res = np.asarray(res).T
@@ -406,7 +409,7 @@ class GLOWRaycast:
                      'hall': 'S m^-1',
                      'Te': 'K',
                      'Ti': 'K',
-                     'ver': 'R',
+                     'ver': 'cm^-3 s^-1',
                      'wavelength': 'angstrom',
                      'energy': 'eV'
                      }
@@ -427,7 +430,7 @@ class GLOWRaycast:
                             'hall': 'Hall conductivity',
                             'Te': 'Electron temperature',
                             'Ti': 'Ion temperature',
-                            'ver': 'Volume (column) photon emission rate',
+                            'ver': 'Photon volume emission rate',
                             'wavelength': 'Emission wavelength',
                             'energy': 'Precipitation energy'
                             }
@@ -795,6 +798,7 @@ class GLOWRaycastXY:
             inp = self._bds[key].values.copy()
             inp[np.where(np.isnan(inp))] = 0
             out = geometric_transform(inp, mapping=self._global_from_local, output_shape=outp_shape)
+            # out = warp(inp, inverse_map=(2, self._ntt, self._nrr), output_shape=outp_shape)
             data_vars[key] = (('za', 'r'), out)
         # end = perf_counter_ns()
         # print('Single_key conversion: %.3f us'%((end - start)*1e-3))
@@ -812,6 +816,7 @@ class GLOWRaycastXY:
             inp[np.where(np.isnan(inp))] = 0
             # scaled by point distribution because flux is conserved, not brightness
             out = geometric_transform(inp, mapping=self._global_from_local, output_shape=outp_shape, mode='nearest') * gd
+            # out = warp(inp, inverse_map=(2, self._ntt, self._nrr), output_shape=outp_shape, mode='nearest') * gd
             inp[ttidx] = 0
             inpsum = inp.sum()  # sum of input for valid angles
             outpsum = out.sum()  # sum of output
@@ -840,6 +845,7 @@ class GLOWRaycastXY:
                     inp = bds[key].loc[dict(state=st)].values.copy()
                     inp[np.where(np.isnan(inp))] = 0
                     out = geometric_transform(inp, mapping=self._global_from_local, output_shape=outp_shape)
+                    # out = warp(inp, inverse_map=(2, self._ntt, self._nrr), output_shape=outp_shape)
                     return out.T
                 res = list(map(convert_state_stuff, coord_state))
                 res = np.asarray(res).T
@@ -895,7 +901,7 @@ class GLOWRaycastXY:
                      'hall': 'S m^-1',
                      'Te': 'K',
                      'Ti': 'K',
-                     'ver': 'R',
+                     'ver': 'cm^-3 s^-1',
                      'wavelength': 'angstrom',
                      'energy': 'eV'
                      }
@@ -916,7 +922,7 @@ class GLOWRaycastXY:
                             'hall': 'Hall conductivity',
                             'Te': 'Electron temperature',
                             'Ti': 'Ion temperature',
-                            'ver': 'Volume (column) photon emission rate',
+                            'ver': 'Photon volume emission rate',
                             'wavelength': 'Emission wavelength',
                             'energy': 'Precipitation energy'
                             }
