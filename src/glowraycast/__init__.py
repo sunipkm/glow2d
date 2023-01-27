@@ -13,6 +13,6 @@ Misc. Variables
 
 from ._glowraycast import GLOWRaycast, GLOWRaycastXY
 
-__version__ = '1.2.0'
+__version__ = '2.0.0a'
 
 __all__ = ['GLOWRaycast', 'GLOWRaycastXY', '__version__']

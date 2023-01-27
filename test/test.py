@@ -97,7 +97,7 @@ tt, rr = grobj.get_local_coords(t, r)
 # %%
 fig, ax = plt.subplots(dpi=300, subplot_kw=dict(projection='polar'))
 tn = (bds.ver.loc[dict(wavelength='5577')].values)
-r, t = rr, tt  # np.meshgrid((alt + ofst) / ofst, ang)
+r, t = rr, np.pi / 2 - tt  # np.meshgrid((alt + ofst) / ofst, ang)
 print(r.shape, t.shape)
 # , extent=[0, 0, 7400 / EARTH_RADIUS, ang.max()])
 im = ax.contourf(t, r, np.log10(tn), 100)
@@ -192,6 +192,65 @@ tn = iono.ver.loc[dict(wavelength='5577')].values
 r, t = iono.r.values, np.pi/2 - iono.za.values
 print(r.shape, t.shape)
 r, t = np.meshgrid(r, t)
+# , extent=[0, 0, 7400 / EARTH_RADIUS, ang.max()])
+im = ax.contourf(t, r, gd2, 100, cmap='gist_ncar_r')
+cbar = fig.colorbar(im, shrink=0.6)
+cbar.set_label('Number Density', fontsize=10)
+cbar.ax.tick_params(labelsize=8)
+ax.set_thetamax(90)
+ax.text(np.radians(-12), ax.get_rmax()/2, 'Distance from observation location (km)',
+        rotation=0, ha='center', va='center')
+fig.suptitle('Distribution of GEO coordinate points in local coordinates')
+ax.fill_between(np.deg2rad([12, 69]), 0, 10000, alpha=0.3, color='b')
+ax.plot(np.deg2rad([12, 12]), [0, 10000], lw=0.5, color='k', ls='--')
+ax.plot(np.deg2rad([69, 69]), [0, 10000], lw=0.5, color='k', ls='--')
+ax.text(np.deg2rad(37), 1600, 'HiT&MIS View Cone', fontsize=10, color='w', rotation=360-45)
+ax.tick_params(labelsize=10)
+# earth = pl.Circle((0, 0), 1, transform=ax.transData._b, color='k', alpha=0.4)
+# ax.add_artist(earth)
+# ax.set_thetamax(ang.max()*180/np.pi)
+ax.set_ylim(r.min(), r.max())
+# ax.set_rscale('symlog')
+ax.set_rorigin(-60)
+plt.savefig('test_loc_geo_distrib.pdf')
+plt.show()
+# %%
+def get_jacobian_glob2loc_loc(r: np.ndarray, t: np.ndarray) -> np.ndarray:
+    if r.ndim != 2 or t.ndim != 2:
+        raise ValueError('Dimension of inputs must be 2')
+    gt, gr = GLOWRaycast.get_global_coords(t, r, r0 = EARTH_RADIUS)
+    jac = (1/r**3)*((gr*((gr - EARTH_RADIUS*np.cos(gt))**2)) + (gr*((EARTH_RADIUS*np.sin(gt))**2)))
+    return jac
+
+def get_jacobian_loc2glob_loc(r: np.ndarray, t: np.ndarray) -> np.ndarray:
+    if r.ndim != 2 or t.ndim != 2:
+        raise ValueError('Dimension of inputs must be 2')
+    gt, gr = GLOWRaycast.get_global_coords(t, r, r0 = EARTH_RADIUS)
+    jac = (1/gr**3)*((r*((r + EARTH_RADIUS*np.cos(t))**2)) + (r*((EARTH_RADIUS*np.sin(t))**2)))
+    return jac
+
+def get_jacobian_glob2loc_glob(gr: np.ndarray, gt: np.ndarray) -> np.ndarray:
+    if gr.ndim != 2 or gt.ndim != 2:
+        raise ValueError('Dimension of inputs must be 2')
+    t, r = GLOWRaycast.get_local_coords(gt, gr, r0 = EARTH_RADIUS)
+    jac = (1/r**3)*((gr*((gr - EARTH_RADIUS*np.cos(gt))**2)) + (gr*((EARTH_RADIUS*np.sin(gt))**2)))
+    return jac
+
+def get_jacobian_loc2glob_glob(gr: np.ndarray, gt: np.ndarray) -> np.ndarray:
+    if gr.ndim != 2 or gt.ndim != 2:
+        raise ValueError('Dimension of inputs must be 2')
+    t, r = GLOWRaycast.get_local_coords(gt, gr, r0 = EARTH_RADIUS)
+    jac = (1/gr**3)*((r*((r + EARTH_RADIUS*np.cos(t))**2)) + (r*((EARTH_RADIUS*np.sin(t))**2)))
+    return jac
+
+# %%
+fig, ax = plt.subplots(dpi=300, subplot_kw=dict(projection='polar'), figsize=(6.4, 4.8))
+# np.meshgrid((alt + ofst) / ofst, ang)
+r, t = iono.r.values, iono.za.values
+print(r.shape, t.shape)
+r, t = np.meshgrid(r, t)
+gd2 = get_jacobian_loc2glob_loc(r, t)
+t = np.pi / 2 - t
 # , extent=[0, 0, 7400 / EARTH_RADIUS, ang.max()])
 im = ax.contourf(t, r, gd2, 100, cmap='gist_ncar_r')
 cbar = fig.colorbar(im, shrink=0.6)

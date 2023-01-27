@@ -145,6 +145,34 @@ class GLOWRaycast:
         }
         _ = list(map(lambda x: self._bds[x].attrs.update(
             {'units': unit_desc_dict[x][0], 'description': unit_desc_dict[x][1]}), unit_desc_dict.keys()))
+        # Fix units
+        unit_keys = {
+            'O': 'cm^-3',
+            'N2': 'cm^-3',
+            'O2': 'cm^-3',
+            'NO': 'cm^-3',
+            'NeIn': 'cm^-3',
+            'NeOut': 'cm^-3',
+            'ionrate': 'cm^-3',
+            'O+': 'cm^-3',
+            'O2+': 'cm^-3',
+            'NO+': 'cm^-3',
+            'N2D': 'cm^-3',
+        }
+        scale = (self._bds.alt_km.values + EARTH_RADIUS) * 1e5 # in distance in cm
+        scale *= 1e-3 # factor in to convert to millirad
+        sc2d = np.stack([scale]*len(self._bds.angle.values))
+        for key in unit_keys.keys():
+            self._bds[key] *= sc2d
+            self._bds[key].attrs['units'] = 'cm^-2 mr^-1'
+        sc3d = np.stack([sc2d]*len(self._bds.state), axis=2)
+        self._bds['production'] *= sc3d
+        self._bds['production'].attrs['units'] = 'cm^-2 mr^-1 s^-1'
+        self._bds['excitedDensity'] *= sc3d
+        self._bds['excitedDensity'].attrs['units'] = 'cm^-2 mr^-1'
+        sc3d = np.stack([sc2d]*len(self._bds.wavelength), axis=2)
+        self._bds['ver'] *= sc3d
+        self._bds['ver'].attrs['units'] = 'cm^-2 mr^-1 s^-1'
         return self._bds  # return the calculated
 
     @classmethod
@@ -241,19 +269,22 @@ class GLOWRaycast:
 
         self._rmin, self._rmax = rr.min(), rr.max()  # nearest and farthest local pts
         # highest and lowest look angle (90 deg - za)
-        self._tmin, self._tmax = 0, tt.max()
+        self._tmin, self._tmax = tt.min(), np.pi / 2 # 0, tt.max()
         self._nr_num = int(len(self._bds.alt_km.values) * self._resamp)  # resample to half density
         self._nt_num = int(len(self._bds.angle.values) * self._resamp)   # resample to half density
         outp_shape = (self._nt_num, self._nr_num)
 
-        ttidx = np.where(tt < 0)  # angle below horizon (LA < 0)
-        # get distribution of global -> local points in local grid
-        res = np.histogram2d(rr.flatten(), tt.flatten(), range=([rr.min(), rr.max()], [0, tt.max()]))
-        gd = resize(res[0], outp_shape, mode='edge')  # remap to right size
-        gd *= res[0].sum() / gd.sum()  # conserve sum of points
-        window_length = int(25 * self._resamp)  # smoothing window
-        window_length = window_length if window_length % 2 else window_length + 1  # must be odd
-        gd = savgol_filter(gd, window_length=window_length, polyorder=5, mode='nearest')  # smooth the distribution
+        gd_r, gd_t = np.meshgrid(self._bds.alt_km.values + EARTH_RADIUS, self._bds.angle.values)
+        gd = GLOWRaycast.get_jacobian_glob2loc_glob(gd_r, gd_t)
+
+        # ttidx = np.where(tt < 0)  # angle below horizon (LA < 0)
+        # # get distribution of global -> local points in local grid
+        # res = np.histogram2d(rr.flatten(), tt.flatten(), range=([rr.min(), rr.max()], [0, tt.max()]))
+        # gd = resize(res[0], outp_shape, mode='edge')  # remap to right size
+        # gd *= res[0].sum() / gd.sum()  # conserve sum of points
+        # window_length = int(25 * self._resamp)  # smoothing window
+        # window_length = window_length if window_length % 2 else window_length + 1  # must be odd
+        # gd = savgol_filter(gd, window_length=window_length, polyorder=5, mode='nearest')  # smooth the distribution
 
         self._altkm = altkm = self._bds.alt_km.values  # store the altkm
         self._theta = theta = self._bds.angle.values  # store the angles
@@ -313,7 +344,7 @@ class GLOWRaycast:
         # start = perf_counter_ns()
         # dataset of (angle, alt_km) vars
         iono = xr.Dataset(data_vars=data_vars, coords={
-                          'za': np.pi/2 - nt, 'r': nr})
+                          'za': nt, 'r': nr})
         # end = perf_counter_ns()
         # print('Single_key dataset: %.3f us'%((end - start)*1e-3))
         # start = perf_counter_ns()
@@ -324,11 +355,11 @@ class GLOWRaycast:
             inp[np.where(np.isnan(inp))] = 0
             # scaled by point distribution because flux is conserved, not brightness
             # out = warp(inp, inverse_map=(2, self._ntt, self._nrr), output_shape=outp_shape, mode='nearest') * gd
-            out = geometric_transform(inp, mapping=self._global_from_local, output_shape=outp_shape, mode='nearest') * gd
-            inp[ttidx] = 0
-            inpsum = inp.sum()  # sum of input for valid angles
-            outpsum = out.sum()  # sum of output
-            out = out * (inpsum / outpsum)  # scale the sum to conserve total flux
+            # out = geometric_transform(inp, mapping=self._global_from_local, output_shape=outp_shape, mode='nearest') * gd
+            # inp[ttidx] = 0
+            # inpsum = inp.sum()  # sum of input for valid angles
+            # outpsum = out.sum()  # sum of output
+            # out = out * (inpsum / outpsum)  # scale the sum to conserve total flux
             ver.append(out.T)
         # end = perf_counter_ns()
         # print('VER eval: %.3f us'%((end - start)*1e-3))
@@ -336,7 +367,7 @@ class GLOWRaycast:
         ver = np.asarray(ver).T
         ver = xr.DataArray(
             ver,
-            coords={'za': np.pi/2 - nt, 'r': nr,
+            coords={'za': nt, 'r': nr,
                     'wavelength': coord_wavelength},
             dims=['za', 'r', 'wavelength'],
             name='ver'
@@ -363,7 +394,7 @@ class GLOWRaycast:
             # start = perf_counter_ns()
             prodloss = xr.Dataset(
                 data_vars=d,
-                coords={'za': np.pi/2 - nt, 'r': nr, 'state': coord_state}
+                coords={'za': nt, 'r': nr, 'state': coord_state}
             )  # calculate (angle, alt_km, state) -> (la, r, state) dataset
         else:
             prodloss = xr.Dataset()
@@ -506,7 +537,7 @@ class GLOWRaycast:
             _t = np.atleast_1d(t)
         else:
             raise TypeError('r and t must be np.ndarray.')
-        _t = np.pi/2 - _t
+        # _t = np.pi/2 - _t
         rr = np.sqrt((_r*np.cos(_t) + r0)**2 +
                      (_r*np.sin(_t))**2)  # r, la to R, T
         tt = np.arctan2(_r*np.sin(_t), _r*np.cos(_t) + r0)
@@ -547,8 +578,40 @@ class GLOWRaycast:
             raise TypeError('r and t must be np.ndarray.')
         rr = np.sqrt((_r*np.cos(_t) - r0)**2 +
                      (_r*np.sin(_t))**2)  # R, T to r, la
-        tt = np.pi/2 - np.arctan2(_r*np.sin(_t), _r*np.cos(_t) - r0)
+        tt = np.arctan2(_r*np.sin(_t), _r*np.cos(_t) - r0)
         return tt, rr
+
+    @staticmethod
+    def get_jacobian_glob2loc_loc(r: np.ndarray, t: np.ndarray) -> np.ndarray:
+        if r.ndim != 2 or t.ndim != 2:
+            raise ValueError('Dimension of inputs must be 2')
+        gt, gr = GLOWRaycast.get_global_coords(t, r, r0 = EARTH_RADIUS)
+        jac = (1/r**3)*((gr*((gr - EARTH_RADIUS*np.cos(gt))**2)) + (gr*((EARTH_RADIUS*np.sin(gt))**2)))
+        return jac
+
+    @staticmethod
+    def get_jacobian_loc2glob_loc(r: np.ndarray, t: np.ndarray) -> np.ndarray:
+        if r.ndim != 2 or t.ndim != 2:
+            raise ValueError('Dimension of inputs must be 2')
+        gt, gr = GLOWRaycast.get_global_coords(t, r, r0 = EARTH_RADIUS)
+        jac = (1/gr**3)*((r*((r + EARTH_RADIUS*np.cos(t))**2)) + (r*((EARTH_RADIUS*np.sin(t))**2)))
+        return jac
+
+    @staticmethod
+    def get_jacobian_glob2loc_glob(gr: np.ndarray, gt: np.ndarray) -> np.ndarray:
+        if gr.ndim != 2 or gt.ndim != 2:
+            raise ValueError('Dimension of inputs must be 2')
+        t, r = GLOWRaycast.get_local_coords(gt, gr, r0 = EARTH_RADIUS)
+        jac = (1/r**3)*((gr*((gr - EARTH_RADIUS*np.cos(gt))**2)) + (gr*((EARTH_RADIUS*np.sin(gt))**2)))
+        return jac
+
+    @staticmethod
+    def get_jacobian_loc2glob_glob(gr: np.ndarray, gt: np.ndarray) -> np.ndarray:
+        if gr.ndim != 2 or gt.ndim != 2:
+            raise ValueError('Dimension of inputs must be 2')
+        t, r = GLOWRaycast.get_local_coords(gt, gr, r0 = EARTH_RADIUS)
+        jac = (1/gr**3)*((r*((r + EARTH_RADIUS*np.cos(t))**2)) + (r*((EARTH_RADIUS*np.sin(t))**2)))
+        return jac
 
 
 class GLOWRaycastXY:
@@ -1081,7 +1144,7 @@ if __name__ == '__main__':
     time = datetime(2022, 2, 15, 6, 0).astimezone(pytz.utc)
     print(time)
     lat, lon = 42.64981361744372, -71.31681056737486
-    grobj = GLOWRaycastXY(time, 42.64981361744372, -71.31681056737486, 40, n_threads=6, n_pts=100, resamp=1, show_progress=True)
+    grobj = GLOWRaycast(time, 42.64981361744372, -71.31681056737486, 40, n_threads=6, n_pts=100, resamp=1, show_progress=True)
     st = perf_counter_ns()
     bds = grobj.run_no_precipitation()
     end = perf_counter_ns()
@@ -1090,3 +1153,5 @@ if __name__ == '__main__':
     iono = grobj.transform_coord()
     end = perf_counter_ns()
     print('Time to convert:', (end - st)*1e-6, 'ms')
+
+# %%
