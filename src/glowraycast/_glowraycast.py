@@ -28,12 +28,8 @@ N_CPUS = cpu_count()
 # %%
 
 
-class GLOWRaycast:
-    """Compute GLOW model on the great circle passing through the origin location along the specified bearing. 
-    The result is presented in a geocentric coordinate system, as well as in a ZA, R coordinate system at the origin location.
-    """
-
-    def __init__(self, time: datetime, lat: Numeric, lon: Numeric, heading: Numeric, max_alt: Numeric = 1000, n_pts: int = 50, n_bins: int = 100, *, with_prodloss: bool = False, n_threads: int = None, full_circ: bool = False, resamp: Numeric = 1.5, show_progress: bool = True):
+class GLOW2D:
+    def __init__(self, time: datetime, lat: Numeric, lon: Numeric, heading: Numeric, max_alt: Numeric = 1000, n_pts: int = 50, n_bins: int = 100, *, n_alt: int = None, uniformize_glow: bool = True, n_threads: int = None, full_circ: bool = False, show_progress: bool = True):
         """Create a GLOWRaycast object.
 
         Args:
@@ -44,16 +40,16 @@ class GLOWRaycast:
             max_alt (Numeric, optional): Maximum altitude where intersection is considered (km). Defaults to 1000, i.e. exobase.
             n_pts (int, optional): Number of GEO coordinate angular grid points (i.e. number of GLOW runs), must be even and > 20. Defaults to 50.
             n_bins (int, optional): Number of energy bins. Defaults to 100.
-            with_prodloss (bool, optional): Calculate production and loss parameters in local coordinates. Defaults to False.
-            n_threads (int, optional): Number of threads for parallel GLOW runs. Set to None to use all system threads. Defaults to None.
+            n_alt (int, optional): Number of altitude bins, must be > 100. Used only when `uniformize_glow` is set to `True` (default). Defaults to `None`, i.e. uses same number of bins as a single GLOW run.
+            uniformize_glow (bool, optional): Interpolate GLOW output to an uniform altitude grid. `n_alt` is ignored if this option is set to `False`. Defaults to `True`.
+            n_threads (int, optional): Number of threads for parallel GLOW runs. Set to `None` to use all system threads. Defaults to `None`.
             full_circ (bool, optional): For testing only, do not use. Defaults to False.
-            resamp (Numeric, optional): Number of R and ZA points in local coordinate output. ``len(R) = len(alt_km) * resamp`` and ``len(ZA) = n_pts * resamp``. Must be > 0.5. Defaults to 1.5.
             show_progress (bool, optional): Use TQDM to show progress of GLOW model calculations. Defaults to True.
 
         Raises:
             ValueError: Number of position bins can not be odd.
             ValueError: Number of position bins can not be < 20.
-            ValueError: Resampling can not be < 0.5.
+            ValueError: Number of altitude bins can not be < 100.
 
         Warns:
             ResourceWarning: Number of threads requested is more than available system threads.
@@ -66,12 +62,13 @@ class GLOWRaycast:
             n_threads = N_CPUS
         if n_threads > N_CPUS:
             warnings.warn('Number of requested threads (%d > %d)' % (n_threads, N_CPUS), ResourceWarning)
-        if resamp < 0.5:
-            raise ValueError('Resampling can not be < 0.5.')
-        self._resamp = resamp
-        self._wprodloss = with_prodloss
+        self._uniform_glow = uniformize_glow
         self._pt = Point(lat, lon)  # instrument loc
         self._time = time  # time of calc
+        if n_alt is not None and n_alt < 100:
+            raise ValueError('Number of altitude bins can not be < 100')
+        if n_alt is None:
+            n_alt = 100  # default
         max_d = 6400 * np.pi if full_circ else EARTH_RADIUS * \
             np.arccos(EARTH_RADIUS / (EARTH_RADIUS + max_alt)
                       )  # find maximum distance where LOS intersects exobase # 6400 * np.pi
@@ -96,7 +93,6 @@ class GLOWRaycast:
             self._angs[len(self._angs) // 2:] = 2*np.pi - \
                 self._angs[len(self._angs) // 2:]
         self._bds = None
-        self._iono = None
 
     def _get_angle(self) -> np.ndarray:  # get haversine angles between two lat, lon coords
         angs = []
@@ -105,10 +101,49 @@ class GLOWRaycast:
             angs.append(ang)
         return np.asarray(angs)
 
+    @staticmethod
+    def _uniformize_glow(iono: xr.Dataset) -> xr.Dataset:
+        alt_km = iono.alt_km.values
+        alt = np.linspace(alt_km.min(), alt_km.max(), len(alt_km))  # change to custom
+        unit_keys = ["Tn", "O", "N2", "O2", "NO", "NeIn", "NeOut", "ionrate",
+                     "O+", "O2+", "NO+", "N2D", "pedersen", "hall", "Te", "Ti"]
+        state_keys = ['production', 'loss', 'excitedDensity']
+        data_vars = {}
+        for key in unit_keys:
+            out = np.interp(alt, alt_km, iono[key].values)
+            data_vars[key] = (('alt_km'), out)
+        bds = xr.Dataset(data_vars=data_vars, coords={'alt_km': alt})
+        ver = np.zeros(iono['ver'].shape, dtype=float)
+        for idx in range(len(iono.wavelength)):
+            ver[:, idx] += np.interp(alt, alt_km, iono['ver'].values[:, idx])
+        ver = xr.DataArray(
+            ver,
+            coords={'alt_km': alt, 'wavelength': iono.wavelength.values},
+            dims=('alt_km', 'wavelength'),
+            name='ver'
+        )
+        data_vars = {}
+        for key in state_keys:
+            out = np.zeros(iono[key].shape)
+            inp = iono[key].values
+            for idx in range(len(iono.state)):
+                out[:, idx] += np.interp(alt, alt_km, inp[:, idx])
+            data_vars[key] = (('alt_km', 'state'), out)
+        prodloss = xr.Dataset(data_vars=data_vars,
+                              coords={'alt_km': alt, 'state': iono.state.values})
+        precip = iono['precip']
+        bds: xr.Dataset = xr.merge((bds, ver, prodloss, precip))
+        _ = list(map(lambda x: bds[x].attrs.update(iono[x].attrs), tuple(bds.data_vars.keys())))
+        bds.attrs.update(iono.attrs)
+        return bds
+
     # calculate glow model for one location
     def _calc_glow_single_noprecip(self, index):
         d = self._locs[index]
-        return glow.no_precipitation(self._time, d[0], d[1], self._nbins)
+        iono = glow.no_precipitation(self._time, d[0], d[1], self._nbins)
+        if self._uniform_glow:
+            iono = self._uniformize_glow(iono)
+        return iono
 
     def _calc_glow_noprecip(self) -> xr.Dataset:  # run glow model calculation
         if self._show_prog:
@@ -137,46 +172,111 @@ class GLOWRaycast:
         if self._bds is not None:
             return self._bds
         # calculate the GLOW model for each lat-lon point determined in init()
-        self._bds = self._calc_glow_noprecip()
+        bds = self._calc_glow_noprecip()
         unit_desc_dict = {
             'angle': ('radians', 'Angle of location w.r.t. radius vector at origin (starting location)'),
             'lat': ('degree', 'Latitude of locations'),
             'lon': ('degree', 'Longitude of location')
         }
-        _ = list(map(lambda x: self._bds[x].attrs.update(
+        _ = list(map(lambda x: bds[x].attrs.update(
             {'units': unit_desc_dict[x][0], 'description': unit_desc_dict[x][1]}), unit_desc_dict.keys()))
         # Fix units
-        unit_keys = {
-            'O': 'cm^-3',
-            'N2': 'cm^-3',
-            'O2': 'cm^-3',
-            'NO': 'cm^-3',
-            'NeIn': 'cm^-3',
-            'NeOut': 'cm^-3',
-            'ionrate': 'cm^-3',
-            'O+': 'cm^-3',
-            'O2+': 'cm^-3',
-            'NO+': 'cm^-3',
-            'N2D': 'cm^-3',
-        }
-        scale = (self._bds.alt_km.values + EARTH_RADIUS) * 1e5 # in distance in cm
-        scale *= 1e-3 # factor in to convert to millirad
-        sc2d = np.stack([scale]*len(self._bds.angle.values))
-        for key in unit_keys.keys():
-            self._bds[key] *= sc2d
-            self._bds[key].attrs['units'] = 'cm^-2 mr^-1'
-        sc3d = np.stack([sc2d]*len(self._bds.state), axis=2)
-        self._bds['production'] *= sc3d
-        self._bds['production'].attrs['units'] = 'cm^-2 mr^-1 s^-1'
-        self._bds['excitedDensity'] *= sc3d
-        self._bds['excitedDensity'].attrs['units'] = 'cm^-2 mr^-1'
-        sc3d = np.stack([sc2d]*len(self._bds.wavelength), axis=2)
-        self._bds['ver'] *= sc3d
-        self._bds['ver'].attrs['units'] = 'cm^-2 mr^-1 s^-1'
+        unit_keys = [
+            'O',
+            'N2',
+            'O2',
+            'NO',
+            'NeIn',
+            'NeOut',
+            'ionrate',
+            'O+',
+            'O2+',
+            'NO+',
+            'N2D',
+        ]
+        scale = (bds.alt_km.values + EARTH_RADIUS) * 1e5  # in distance in cm
+        scale *= 1e-3  # factor in to convert to millirad
+        sc2d = np.stack([scale]*len(bds.angle.values))
+        for key in unit_keys:
+            bds[key] *= sc2d
+            bds[key].attrs['units'] = 'cm^{-2} mr^{-1}'
+        sc3d = np.stack([sc2d]*len(bds.state), axis=2)
+        bds['production'] *= sc3d
+        bds['production'].attrs['units'] = 'cm^{-2} mr^{-1} s^{-1}'
+        bds['excitedDensity'] *= sc3d
+        bds['excitedDensity'].attrs['units'] = 'cm^{-2} mr^{-1}'
+        sc3d = np.stack([sc2d]*len(bds.wavelength), axis=2)
+        bds['ver'] *= sc3d
+        bds['ver'].attrs['units'] = 'cm^{-2} mr^{-1} s^{-1}'
+        self._bds = bds
         return self._bds  # return the calculated
 
     @classmethod
-    def no_precipitation(cls, time: datetime, lat: Numeric, lon: Numeric, heading: Numeric, max_alt: Numeric = 1000, n_pts: int = 50, n_bins: int = 100, *, with_prodloss: bool = False, n_threads: int = None, full_output: bool = False, resamp: Numeric = 1.5, show_progress: bool = True) -> xr.Dataset | tuple(xr.Dataset, xr.Dataset):
+    def no_precipitation_geo(cls, time: datetime, lat: Numeric, lon: Numeric, heading: Numeric, max_alt: Numeric = 1000, n_pts: int = 50, n_bins: int = 100, *, n_alt: int = None, uniformize_glow: bool = True, n_threads: int = None, resamp: Numeric = 1.5, show_progress: bool = True) -> xr.Dataset:
+        """Run GLOW model looking along heading from the current location and return the model output in
+        (T, R) geocentric coordinates where T is angle in radians from the current location along the great circle
+        following current heading, and R is altitude in kilometers, which may be non-uniform depending on the `uniformize_glow` flag.
+
+        Args:
+            time (datetime): Datetime of GLOW calculation.
+            lat (Numeric): Latitude of starting location.
+            lon (Numeric): Longitude of starting location.
+            heading (Numeric): Heading (look direction).
+            max_alt (Numeric, optional): Maximum altitude where intersection is considered (km). Defaults to 1000, i.e. exobase.
+            n_pts (int, optional): Number of GEO coordinate angular grid points (i.e. number of GLOW runs), must be even and > 20. Defaults to 50.
+            n_bins (int, optional): Number of energy bins. Defaults to 100.
+            n_alt (int, optional): Number of altitude bins, must be > 100. Defaults to `None`, i.e. uses same number of bins as a single GLOW run.
+            uniformize_glow (bool, optional): Interpolate GLOW output to an uniform altitude grid. `n_alt` is ignored if this option is set to `False`. Defaults to `True`.
+            n_threads (int, optional): Number of threads for parallel GLOW runs. Set to `None` to use all system threads. Defaults to `None`.
+            full_circ (bool, optional): For testing only, do not use. Defaults to `False`.
+            show_progress (bool, optional): Use TQDM to show progress of GLOW model calculations. Defaults to `True`.
+
+        Returns:
+            bds (xarray.Dataset): Ionospheric parameters and brightnesses (with production and loss) in GEO coordinates.
+
+        Raises:
+            ValueError: Number of position bins can not be odd.
+            ValueError: Number of position bins can not be < 20.
+            ValueError: Resampling can not be < 0.5.
+
+        Warns:
+            ResourceWarning: Number of threads requested is more than available system threads.
+        """
+        grobj = cls(time, lat, lon, heading, max_alt,
+                    n_pts, n_bins, n_alt=n_alt, uniformize_glow=uniformize_glow, n_threads=n_threads, resamp=resamp, show_progress=show_progress)
+        bds = grobj.run_no_precipitation()
+        return bds
+
+
+class GLOWRaycast:
+    """Compute GLOW model on the great circle passing through the origin location along the specified bearing. 
+    The result is presented in a geocentric coordinate system, as well as in a ZA, R coordinate system at the origin location.
+    """
+
+    def __init__(self, bds: xr.Dataset, *, with_prodloss: bool = False, resamp: Numeric = 1.5):
+        """Create a GLOWRaycast object.
+
+        Args:
+            bds (xr.Dataset): GLOW model evaluated on a 2D grid using `GLOW2D`.
+            with_prodloss (bool, optional): Calculate production and loss parameters in local coordinates. Defaults to False.
+            resamp (Numeric, optional): Number of R and ZA points in local coordinate output. ``len(R) = len(alt_km) * resamp`` and ``len(ZA) = n_pts * resamp``. Must be > 0.5. Defaults to 1.5.
+            show_progress (bool, optional): Use TQDM to show progress of GLOW model calculations. Defaults to True.
+
+        Raises:
+            ValueError: Resampling can not be < 0.5.
+
+        Warns:
+            ResourceWarning: Number of threads requested is more than available system threads.
+        """
+        if resamp < 0.5:
+            raise ValueError('Resampling can not be < 0.5.')
+        self._resamp = resamp
+        self._wprodloss = with_prodloss
+        self._bds = bds.copy()
+        self._iono = None
+
+    @classmethod
+    def no_precipitation(cls, time: datetime, lat: Numeric, lon: Numeric, heading: Numeric, max_alt: Numeric = 1000, n_pts: int = 50, n_bins: int = 100, *, n_alt: int = None, with_prodloss: bool = False, n_threads: int = None, full_output: bool = False, resamp: Numeric = 1.5, show_progress: bool = True) -> xr.Dataset | tuple(xr.Dataset, xr.Dataset):
         """Run GLOW model looking along heading from the current location and return the model output in
         (ZA, R) local coordinates where ZA is zenith angle in radians and R is distance in kilometers.
 
@@ -188,6 +288,7 @@ class GLOWRaycast:
             max_alt (Numeric, optional): Maximum altitude where intersection is considered (km). Defaults to 1000, i.e. exobase.
             n_pts (int, optional): Number of GEO coordinate angular grid points (i.e. number of GLOW runs), must be even and > 20. Defaults to 50.
             n_bins (int, optional): Number of energy bins. Defaults to 100.
+            n_alt (int, optional): Number of altitude bins, must be > 100. Defaults to None, i.e. uses same number of bins as a single GLOW run.
             with_prodloss (bool, optional): Calculate production and loss parameters in local coordinates. Defaults to False.
             n_threads (int, optional):  Number of threads for parallel GLOW runs. Set to None to use all system threads. Defaults to None.
             full_output (bool, optional): Returns only local coordinate GLOW output if False, and a tuple of local and GEO outputs if True. Defaults to False.
@@ -206,14 +307,16 @@ class GLOWRaycast:
         Raises:
             ValueError: Number of position bins can not be odd.
             ValueError: Number of position bins can not be < 20.
+            ValueError: n_alt can not be < 100.
             ValueError: Resampling can not be < 0.5.
 
         Warns:
             ResourceWarning: Number of threads requested is more than available system threads.
         """
-        grobj = cls(time, lat, lon, heading, max_alt, n_pts, n_bins,
-                    n_threads=n_threads, with_prodloss=with_prodloss, resamp=resamp)
+        grobj = GLOW2D(time, lat, lon, heading, max_alt, n_pts, n_bins, n_alt=n_alt, uniformize_glow=True,
+                       n_threads=n_threads, show_progress=show_progress)
         bds = grobj.run_no_precipitation()
+        grobj = cls(bds, with_prodloss=with_prodloss, resamp=resamp)
         iono = grobj.transform_coord()
         if not full_output:
             return iono
@@ -221,10 +324,10 @@ class GLOWRaycast:
             return (iono, bds)
 
     @classmethod
-    def no_precipitation_geo(cls, time: datetime, lat: Numeric, lon: Numeric, heading: Numeric, max_alt: Numeric = 1000, n_pts: int = 50, n_bins: int = 100, *, n_threads: int = None, resamp: Numeric = 1.5, show_progress: bool = True) -> xr.Dataset:
+    def no_precipitation_geo(cls, time: datetime, lat: Numeric, lon: Numeric, heading: Numeric, max_alt: Numeric = 1000, n_pts: int = 50, n_bins: int = 100, *, n_alt: int = None, n_threads: int = None, resamp: Numeric = 1.5, show_progress: bool = True) -> xr.Dataset:
         """Run GLOW model looking along heading from the current location and return the model output in
         (T, R) geocentric coordinates where T is angle in radians from the current location along the great circle
-        following current heading, and R is altitude in kilometers.
+        following current heading, and R is altitude in kilometers. R is in an uniform grid with `n_alt` points.
 
         Args:
             time (datetime): Datetime of GLOW calculation.
@@ -232,11 +335,12 @@ class GLOWRaycast:
             lon (Numeric): Longitude of starting location.
             heading (Numeric): Heading (look direction).
             max_alt (Numeric, optional): Maximum altitude where intersection is considered (km). Defaults to 1000, i.e. exobase.
-            n_pts (int, optional): Number of GEO coordinate angular grid points (i.e. number of GLOW runs). Defaults to 50.
+            n_pts (int, optional): Number of GEO coordinate angular grid points (i.e. number of GLOW runs), must be even and > 20. Defaults to 50.
             n_bins (int, optional): Number of energy bins. Defaults to 100.
-            n_threads (int, optional):  Number of threads for parallel GLOW runs. Set to None to use all system threads. Defaults to None.
-            resamp (Numeric, optional): Number of R and ZA points in local coordinate output. ``len(R) = len(alt_km) * resamp`` and ``len(ZA) = n_pts * resamp``. Must be > 0.5. Defaults to 1.5.
-            show_progress (bool, optional): Use TQDM to show progress of GLOW model calculations. Defaults to True.
+            n_alt (int, optional): Number of altitude bins, must be > 100. Defaults to `None`, i.e. uses same number of bins as a single GLOW run.
+            n_threads (int, optional): Number of threads for parallel GLOW runs. Set to `None` to use all system threads. Defaults to `None`.
+            full_circ (bool, optional): For testing only, do not use. Defaults to `False`.
+            show_progress (bool, optional): Use TQDM to show progress of GLOW model calculations. Defaults to `True`.
 
         Returns:
             bds (xarray.Dataset): Ionospheric parameters and brightnesses (with production and loss) in GEO coordinates.
@@ -249,8 +353,8 @@ class GLOWRaycast:
         Warns:
             ResourceWarning: Number of threads requested is more than available system threads.
         """
-        grobj = cls(time, lat, lon, heading, max_alt,
-                    n_pts, n_bins, n_threads=n_threads, resamp=resamp, show_progress=show_progress)
+        grobj = GLOW2D(time, lat, lon, heading, max_alt,
+                    n_pts, n_bins, n_alt=n_alt, uniformize_glow=True, n_threads=n_threads, resamp=resamp, show_progress=show_progress)
         bds = grobj.run_no_precipitation()
         return bds
 
@@ -260,22 +364,17 @@ class GLOWRaycast:
         Returns:
             xr.Dataset: GLOW output in (ZA, r) coordinates.
         """
-        if self._bds is None:
-            _ = self.run_no_precipitation()
         if self._iono is not None:
             return self._iono
         tt, rr = self.get_local_coords(
             self._bds.angle.values, self._bds.alt_km.values + EARTH_RADIUS)  # get local coords from geocentric coords
 
         self._rmin, self._rmax = rr.min(), rr.max()  # nearest and farthest local pts
-        # highest and lowest look angle (90 deg - za)
-        self._tmin, self._tmax = tt.min(), np.pi / 2 # 0, tt.max()
-        self._nr_num = int(len(self._bds.alt_km.values) * self._resamp)  # resample to half density
-        self._nt_num = int(len(self._bds.angle.values) * self._resamp)   # resample to half density
+        # highest and lowest za
+        self._tmin, self._tmax = tt.min(), np.pi / 2  # 0, tt.max()
+        self._nr_num = round(len(self._bds.alt_km.values) * self._resamp)  # resample
+        self._nt_num = round(len(self._bds.angle.values) * self._resamp)   # resample
         outp_shape = (self._nt_num, self._nr_num)
-
-        gd_r, gd_t = np.meshgrid(self._bds.alt_km.values + EARTH_RADIUS, self._bds.angle.values)
-        gd = GLOWRaycast.get_jacobian_glob2loc_glob(gd_r, gd_t)
 
         # ttidx = np.where(tt < 0)  # angle below horizon (LA < 0)
         # # get distribution of global -> local points in local grid
@@ -294,8 +393,11 @@ class GLOWRaycast:
             rmin, rmax, self._nr_num, endpoint=True)  # local r
         self._nt = nt = np.linspace(
             tmin, tmax, self._nt_num, endpoint=True)  # local look angle
-        # get meshgrid of the R, T coord system from regular r, la grid
+        # get meshgrid of the R, T coord system from regular r, za grid
         self._ntt, self._nrr = self.get_global_coords(nt, nr)
+        # calculate jacobian
+        jacobian = self.get_jacobian_glob2loc_glob(self._nrr, self._ntt)
+        # convert to pixel coordinates
         self._ntt = self._ntt.flatten()  # flatten T, works as _global_from_local LUT
         self._nrr = self._nrr.flatten()  # flatten R, works as _global_from_local LUT
         self._ntt = (self._ntt - self._theta.min()) / \
@@ -304,6 +406,7 @@ class GLOWRaycast:
         self._nrr = (self._nrr - self._altkm.min() - EARTH_RADIUS) / \
             (self._altkm.max() - self._altkm.min()) * \
             len(self._altkm)  # calculate equivalent index (pixel coord) from original R (alt_km) grid
+        # start transformation
         data_vars = {}
         bds = self._bds
         coord_wavelength = bds.wavelength.values  # wl axis
@@ -311,21 +414,23 @@ class GLOWRaycast:
         coord_energy = bds.energy.values  # egrid
         bds_attr = bds.attrs  # attrs
         single_keys = ['Tn',
-                       'O',
-                       'N2',
-                       'O2',
-                       'NO',
-                       'NeIn',
-                       'NeOut',
-                       'ionrate',
-                       'O+',
-                       'O2+',
-                       'NO+',
-                       'N2D',
                        'pedersen',
                        'hall',
                        'Te',
                        'Ti']  # (angle, alt_km) vars
+        density_keys = [
+            'O',
+            'N2',
+            'O2',
+            'NO',
+            'NeIn',
+            'NeOut',
+            'ionrate',
+            'O+',
+            'O2+',
+            'NO+',
+            'N2D',
+        ]
         state_keys = [
             'production',
             'loss',
@@ -334,9 +439,15 @@ class GLOWRaycast:
         # start = perf_counter_ns()
         # map all the single key types from (angle, alt_km) -> (la, r)
         for key in single_keys:
-            inp = self._bds[key].values.copy()
+            inp = self._bds[key].values
             inp[np.where(np.isnan(inp))] = 0
-            out = geometric_transform(inp, mapping=self._global_from_local, output_shape=outp_shape)
+            out = geometric_transform(inp, mapping=self._global_from_local, output_shape=outp_shape, mode='nearest')
+            # out = warp(inp, inverse_map=(2, self._ntt, self._nrr), output_shape=outp_shape)
+            data_vars[key] = (('za', 'r'), out)
+        for key in density_keys:
+            inp = self._bds[key].values
+            inp[np.where(np.isnan(inp))] = 0
+            out = geometric_transform(inp, mapping=self._global_from_local, output_shape=outp_shape, mode='nearest') / jacobian
             # out = warp(inp, inverse_map=(2, self._ntt, self._nrr), output_shape=outp_shape)
             data_vars[key] = (('za', 'r'), out)
         # end = perf_counter_ns()
@@ -351,11 +462,11 @@ class GLOWRaycast:
         ver = []
         # map all the wavelength data from (angle, alt_km, wavelength) -> (la, r, wavelength)
         for key in coord_wavelength:
-            inp = bds['ver'].loc[dict(wavelength=key)].values.copy()
+            inp = bds['ver'].loc[dict(wavelength=key)].values
             inp[np.where(np.isnan(inp))] = 0
             # scaled by point distribution because flux is conserved, not brightness
             # out = warp(inp, inverse_map=(2, self._ntt, self._nrr), output_shape=outp_shape, mode='nearest') * gd
-            # out = geometric_transform(inp, mapping=self._global_from_local, output_shape=outp_shape, mode='nearest') * gd
+            out = geometric_transform(inp, mapping=self._global_from_local, output_shape=outp_shape, mode='nearest') / jacobian
             # inp[ttidx] = 0
             # inpsum = inp.sum()  # sum of input for valid angles
             # outpsum = out.sum()  # sum of output
@@ -381,9 +492,11 @@ class GLOWRaycast:
                 res = []
 
                 def convert_state_stuff(st):
-                    inp = bds[key].loc[dict(state=st)].values.copy()
+                    inp = bds[key].loc[dict(state=st)].values
                     inp[np.where(np.isnan(inp))] = 0
                     out = geometric_transform(inp, mapping=self._global_from_local, output_shape=outp_shape)
+                    if key in ('production', 'excitedDensity'):
+                        out /= jacobian
                     # out = warp(inp, inverse_map=(2, self._ntt, self._nrr), output_shape=outp_shape)
                     return out.T
                 res = list(map(convert_state_stuff, coord_state))
@@ -424,57 +537,8 @@ class GLOWRaycast:
         iono = xr.merge((iono, ver, prodloss, precip))  # merge all datasets
         iono.attrs.update(bds_attr)  # copy original attrs
 
-        unit_dict = {'Tn': 'K',
-                     'O': 'cm^-3',
-                     'N2': 'cm^-3',
-                     'O2': 'cm^-3',
-                     'NO': 'cm^-3',
-                     'NeIn': 'cm^-3',
-                     'NeOut': 'cm^-3',
-                     'ionrate': 'cm^-3',
-                     'O+': 'cm^-3',
-                     'O2+': 'cm^-3',
-                     'NO+': 'cm^-3',
-                     'N2D': 'cm^-3',
-                     'pedersen': 'S m^-1',
-                     'hall': 'S m^-1',
-                     'Te': 'K',
-                     'Ti': 'K',
-                     'ver': 'cm^-3 s^-1',
-                     'wavelength': 'angstrom',
-                     'energy': 'eV'
-                     }
+        _ = list(map(lambda x: iono[x].attrs.update(bds[x].attrs), tuple(iono.data_vars.keys()))) # update attrs from bds
 
-        description_dict = {'Tn': 'Neutral temperature',
-                            'O': 'Number density',
-                            'N2': 'Number density',
-                            'O2': 'Number density',
-                            'NO': 'Number density',
-                            'NeIn': 'Number density',
-                            'NeOut': 'Number density',
-                            'ionrate': 'Number density',
-                            'O+': 'Number density',
-                            'O2+': 'Number density',
-                            'NO+': 'Number density',
-                            'N2D': 'Number density',
-                            'pedersen': 'Pedersen conductivity',
-                            'hall': 'Hall conductivity',
-                            'Te': 'Electron temperature',
-                            'Ti': 'Ion temperature',
-                            'ver': 'Photon volume emission rate',
-                            'wavelength': 'Emission wavelength',
-                            'energy': 'Precipitation energy'
-                            }
-        if self._wprodloss:
-            unit_dict['production'] = 'cm^-3 s^-1'
-            unit_dict['loss'] = 's^-1'
-            unit_dict['excitedDensity'] = 'cm^-3'
-            description_dict['production'] = 'Volume production rate',
-            description_dict['loss'] = 'Loss rate',
-            description_dict['excitedDensity'] = 'Excited/ionized grid density',
-
-        _ = list(map(lambda x: iono[x].attrs.update(
-            {'units': unit_dict[x], 'description': description_dict[x]}), unit_dict.keys()))
         unit_desc_dict = {
             'za': ('radians', 'Zenith angle'),
             'r': ('km', 'Radial distance in km')
@@ -582,35 +646,87 @@ class GLOWRaycast:
         return tt, rr
 
     @staticmethod
-    def get_jacobian_glob2loc_loc(r: np.ndarray, t: np.ndarray) -> np.ndarray:
+    def get_jacobian_glob2loc_loc(r: np.ndarray, t: np.ndarray, r0: Numeric = EARTH_RADIUS) -> np.ndarray:
+        """Jacobian J for global to local coordinate transform, evaluated at points in local coordinate.
+
+        Args:
+            r (np.ndarray): 2-dimensional array of r.
+            t (np.ndarray): 2-dimensional array of phi.
+            r0 (Numeric): Coordinate transform offset. Defaults to EARTH_RADIUS.
+
+        Raises:
+            ValueError: Dimension of inputs must be 2.
+
+        Returns:
+            np.ndarray: Jacobian evaluated at points.
+        """
+        if r.ndim != 2 or t.ndim != 2:
+            raise ValueError('Dimension of inputs must be 2.')
+        gt, gr = GLOWRaycast.get_global_coords(t, r, r0=r0)
+        jac = (gr / (r**3)) * ((gr**2) + (r0**2) - (2*gr*r0*np.cos(gt)))
+        return jac
+
+    @staticmethod
+    def get_jacobian_loc2glob_loc(r: np.ndarray, t: np.ndarray, r0: Numeric = EARTH_RADIUS) -> np.ndarray:
+        """Jacobian J for local to global coordinate transform, evaluated at points in local coordinate.
+
+        Args:
+            r (np.ndarray): 2-dimensional array of r.
+            t (np.ndarray): 2-dimensional array of phi.
+            r0 (Numeric): Coordinate transform offset. Defaults to EARTH_RADIUS.
+
+        Raises:
+            ValueError: Dimension of inputs must be 2.
+
+        Returns:
+            np.ndarray: Jacobian evaluated at points.
+        """
         if r.ndim != 2 or t.ndim != 2:
             raise ValueError('Dimension of inputs must be 2')
-        gt, gr = GLOWRaycast.get_global_coords(t, r, r0 = EARTH_RADIUS)
-        jac = (1/r**3)*((gr*((gr - EARTH_RADIUS*np.cos(gt))**2)) + (gr*((EARTH_RADIUS*np.sin(gt))**2)))
+        gt, gr = GLOWRaycast.get_global_coords(t, r, r0=r0)
+        jac = (r/(gr**3))*((r**2) + (r0**2) + (2*r*r0*np.cos(t)))
         return jac
 
     @staticmethod
-    def get_jacobian_loc2glob_loc(r: np.ndarray, t: np.ndarray) -> np.ndarray:
-        if r.ndim != 2 or t.ndim != 2:
-            raise ValueError('Dimension of inputs must be 2')
-        gt, gr = GLOWRaycast.get_global_coords(t, r, r0 = EARTH_RADIUS)
-        jac = (1/gr**3)*((r*((r + EARTH_RADIUS*np.cos(t))**2)) + (r*((EARTH_RADIUS*np.sin(t))**2)))
-        return jac
+    def get_jacobian_glob2loc_glob(gr: np.ndarray, gt: np.ndarray, r0: Numeric = EARTH_RADIUS) -> np.ndarray:
+        """Jacobian J for global to local coordinate transform, evaluated at points in global coordinate.
 
-    @staticmethod
-    def get_jacobian_glob2loc_glob(gr: np.ndarray, gt: np.ndarray) -> np.ndarray:
+        Args:
+            gr (np.ndarray): 2-dimensional array of R.
+            gt (np.ndarray): 2-dimensional array of Theta.
+            r0 (Numeric): Coordinate transform offset. Defaults to EARTH_RADIUS.
+
+        Raises:
+            ValueError: Dimension of inputs must be 2.
+
+        Returns:
+            np.ndarray: Jacobian evaluated at points.
+        """
         if gr.ndim != 2 or gt.ndim != 2:
             raise ValueError('Dimension of inputs must be 2')
-        t, r = GLOWRaycast.get_local_coords(gt, gr, r0 = EARTH_RADIUS)
-        jac = (1/r**3)*((gr*((gr - EARTH_RADIUS*np.cos(gt))**2)) + (gr*((EARTH_RADIUS*np.sin(gt))**2)))
+        t, r = GLOWRaycast.get_local_coords(gt, gr, r0=r0)
+        jac = (gr / (r**3)) * ((gr**2) + (r0**2) - (2*gr*r0*np.cos(gt)))
         return jac
 
     @staticmethod
-    def get_jacobian_loc2glob_glob(gr: np.ndarray, gt: np.ndarray) -> np.ndarray:
+    def get_jacobian_loc2glob_glob(gr: np.ndarray, gt: np.ndarray, r0: Numeric = EARTH_RADIUS) -> np.ndarray:
+        """Jacobian J for global to local coordinate transform, evaluated at points in local coordinate.
+
+        Args:
+            gr (np.ndarray): 2-dimensional array of R.
+            gt (np.ndarray): 2-dimensional array of Theta.
+            r0 (Numeric): Coordinate transform offset. Defaults to EARTH_RADIUS.
+
+        Raises:
+            ValueError: Dimension of inputs must be 2.
+
+        Returns:
+            np.ndarray: Jacobian evaluated at points.
+        """
         if gr.ndim != 2 or gt.ndim != 2:
             raise ValueError('Dimension of inputs must be 2')
-        t, r = GLOWRaycast.get_local_coords(gt, gr, r0 = EARTH_RADIUS)
-        jac = (1/gr**3)*((r*((r + EARTH_RADIUS*np.cos(t))**2)) + (r*((EARTH_RADIUS*np.sin(t))**2)))
+        t, r = GLOWRaycast.get_local_coords(gt, gr, r0=EARTH_RADIUS)
+        jac = (r/(gr**3))*((r**2) + (r0**2) + (2*r*r0*np.cos(t)))
         return jac
 
 

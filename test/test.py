@@ -8,18 +8,19 @@ from geopy.distance import EARTH_RADIUS
 from datetime import datetime
 import pytz
 from time import perf_counter_ns
-from glowraycast import GLOWRaycast
+from glowraycast import GLOWRaycast, GLOW2D
 
 # %%
 time = datetime(2022, 2, 15, 6, 0).astimezone(pytz.utc)
 print(time)
 lat, lon = 42.64981361744372, -71.31681056737486
-grobj = GLOWRaycast(time, 42.64981361744372, -71.31681056737486, 40, n_pts = 100, resamp=2)
+grobj = GLOW2D(time, 42.64981361744372, -71.31681056737486, 40, n_pts = 100)
 st = perf_counter_ns()
 bds = grobj.run_no_precipitation()
 end = perf_counter_ns()
 print('Time to generate:', (end - st)*1e-6, 'ms')
 st = perf_counter_ns()
+grobj = GLOWRaycast(bds, resamp=2)
 iono = grobj.transform_coord()
 end = perf_counter_ns()
 print('Time to convert:', (end - st)*1e-6, 'ms')
@@ -58,7 +59,7 @@ print(r.shape, t.shape)
 im = ax.contourf(t, r, tn.T, 100, cmap='gist_ncar_r')
 cbar = fig.colorbar(im, cax=cax, shrink=0.6, orientation='horizontal')
 cbar.ax.tick_params(labelsize=8)
-cbar.set_label('Brightness (R)', fontsize=8)
+cbar.set_label(r'Volume Emission Rate ($%s$)'%(bds.ver.attrs['units']), fontsize=8)
 earth = pl.Circle((0, 0), 1, transform=ax.transData._b, color='k', alpha=0.4)
 ax.add_artist(earth)
 ax.set_thetamax(ang.max()*180/np.pi)
@@ -116,9 +117,9 @@ tn[vidx] = 0
 print(tn.sum())
 # np.meshgrid((alt + ofst) / ofst, ang)
 # , extent=[0, 0, 7400 / EARTH_RADIUS, ang.max()])
-im = ax.contourf(t, r, tn, 100, cmap='gist_ncar_r')
+im = ax.contourf(t, r, tn, 100) #, cmap='gist_ncar_r')
 cbar = fig.colorbar(im, shrink=0.6)
-cbar.set_label('Brightness (R)', fontsize=10)
+cbar.set_label(r'Volume Emission Rate ($%s$)'%(bds.ver.attrs['units']), fontsize=10)
 cbar.ax.tick_params(labelsize=8)
 ax.set_thetamax(90)
 ax.text(np.radians(-12), ax.get_rmax()/2, 'Distance from observation location (km)',
@@ -164,9 +165,9 @@ r, t = iono.r.values, np.pi/2 - iono.za.values
 print(r.shape, t.shape)
 r, t = np.meshgrid(r, t)
 # , extent=[0, 0, 7400 / EARTH_RADIUS, ang.max()])
-im = ax.contourf(t, r, tn, 100, cmap='gist_ncar_r')
+im = ax.contourf(t, r, tn, 100) #, cmap='gist_ncar_r')
 cbar = fig.colorbar(im, shrink=0.6)
-cbar.set_label('Brightness (R)', fontsize=10)
+cbar.set_label(r'Volume Emission Rate ($%s$)'%(iono.ver.attrs['units']), fontsize=10)
 cbar.ax.tick_params(labelsize=8)
 ax.set_thetamax(90)
 ax.text(np.radians(-12), ax.get_rmax()/2, 'Distance from observation location (km)',
@@ -212,44 +213,17 @@ ax.tick_params(labelsize=10)
 ax.set_ylim(r.min(), r.max())
 # ax.set_rscale('symlog')
 ax.set_rorigin(-60)
-plt.savefig('test_loc_geo_distrib.pdf')
+# plt.savefig('test_loc_geo_distrib.pdf')
 plt.show()
 # %%
-def get_jacobian_glob2loc_loc(r: np.ndarray, t: np.ndarray) -> np.ndarray:
-    if r.ndim != 2 or t.ndim != 2:
-        raise ValueError('Dimension of inputs must be 2')
-    gt, gr = GLOWRaycast.get_global_coords(t, r, r0 = EARTH_RADIUS)
-    jac = (1/r**3)*((gr*((gr - EARTH_RADIUS*np.cos(gt))**2)) + (gr*((EARTH_RADIUS*np.sin(gt))**2)))
-    return jac
-
-def get_jacobian_loc2glob_loc(r: np.ndarray, t: np.ndarray) -> np.ndarray:
-    if r.ndim != 2 or t.ndim != 2:
-        raise ValueError('Dimension of inputs must be 2')
-    gt, gr = GLOWRaycast.get_global_coords(t, r, r0 = EARTH_RADIUS)
-    jac = (1/gr**3)*((r*((r + EARTH_RADIUS*np.cos(t))**2)) + (r*((EARTH_RADIUS*np.sin(t))**2)))
-    return jac
-
-def get_jacobian_glob2loc_glob(gr: np.ndarray, gt: np.ndarray) -> np.ndarray:
-    if gr.ndim != 2 or gt.ndim != 2:
-        raise ValueError('Dimension of inputs must be 2')
-    t, r = GLOWRaycast.get_local_coords(gt, gr, r0 = EARTH_RADIUS)
-    jac = (1/r**3)*((gr*((gr - EARTH_RADIUS*np.cos(gt))**2)) + (gr*((EARTH_RADIUS*np.sin(gt))**2)))
-    return jac
-
-def get_jacobian_loc2glob_glob(gr: np.ndarray, gt: np.ndarray) -> np.ndarray:
-    if gr.ndim != 2 or gt.ndim != 2:
-        raise ValueError('Dimension of inputs must be 2')
-    t, r = GLOWRaycast.get_local_coords(gt, gr, r0 = EARTH_RADIUS)
-    jac = (1/gr**3)*((r*((r + EARTH_RADIUS*np.cos(t))**2)) + (r*((EARTH_RADIUS*np.sin(t))**2)))
-    return jac
-
-# %%
+from matplotlib import ticker
 fig, ax = plt.subplots(dpi=300, subplot_kw=dict(projection='polar'), figsize=(6.4, 4.8))
 # np.meshgrid((alt + ofst) / ofst, ang)
 r, t = iono.r.values, iono.za.values
 print(r.shape, t.shape)
 r, t = np.meshgrid(r, t)
-gd2 = get_jacobian_loc2glob_loc(r, t)
+tt, rr = grobj.get_global_coords(t, r)
+gd2 = grobj.get_jacobian_glob2loc_glob(rr, tt)
 t = np.pi / 2 - t
 # , extent=[0, 0, 7400 / EARTH_RADIUS, ang.max()])
 im = ax.contourf(t, r, gd2, 100, cmap='gist_ncar_r')
@@ -273,4 +247,33 @@ ax.set_ylim(r.min(), r.max())
 ax.set_rorigin(-60)
 plt.savefig('test_loc_geo_distrib.pdf')
 plt.show()
+# %%
+iono.za.values
+# %%
+iono.Tn.loc[dict(za=0)].plot()
+bds.Tn.loc[dict(angle=0)].plot()
+plt.xlim(60, 200)
+# %%
+# %%
+bds.Tn.loc[dict(angle=0)].alt_km.values
+# %%
+iono.Tn.loc[dict(za=0)].r.values
+# %%
+GLOWRaycast.get_local_coords(0, EARTH_RADIUS + 60)
+# %%
+gt, gr = GLOWRaycast.get_global_coords(np.asarray([0]*len(iono.Tn.loc[dict(za=0)].r.values)), iono.Tn.loc[dict(za=0)].r.values, meshgrid=False)
+# %%
+plt.plot(iono.ver.loc[dict(za=0, wavelength='5577')].r, iono.ver.loc[dict(za=0, wavelength='5577')].values, label='Map')
+plt.plot(bds.Te.loc[dict(angle=0)].alt_km.values, bds.ver.loc[dict(angle=0, wavelength='5577')].values, label='Orig')
+plt.plot(gr - EARTH_RADIUS, np.interp(gr - EARTH_RADIUS, bds.Te.loc[dict(angle=0)].alt_km.values, bds.ver.loc[dict(angle=0, wavelength='5577')].values), label='Interp')
+plt.xlim(60, 1000)
+plt.legend()
+# %%
+plt.plot(iono.ver.loc[dict(za=0, wavelength='5577')].r, iono.ver.loc[dict(za=0, wavelength='5577')].values, label='Map')
+plt.xlim(60, 1000)
+# %%
+from scipy.integrate import trapz
+
+print(trapz(iono.ver.loc[dict(za=np.pi / 2, wavelength='5577')].values, iono.ver.loc[dict(za=np.pi / 2, wavelength='5577')].r))
+print(trapz(bds.ver.loc[dict(angle=bds.angle.max(), wavelength='5577')].values, bds.ver.loc[dict(angle=bds.angle.max(), wavelength='5577')].alt_km + EARTH_RADIUS))
 # %%
