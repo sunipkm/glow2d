@@ -61,12 +61,12 @@ for file_suffix, time in tdict.items():
     st = perf_counter_ns()
     bds = grobj.run_no_precipitation()
     end = perf_counter_ns()
-    print('Time to generate:', (end - st)*1e-6, 'ms')
+    print(f'Time to generate : {(end - st)*1e-6: 8.6f} ms')
     st = perf_counter_ns()
     grobj = glow2d_polar(bds, resamp=2)
     iono = grobj.transform_coord()
     end = perf_counter_ns()
-    print('Time to convert:', (end - st)*1e-6, 'ms')
+    print(f'Time to convert  : {(end - st)*1e-6: 8.6f} ms')
     bdss[file_suffix] = bds
     ionos[file_suffix] = iono
 
