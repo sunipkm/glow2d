@@ -46,10 +46,10 @@ def get_all_minmax(ionos: dict[str, xr.Dataset], feature: str = 'Tn', subfeature
 
 # %%
 tdict = {
-    'dawn': datetime(2022, 2, 15, 6, 0).astimezone(pytz.utc),
-    'noon': datetime(2022, 2, 15, 12, 0).astimezone(pytz.utc),
-    'dusk': datetime(2022, 2, 15, 18, 0).astimezone(pytz.utc),
-    'midnight': datetime(2022, 2, 15, 23, 59).astimezone(pytz.utc)
+    'dawn': datetime(2022, 3, 22, 6, 0).astimezone(pytz.utc),
+    'noon': datetime(2022, 3, 22, 12, 0).astimezone(pytz.utc),
+    'dusk': datetime(2022, 3, 22, 18, 0).astimezone(pytz.utc),
+    'midnight': datetime(2022, 3, 22, 23, 59).astimezone(pytz.utc)
 }
 
 bdss = {}
