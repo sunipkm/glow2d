@@ -277,3 +277,97 @@ ax.set_rorigin(-60)
 plt.savefig('test_loc_geo_distrib.pdf')
 plt.show()
 # %%
+ofst = 1000
+scale = 1000
+fig = plt.figure(figsize=(4.8, 3.8), dpi=300, constrained_layout=True)
+gspec = GridSpec(1, 1, figure=fig)
+ax = fig.add_subplot(gspec[0, 0], projection='polar')
+alt = np.linspace(60, 550, 5)
+ang = np.linspace(np.deg2rad(2.5), np.deg2rad(27.5), 5) # np.arccos(EARTH_RADIUS/(EARTH_RADIUS + 1000)), 5)
+r = (alt + ofst) / scale
+# , extent=[0, 0, 7400 / EARTH_RADIUS, ang.max()])
+earth = pl.Circle((0, 0), 1, transform=ax.transData._b, color='k', alpha=0.4)
+ax.add_artist(earth)
+ax.set_thetamax(np.rad2deg(np.arccos(EARTH_RADIUS/(EARTH_RADIUS + 1000))))
+
+cmap = matplotlib.cm.get_cmap('rainbow')
+
+ttext = ('A', 'B', 'C', 'D', 'E')
+rtext = ('1', '2', '3', '4', '5')
+
+for tidx, t in enumerate(ang):
+    for ridx, dist in enumerate(r):
+        col = cmap(1 - ((alt[ridx] - alt.min()) / alt.max()))
+        p, _ = glow2d_polar.get_local_coords(t, alt[ridx] + EARTH_RADIUS)
+        p = np.pi/2 - p
+        ax.scatter(t, dist, s=80, marker='o', facecolors=col if p > 0 else 'w', edgecolors=col, clip_on=False)
+        ax.annotate(ttext[tidx] + rtext[ridx], xy=(t - np.deg2rad(0.25), dist), color='w' if ridx ==4 and p > 0 else 'k', weight='heavy', horizontalalignment='center', verticalalignment='center', fontsize='6')
+
+ax.set_ylim([0, (600 / scale) + 1])
+locs = ax.get_yticks()
+
+
+def get_loc_labels(locs, ofst, scale):
+    locs = np.asarray(locs)
+    locs = locs[np.where(locs > 1.0)]
+    labels = ['O', r'R$_0$']
+    for loc in locs:
+        labels.append('%.0f' % (loc*scale - ofst))
+    locs = np.concatenate((np.asarray([0, 1]), locs.copy()))
+    labels = labels
+    return locs, labels
+
+
+locs, labels = get_loc_labels(locs, ofst, scale)
+ax.set_yticks(locs)
+ax.set_yticklabels(labels)
+ax.set_axisbelow(True)
+
+# label_position=ax.get_rlabel_position()
+ax.text(np.radians(-12), ax.get_rmax()/2, 'Distance from Earth center (km)',
+        rotation=0, ha='center', va='center')
+ax.set_position([0.1, -0.45, 0.8, 2])
+fig.suptitle('Distribution of points in geocentric coordinates')
+# fig.suptitle('GLOW Model Output (2D, geocentric) %s %s'%(day, time_of_day))
+# ax.set_rscale('ofst_r_scale')
+# ax.set_rscale('symlog')
+# ax.set_rorigin(-1)
+plt.savefig('pt_distrib_geo.pdf')
+plt.show()
+# %%
+from matplotlib import ticker
+fig, ax = plt.subplots(dpi=300, subplot_kw=dict(projection='polar'), figsize=(6.4, 4.5))
+
+r, t = np.meshgrid(alt + EARTH_RADIUS, ang)
+t, r = glow2d_polar.get_local_coords(t, r)
+ax.set_ylim(60, r.max())
+ax.text(np.radians(90), r.max()*1.02, '(Zenith)',
+            rotation=0, ha='center', va='center', fontdict={'size': 8})
+ax.text(np.radians(-12), ax.get_rmax()/2, 'Distance from observation location (km)',
+        rotation=0, ha='center', va='center')
+ax.fill_between(np.deg2rad([12, 69]), 0, 10000, alpha=0.13, color='b')
+ax.plot(np.deg2rad([12, 12]), [0, 10000], lw=0.5, color='k', ls='--', alpha=0.5)
+ax.plot(np.deg2rad([69, 69]), [0, 10000], lw=0.5, color='k', ls='--', alpha=0.5)
+
+for tidx, t in enumerate(ang):
+    for ridx, dist in enumerate(alt):
+        col = cmap(1 - ((dist - alt.min()) / alt.max()))
+        p, r = glow2d_polar.get_local_coords(t, dist + EARTH_RADIUS)
+        p = np.pi/2 - p
+        ax.scatter(p, r, s=80, marker='o', facecolors=col if p > 0 else 'w', edgecolors=col, clip_on=True)
+        ax.annotate(ttext[tidx] + rtext[ridx], xy=(p, r), color='black' if ridx < 4 else 'w', weight='heavy', horizontalalignment='center', verticalalignment='center', fontsize='6')
+
+# np.meshgrid((alt + ofst) / ofst, ang)
+ax.text(np.deg2rad(37), 1600, r'HiT\&MIS View Cone', fontsize=10, color='k', rotation=360-45)
+ax.tick_params(labelsize=10)
+# earth = pl.Circle((0, 0), 1, transform=ax.transData._b, color='k', alpha=0.4)
+# ax.add_artist(earth)
+ax.set_thetamax(90)
+# ax.set_rscale('symlog')
+ax.set_rorigin(-60)
+ax.set_axisbelow(True)
+fig.suptitle('Distribution of points in local polar coordinates')
+
+plt.savefig('pt_distrib_local.pdf')
+plt.show()
+# %%
