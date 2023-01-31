@@ -266,6 +266,8 @@ ax.plot(np.deg2rad([12, 12]), [0, 10000], lw=0.5, color='k', ls='--')
 ax.plot(np.deg2rad([69, 69]), [0, 10000], lw=0.5, color='k', ls='--')
 ax.text(np.deg2rad(37), 1600, r'HiT\&MIS View Cone', fontsize=10, color='w', rotation=360-45)
 ax.tick_params(labelsize=10)
+ax.text(np.radians(90), r.max()*1.02, '(Zenith)',
+            rotation=0, ha='center', va='center', fontdict={'size': 8})
 # earth = pl.Circle((0, 0), 1, transform=ax.transData._b, color='k', alpha=0.4)
 # ax.add_artist(earth)
 # ax.set_thetamax(ang.max()*180/np.pi)
