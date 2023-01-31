@@ -1,16 +1,16 @@
-# GLOW Raycasting
+# GLOW2D
 
-This package builds off of the GLobal airglOW model. The GLOW model is evaluated on an altitude grid at a location. For non-zenith observation geometries, the model requires evaluation at multiple points along the line of sight. The `glowraycast` library wraps the `ncarglow.no_precipitation()` function to generate the output on a 2D grid in a geocentric (GEO) coordinate system and in a local (ZA, R) coordinate system.
+This package builds off of the GLobal airglOW model. The GLOW model is evaluated on an altitude grid at a location. For non-zenith observation geometries, the model requires evaluation at multiple points along the line of sight. The `glow2d` library wraps the `ncarglow.no_precipitation()` function to generate the output on a 2D grid in a geocentric (GEO) coordinate system and in a local (ZA, R) coordinate system.
 
 ## Installation
 Directly using `pip`:
 ```sh
-$ pip install glowraycast @ git+https://github.com/sunipkm/glowraycast
+$ pip install glow2d @ git+https://github.com/sunipkm/glow2d
 ```
 
 Indirectly by `git clone`:
 ```sh
-$ git clone https://github.com/sunipkm/glowraycast && cd glowraycast
+$ git clone https://github.com/sunipkm/glow2d && cd glow2d
 $ pip install .
 ```
 
@@ -18,7 +18,7 @@ For example:
 
 ```py
 from datetime import datetime
-from glowraycast import GLOWRaycast as grc
+from glow2d import glow2d_polar as grc
 
 time = datetime(2022, 2, 15, 20, 0, 0).astimezone('UTC') # 20:00 hours local in UTC
 lat, lon = 42.64981361744372, -71.31681056737486 # location of observation

@@ -8,19 +8,19 @@ from geopy.distance import EARTH_RADIUS
 from datetime import datetime
 import pytz
 from time import perf_counter_ns
-from glowraycast import GLOWRaycast, GLOW2D
+from glow2d import glow2d_geo, glow2d_polar
 
 # %%
 time = datetime(2022, 2, 15, 6, 0).astimezone(pytz.utc)
 print(time)
 lat, lon = 42.64981361744372, -71.31681056737486
-grobj = GLOW2D(time, 42.64981361744372, -71.31681056737486, 40, n_pts = 100)
+grobj = glow2d_geo(time, 42.64981361744372, -71.31681056737486, 40, n_pts = 100)
 st = perf_counter_ns()
 bds = grobj.run_no_precipitation()
 end = perf_counter_ns()
 print('Time to generate:', (end - st)*1e-6, 'ms')
 st = perf_counter_ns()
-grobj = GLOWRaycast(bds, resamp=2)
+grobj = glow2d_polar(bds, resamp=2)
 iono = grobj.transform_coord()
 end = perf_counter_ns()
 print('Time to convert:', (end - st)*1e-6, 'ms')
@@ -187,35 +187,6 @@ ax.set_rorigin(-r.min())
 plt.savefig('test_loc_5577_uniform.pdf')
 plt.show()
 # %%
-fig, ax = plt.subplots(dpi=300, subplot_kw=dict(projection='polar'), figsize=(6.4, 4.8))
-tn = iono.ver.loc[dict(wavelength='5577')].values
-# np.meshgrid((alt + ofst) / ofst, ang)
-r, t = iono.r.values, np.pi/2 - iono.za.values
-print(r.shape, t.shape)
-r, t = np.meshgrid(r, t)
-# , extent=[0, 0, 7400 / EARTH_RADIUS, ang.max()])
-im = ax.contourf(t, r, gd2, 100, cmap='gist_ncar_r')
-cbar = fig.colorbar(im, shrink=0.6)
-cbar.set_label('Number Density', fontsize=10)
-cbar.ax.tick_params(labelsize=8)
-ax.set_thetamax(90)
-ax.text(np.radians(-12), ax.get_rmax()/2, 'Distance from observation location (km)',
-        rotation=0, ha='center', va='center')
-fig.suptitle('Distribution of GEO coordinate points in local coordinates')
-ax.fill_between(np.deg2rad([12, 69]), 0, 10000, alpha=0.3, color='b')
-ax.plot(np.deg2rad([12, 12]), [0, 10000], lw=0.5, color='k', ls='--')
-ax.plot(np.deg2rad([69, 69]), [0, 10000], lw=0.5, color='k', ls='--')
-ax.text(np.deg2rad(37), 1600, 'HiT&MIS View Cone', fontsize=10, color='w', rotation=360-45)
-ax.tick_params(labelsize=10)
-# earth = pl.Circle((0, 0), 1, transform=ax.transData._b, color='k', alpha=0.4)
-# ax.add_artist(earth)
-# ax.set_thetamax(ang.max()*180/np.pi)
-ax.set_ylim(r.min(), r.max())
-# ax.set_rscale('symlog')
-ax.set_rorigin(-60)
-# plt.savefig('test_loc_geo_distrib.pdf')
-plt.show()
-# %%
 from matplotlib import ticker
 fig, ax = plt.subplots(dpi=300, subplot_kw=dict(projection='polar'), figsize=(6.4, 4.8))
 # np.meshgrid((alt + ofst) / ofst, ang)
@@ -259,9 +230,9 @@ bds.Tn.loc[dict(angle=0)].alt_km.values
 # %%
 iono.Tn.loc[dict(za=0)].r.values
 # %%
-GLOWRaycast.get_local_coords(0, EARTH_RADIUS + 60)
+glow2d_polar.get_local_coords(0, EARTH_RADIUS + 60)
 # %%
-gt, gr = GLOWRaycast.get_global_coords(np.asarray([0]*len(iono.Tn.loc[dict(za=0)].r.values)), iono.Tn.loc[dict(za=0)].r.values, meshgrid=False)
+gt, gr = glow2d_polar.get_global_coords(np.asarray([0]*len(iono.Tn.loc[dict(za=0)].r.values)), iono.Tn.loc[dict(za=0)].r.values, meshgrid=False)
 # %%
 plt.plot(iono.ver.loc[dict(za=0, wavelength='5577')].r, iono.ver.loc[dict(za=0, wavelength='5577')].values, label='Map')
 plt.plot(bds.Te.loc[dict(angle=0)].alt_km.values, bds.ver.loc[dict(angle=0, wavelength='5577')].values, label='Orig')

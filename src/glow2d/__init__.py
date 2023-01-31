@@ -3,17 +3,16 @@ Evaluate GLOW model on the great circle passing through an origin location along
 
 Classes
 -------
-- GLOW2D
-- GLOWRaycast
-- GLOWRaycastXY
+- glow2d_geo
+- glow2d_polar
 
 Misc. Variables
 ---------------
 - __version__
 """
 
-from ._glowraycast import GLOW2D, GLOWRaycast, GLOWRaycastXY
+from ._glow2d import glow2d_geo, glow2d_polar
 
 __version__ = '2.0.0a'
 
-__all__ = ['GLOW2D', 'GLOWRaycast', 'GLOWRaycastXY', '__version__']
+__all__ = ['glow2d_geo', 'glow2d_polar', '__version__']
