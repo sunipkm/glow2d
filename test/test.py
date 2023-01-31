@@ -70,11 +70,8 @@ for file_suffix, time in tdict.items():
     bdss[file_suffix] = bds
     ionos[file_suffix] = iono
 
-# %%
-bds_minmax_ver5577 = get_all_minmax(bdss, 'ver', {'wavelength': '5577'}, True)
-iono_minmax_ver5577 = get_all_minmax(ionos, 'ver', {'wavelength': '5577'}, True)
 # %% 5577
-def plot_geo(bds: xr.Dataset, file_suffix: str, *, vmin: float = None, vmax: float = None, decimals: int = 0, num_levels: int = 1000) -> None:
+def plot_geo(bds: xr.Dataset, wl: str, file_suffix: str, *, vmin: float = None, vmax: float = None, decimals: int = 0, num_levels: int = 1000) -> None:
     ofst = 1000
     scale = 1000
     fig = plt.figure(figsize=(4.8, 3.8), dpi=300, constrained_layout=True)
@@ -89,7 +86,7 @@ def plot_geo(bds: xr.Dataset, file_suffix: str, *, vmin: float = None, vmax: flo
     # cax = fig.add_axes([0.85, 0.15, 0.05, 0.7])
     # divider = make_axes_locatable(ax)
     # cax = divider.append_axes('top', size='5%', pad=0.05)
-    tn = (bds.ver.loc[dict(wavelength='5577')].values)
+    tn = (bds.ver.loc[dict(wavelength=wl)].values)
     alt = bds.alt_km.values
     ang = bds.angle.values
     r, t = (alt + ofst) / scale, ang  # np.meshgrid((alt + ofst), ang)
@@ -106,7 +103,7 @@ def plot_geo(bds: xr.Dataset, file_suffix: str, *, vmin: float = None, vmax: flo
     if ticks is not None: cbar.ax.set_xticklabels([r'$10^{%d}$'%(tval) for tval in ticks])
     cbar.ax.tick_params(labelsize=8)
     # cbar.formatter.set_useMathText(True)
-    cbar.set_label(r'Volume Emission Rate of 5577 \AA ($%s$)'%(bds.ver.attrs['units']), fontsize=8)
+    cbar.set_label(r'Volume Emission Rate of %s \AA ($%s$)'%(wl, bds.ver.attrs['units']), fontsize=8)
     earth = pl.Circle((0, 0), 1, transform=ax.transData._b, color='k', alpha=0.4)
     ax.add_artist(earth)
     ax.set_thetamax(ang.max()*180/np.pi)
@@ -142,15 +139,15 @@ def plot_geo(bds: xr.Dataset, file_suffix: str, *, vmin: float = None, vmax: flo
     # ax.set_rscale('ofst_r_scale')
     # ax.set_rscale('symlog')
     # ax.set_rorigin(-1)
-    plt.savefig('test_geo_5577_%s.pdf'%(file_suffix))
+    plt.savefig('test_geo_%s_%s.pdf'%(wl, file_suffix))
     plt.show()
 # %%
-def plot_geo_local(bds: xr.Dataset, file_suffix: str, *, vmin: float = None, vmax: float = None, decimals: int = 0, num_levels: int = 1000)->None:
+def plot_geo_local(bds: xr.Dataset, wl:str, file_suffix: str, *, vmin: float = None, vmax: float = None, decimals: int = 0, num_levels: int = 1000)->None:
     dtime = parse(bds.time).astimezone(get_localzone())
     day = dtime.strftime('%Y-%m-%d')
     time_of_day = dtime.strftime('%H:%M hrs')
     fig, ax = plt.subplots(dpi=300, subplot_kw=dict(projection='polar'), figsize=(6.4, 4.8))
-    tn = (bds.ver.loc[dict(wavelength='5577')].values).copy()
+    tn = (bds.ver.loc[dict(wavelength=wl)].values).copy()
     r, t = np.meshgrid((bds.alt_km.values + EARTH_RADIUS), bds.angle.values)
     tt, rr = glow2d_polar.get_local_coords(t, r)
     tt = np.pi / 2 - tt
@@ -166,7 +163,7 @@ def plot_geo_local(bds: xr.Dataset, file_suffix: str, *, vmin: float = None, vma
     cbar = fig.colorbar(im, shrink=0.6, ticks=ticks)
     if ticks is not None: cbar.ax.set_yticklabels([r'$10^{%d}$'%(tval) for tval in ticks])
     cbar.ax.tick_params(labelsize=8)
-    cbar.set_label(r'Volume Emission Rate of 5577 \AA ($%s$)'%(bds.ver.attrs['units']), fontsize=10)
+    cbar.set_label(r'Volume Emission Rate of %s \AA ($%s$)'%(wl, bds.ver.attrs['units']), fontsize=10)
     ax.set_thetamax(90)
     ax.text(np.radians(-12), ax.get_rmax()/2, 'Distance from observation location (km)',
             rotation=0, ha='center', va='center')
@@ -184,16 +181,16 @@ def plot_geo_local(bds: xr.Dataset, file_suffix: str, *, vmin: float = None, vma
     ax.set_ylim(rr.min(), rr.max())
     # ax.set_rscale('symlog')
     ax.set_rorigin(-rr.min())
-    plt.savefig('test_loc_5577_%s.pdf'%(file_suffix))
+    plt.savefig('test_loc_%s_%s.pdf'%(wl, file_suffix))
     plt.show()
 # %%
 from scipy.signal import savgol_filter
-def plot_local(iono: xr.Dataset, file_suffix: str, *, vmin: float = None, vmax: float = None, decimals: int = 0, num_levels: int = 1000)->None:
+def plot_local(iono: xr.Dataset, wl: str, file_suffix: str, *, vmin: float = None, vmax: float = None, decimals: int = 0, num_levels: int = 1000)->None:
     dtime = parse(iono.time).astimezone(get_localzone())
     day = dtime.strftime('%Y-%m-%d')
     time_of_day = dtime.strftime('%H:%M hrs')
     fig, ax = plt.subplots(dpi=300, subplot_kw=dict(projection='polar'), figsize=(6.4, 4.8))
-    tn = (iono.ver.loc[dict(wavelength='5577')].values).copy()
+    tn = (iono.ver.loc[dict(wavelength=wl)].values).copy()
     rr, tt = np.meshgrid((iono.r.values), iono.za.values)
     tt = np.pi / 2 - tt
     vidx = np.where(tt < 0)
@@ -208,7 +205,7 @@ def plot_local(iono: xr.Dataset, file_suffix: str, *, vmin: float = None, vmax: 
     cbar = fig.colorbar(im, shrink=0.6, ticks=ticks)
     if ticks is not None: cbar.ax.set_yticklabels([r'$10^{%d}$'%(tval) for tval in ticks])
     cbar.ax.tick_params(labelsize=8)
-    cbar.set_label(r'Volume Emission Rate of 5577 \AA ($%s$)'%(iono.ver.attrs['units']), fontsize=10)
+    cbar.set_label(r'Volume Emission Rate of %s \AA ($%s$)'%(wl, iono.ver.attrs['units']), fontsize=10)
     ax.set_thetamax(90)
     ax.text(np.radians(-12), ax.get_rmax()/2, 'Distance from observation location (km)',
             rotation=0, ha='center', va='center')
@@ -226,15 +223,18 @@ def plot_local(iono: xr.Dataset, file_suffix: str, *, vmin: float = None, vmax: 
     ax.set_ylim(rr.min(), rr.max())
     # ax.set_rscale('symlog')
     ax.set_rorigin(-rr.min())
-    plt.savefig('test_loc_5577_uniform_%s.pdf'%(file_suffix))
+    plt.savefig('test_loc_%s_uniform_%s.pdf'%(wl, file_suffix))
     plt.show()
 # %%
 for file_suffix in bdss:
     bds = bdss[file_suffix]
     iono = ionos[file_suffix]
-    plot_geo(bds, file_suffix, vmin=bds_minmax_ver5577[0], vmax=bds_minmax_ver5577[1])
-    plot_geo_local(bds, file_suffix, vmin=bds_minmax_ver5577[0], vmax=bds_minmax_ver5577[1])
-    plot_local(iono, file_suffix, vmin=1000, vmax=iono_minmax_ver5577[1])
+    for wl in ('5577', '6300'):
+        bds_minmax = get_all_minmax(bdss, 'ver', {'wavelength': wl}, True)
+        iono_minmax = get_all_minmax(ionos, 'ver', {'wavelength': wl}, True)
+        plot_geo(bds, wl, file_suffix, vmin=bds_minmax[0], vmax=bds_minmax[1])
+        plot_geo_local(bds, wl, file_suffix, vmin=bds_minmax[0], vmax=bds_minmax[1])
+        plot_local(iono, wl, file_suffix, vmin=1000, vmax=iono_minmax[1])
 # %%
 from matplotlib import ticker
 fig, ax = plt.subplots(dpi=300, subplot_kw=dict(projection='polar'), figsize=(6.4, 4.8))
