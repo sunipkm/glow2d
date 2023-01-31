@@ -279,7 +279,7 @@ plt.show()
 # %%
 ofst = 1000
 scale = 1000
-fig = plt.figure(figsize=(4.8, 3.8), dpi=300, constrained_layout=True)
+fig = plt.figure(figsize=(4.8, 3), dpi=300, constrained_layout=True)
 gspec = GridSpec(1, 1, figure=fig)
 ax = fig.add_subplot(gspec[0, 0], projection='polar')
 alt = np.linspace(60, 550, 5)
