@@ -241,9 +241,6 @@ class glow2d_polar:
 
         Raises:
             ValueError: Resampling can not be < 0.5.
-
-        Warns:
-            ResourceWarning: Number of threads requested is more than available system threads.
         """
         if resamp < 0.5:
             raise ValueError('Resampling can not be < 0.5.')
@@ -302,7 +299,7 @@ class glow2d_polar:
             return (iono, bds)
 
     @classmethod
-    def no_precipitation_geo(cls, time: datetime, lat: Numeric, lon: Numeric, heading: Numeric, max_alt: Numeric = 1000, n_pts: int = 50, n_bins: int = 100, *, n_alt: int = None, n_threads: int = None, resamp: Numeric = 1.5, show_progress: bool = True, **kwargs) -> xr.Dataset:
+    def no_precipitation_geo(cls, time: datetime, lat: Numeric, lon: Numeric, heading: Numeric, max_alt: Numeric = 1000, n_pts: int = 50, n_bins: int = 100, *, n_alt: int = None, n_threads: int = None, show_progress: bool = True, **kwargs) -> xr.Dataset:
         """Run GLOW model looking along heading from the current location and return the model output in
         (T, R) geocentric coordinates where T is angle in radians from the current location along the great circle
         following current heading, and R is altitude in kilometers. R is in an uniform grid with `n_alt` points.
@@ -332,7 +329,7 @@ class glow2d_polar:
             ResourceWarning: Number of threads requested is more than available system threads.
         """
         grobj = glow2d_geo(time, lat, lon, heading, max_alt,
-                           n_pts, n_bins, n_alt=n_alt, uniformize_glow=True, n_threads=n_threads, resamp=resamp, show_progress=show_progress, **kwargs)
+                           n_pts, n_bins, n_alt=n_alt, uniformize_glow=True, n_threads=n_threads, show_progress=show_progress, **kwargs)
         bds = grobj.run_no_precipitation()
         return bds
 
@@ -816,7 +813,7 @@ if __name__ == '__main__':
     plt.ylabel('Azimuth Angle (deg)')
     plt.xlabel(r'Photon Count Rate (cm$^{-2}$ rad$^{-1}$ s$^{-1}$)')
     plt.ylim(0, 90)
-    plt.xlim(0, pc.max())
+    plt.xlim(pc.min(), pc.max())
     plt.show()
 
 
