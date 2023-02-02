@@ -13,6 +13,6 @@ Misc. Variables
 
 from ._glow2d import glow2d_geo, glow2d_polar
 
-__version__ = '2.1.0'
+__version__ = '2.2.0'
 
 __all__ = ['glow2d_geo', 'glow2d_polar', '__version__']

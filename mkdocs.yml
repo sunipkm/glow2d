@@ -1,0 +1,17 @@
+site_name: GLOW2D
+
+theme:
+  name: "material"
+
+plugins:
+  - mkdocstrings
+
+nav:
+  - Overview: index.md
+  - gen_2d.md
+  - overview.md
+
+extra_javascript:
+  - 'https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS_HTML'
+markdown_extensions:
+  - mdx_math

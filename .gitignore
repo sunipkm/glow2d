@@ -6,6 +6,7 @@ __pycache__/
 bin/
 build/
 dist/
+site/
 **/.DS_Store
 **/.vscode
 # Compiled Dynamic libraries

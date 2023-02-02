@@ -1,6 +1,7 @@
 # %% Imports
 from __future__ import annotations
-from typing import SupportsFloat as Numeric
+from functools import partial
+from typing import SupportsFloat as Numeric, Iterable
 import warnings
 import xarray as xr
 import numpy as np
@@ -13,6 +14,8 @@ from haversine import haversine, Unit
 import pandas as pd
 from tqdm.contrib.concurrent import thread_map, process_map
 from scipy.ndimage import geometric_transform
+from scipy.interpolate import interp2d
+from scipy.integrate import simps
 from time import perf_counter_ns
 import platform
 from multiprocessing import Pool, cpu_count
@@ -204,7 +207,6 @@ class glow2d_geo:
             n_alt (int, optional): Number of altitude bins, must be > 100. Defaults to `None`, i.e. uses same number of bins as a single GLOW run.
             uniformize_glow (bool, optional): Interpolate GLOW output to an uniform altitude grid. `n_alt` is ignored if this option is set to `False`. Defaults to `True`.
             n_threads (int, optional): Number of threads for parallel GLOW runs. Set to `None` to use all system threads. Defaults to `None`.
-            full_circ (bool, optional): For testing only, do not use. Defaults to `False`.
             show_progress (bool, optional): Use TQDM to show progress of GLOW model calculations. Defaults to `True`.
             kwargs (dict, optional): Passed to `ncarglow.no_precipitation`.
 
@@ -236,7 +238,6 @@ class glow2d_polar:
             bds (xr.Dataset): GLOW model evaluated on a 2D grid using `GLOW2D`.
             with_prodloss (bool, optional): Calculate production and loss parameters in local coordinates. Defaults to False.
             resamp (Numeric, optional): Number of R and ZA points in local coordinate output. ``len(R) = len(alt_km) * resamp`` and ``len(ZA) = n_pts * resamp``. Must be > 0.5. Defaults to 1.5.
-            show_progress (bool, optional): Use TQDM to show progress of GLOW model calculations. Defaults to True.
 
         Raises:
             ValueError: Resampling can not be < 0.5.
@@ -316,7 +317,6 @@ class glow2d_polar:
             n_bins (int, optional): Number of energy bins. Defaults to 100.
             n_alt (int, optional): Number of altitude bins, must be > 100. Defaults to `None`, i.e. uses same number of bins as a single GLOW run.
             n_threads (int, optional): Number of threads for parallel GLOW runs. Set to `None` to use all system threads. Defaults to `None`.
-            full_circ (bool, optional): For testing only, do not use. Defaults to `False`.
             show_progress (bool, optional): Use TQDM to show progress of GLOW model calculations. Defaults to `True`.
             kwargs (dict, optional): Passed to `ncarglow.no_precipitation`.
 
@@ -420,12 +420,14 @@ class glow2d_polar:
             inp = self._bds[key].values
             inp[np.where(np.isnan(inp))] = 0
             out = geometric_transform(inp, mapping=self._global_from_local, output_shape=outp_shape, mode='nearest')
+            out[np.where(out < 0)] = 0
             # out = warp(inp, inverse_map=(2, self._ntt, self._nrr), output_shape=outp_shape)
             data_vars[key] = (('za', 'r'), out)
         for key in density_keys:
             inp = self._bds[key].values
             inp[np.where(np.isnan(inp))] = 0
             out = geometric_transform(inp, mapping=self._global_from_local, output_shape=outp_shape, mode='nearest') / jacobian
+            out[np.where(out < 0)] = 0
             # out = warp(inp, inverse_map=(2, self._ntt, self._nrr), output_shape=outp_shape)
             data_vars[key] = (('za', 'r'), out)
         # end = perf_counter_ns()
@@ -445,6 +447,7 @@ class glow2d_polar:
             # scaled by point distribution because flux is conserved, not brightness
             # out = warp(inp, inverse_map=(2, self._ntt, self._nrr), output_shape=outp_shape, mode='nearest') * gd
             out = geometric_transform(inp, mapping=self._global_from_local, output_shape=outp_shape, mode='nearest') / jacobian
+            out[np.where(out < 0)] = 0
             # inp[ttidx] = 0
             # inpsum = inp.sum()  # sum of input for valid angles
             # outpsum = out.sum()  # sum of output
@@ -473,6 +476,7 @@ class glow2d_polar:
                     inp = bds[key].loc[dict(state=st)].values
                     inp[np.where(np.isnan(inp))] = 0
                     out = geometric_transform(inp, mapping=self._global_from_local, output_shape=outp_shape)
+                    out[np.where(out < 0)] = 0
                     if key in ('production', 'excitedDensity'):
                         out /= jacobian
                     # out = warp(inp, inverse_map=(2, self._ntt, self._nrr), output_shape=outp_shape)
@@ -527,6 +531,70 @@ class glow2d_polar:
         # print('Merging: %.3f us'%((end - start)*1e-3))
         self._iono = iono
         return iono
+    
+    def get_emission(self, feature: str = '5577', za_min: Numeric | Iterable = np.deg2rad(20), za_max: Numeric | Iterable = np.deg2rad(25), num_zapts: int = 10, *, iono: xr.Dataset = None, rmin: Numeric=None, rmax: Numeric=None, num_rpts: int = 100) -> float | np.ndarray:
+        """Calculate number of photons per azimuth angle (radians) per unit area per second coming from a region of (`rmin`, `rmax`, `za_min`, `za_max`).
+
+        Args:
+            feature (str, optional):GLOW emission feature. Defaults to '5577'.
+            za_min (Numeric | Iterable, optional): Minimum zenith angle. Defaults to np.deg2rad(20).
+            za_max (Numeric | Iterable, optional): Maximum zenith angle. Defaults to np.deg2rad(25).
+            num_zapts (int, optional): Number of points to interpolate to. Defaults to 10.
+            iono (xr.Dataset, optional): GLOW model output in local polar coordinates. If None, the result from this instance is used. Defaults to None.
+            rmin (Numeric, optional): Minimum distance. Defaults to None.
+            rmax (Numeric, optional): Maximum distance. Defaults to None.
+            num_rpts (int, optional): Number of distance points. The default is used only if minimum or maximum distance is not None. Defaults to 100.
+
+        Raises:
+            ValueError: 'ZA min and max arrays must be of the same dimension.'
+            ValueError: ZA min not between 0 deg and 90 deg.
+            ValueError: ZA max is not between 0 deg and 90 deg.
+            ValueError: ZA min > ZA max.
+            ValueError: Selected feature is invalid.
+
+        Returns:
+            float | np.ndarray: Number of photons/rad/cm^2/s
+        """
+        if isinstance(za_min, Iterable) or isinstance(za_max, Iterable):
+            if len(za_min) != len(za_max):
+                raise ValueError('ZA min and max arrays must be of the same dimension.')
+            callable = partial(self.get_emission, feature=feature, num_zapts=num_zapts, iono=iono, rmin=rmin, rmax=rmax, num_rpts=num_rpts)
+            out = list(map(lambda idx: callable(za_min=za_min[idx], za_max=za_max[idx]), range(len(za_min))))
+            return np.asarray(out, dtype=float)
+        
+        if not (0 <= za_min <= np.deg2rad(90)):
+            raise ValueError('ZA must be between 0 deg and 90 deg')
+        if not (0 <= za_max <= np.deg2rad(90)):
+            raise ValueError('ZA must be between 0 deg and 90 deg')
+        if za_min > za_max:
+            raise ValueError('ZA min > ZA max')
+        if iono is None:
+            iono = self.transform_coord()
+        if feature not in iono.wavelength.values:
+            raise ValueError('Feature %s is invalid. Valid features: %s'%(feature, str(iono.wavelength.values)))
+        za: np.ndarray = iono.za.values
+        zaxis = iono.za.values
+        r: np.ndarray = iono.r.values
+        rr = iono.r.values
+        
+        if za_min is not None or za_max is not None:
+            if (za_min == 0) and (za_max == np.deg2rad(90)):
+                pass
+            else:
+                za_min = za.min() if za_min is None else za_min
+                za_max = za.max() if za_max is None else za_max
+                zaxis = np.linspace(za_min, za_max, num_zapts, endpoint=True)
+
+        if rmin is not None or rmax is not None:
+            rmin = r.min() if rmin is None else rmin
+            rmax = r.max() if rmax is None else rmax
+            rr = np.linspace(rmin, rmax, num_rpts, endpoint=True)
+
+        ver = iono.ver.loc[dict(wavelength=feature)].values
+        ver = interp2d(r, za, ver)(rr, zaxis) # interpolate to integration axes
+
+        ver = ver*np.sin(zaxis[:, None]) # integration is VER * sin(phi) * d(phi) * d(r)
+        return simps(simps(ver.T, zaxis), rr) # do the double integral
 
     # get global coord index from local coord index, implemented as LUT
     def _global_from_local(self, pt: tuple(int, int)) -> tuple(float, float):
@@ -551,8 +619,8 @@ class glow2d_polar:
         """Get GEO coordinates from local coordinates.
 
         ..math::
-            R = \\sqrt{\\left\{ (r\\cos{\\phi} + R_0)^2 + r^2\\sin{\\phi}^2 \\right\}}
-            \\theta = \\arctan{\\frac{r\\sin{\\phi}}{r\\cos{\\phi} + R_0}}
+            R = \sqrt{\left\{ (r\cos{\phi} + R_0)^2 + r^2\sin{\phi}^2 \right\}}
+            \theta = \arctan{\frac{r\sin{\phi}}{r\cos{\phi} + R_0}}
 
         Args:
             t (np.ndarray | Numeric): Angles in radians.
@@ -594,8 +662,8 @@ class glow2d_polar:
         """Get local coordinates from GEO coordinates.
 
         ..math::
-            r = \\sqrt{\\left\{ (R\\cos{\\theta} - R_0)^2 + R^2\\sin{\\theta}^2 \\right\}}
-            \\phi = \\arctan{\\frac{R\\sin{\\theta}}{R\\cos{\\theta} - R_0}}
+            r = \sqrt{\left\{ (R\cos{\theta} - R_0)^2 + R^2\sin{\theta}^2 \right\}}
+            \phi = \arctan{\frac{R\sin{\theta}}{R\cos{\theta} - R_0}}
 
         Args:
             t (np.ndarray | Numeric): Angles in radians.
@@ -718,6 +786,8 @@ class glow2d_polar:
 
 # %%
 if __name__ == '__main__':
+    import matplotlib.pyplot as plt
+
     time = datetime(2022, 2, 15, 6, 0).astimezone(pytz.utc)
     print(time)
     lat, lon = 42.64981361744372, -71.31681056737486
@@ -731,5 +801,23 @@ if __name__ == '__main__':
     iono = grobj.transform_coord()
     end = perf_counter_ns()
     print('Time to convert:', (end - st)*1e-6, 'ms')
+    print()
+    feature = '5577'
+    print(f'Number of photons between 70 - 75 deg ZA ({feature} A):', grobj.get_emission(feature=feature, za_min=np.deg2rad(70), za_max=np.deg2rad(75)))
+
+    za_min = np.arange(0, 90, 2.5, dtype=float)
+    za_max = za_min + 2.5
+    za = za_min + 1.25
+    za_min = np.deg2rad(za_min)
+    za_max = np.deg2rad(za_max)
+    pc = grobj.get_emission(za_min=za_min, za_max=za_max)
+    plt.plot(pc, 90 - za)
+    plt.xscale('log')
+    plt.ylabel('Azimuth Angle (deg)')
+    plt.xlabel(r'Photon Count Rate (cm$^{-2}$ rad$^{-1}$ s$^{-1}$)')
+    plt.ylim(0, 90)
+    plt.xlim(0, pc.max())
+    plt.show()
+
 
 # %%
