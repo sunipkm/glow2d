@@ -615,9 +615,10 @@ class glow2d_polar:
     def get_global_coords(t: np.ndarray | Numeric, r: np.ndarray | Numeric, r0: Numeric = EARTH_RADIUS, meshgrid: bool = True) -> tuple(np.ndarray, np.ndarray):
         """Get GEO coordinates from local coordinates.
 
-        ..math::
-            R = \sqrt{\left\{ (r\cos{\phi} + R_0)^2 + r^2\sin{\phi}^2 \right\}}
-            \theta = \arctan{\frac{r\sin{\phi}}{r\cos{\phi} + R_0}}
+        $$
+            R = \\sqrt{\\left\\{ (r\\cos{\\phi} + R_0)^2 + r^2\\sin{\\phi}^2 \\right\\}}, \\\\
+            \\theta = \\arctan{\\frac{r\\sin{\\phi}}{r\\cos{\\phi} + R_0}}
+        $$
 
         Args:
             t (np.ndarray | Numeric): Angles in radians.
@@ -658,9 +659,10 @@ class glow2d_polar:
     def get_local_coords(t: np.ndarray | Numeric, r: np.ndarray | Numeric, r0: Numeric = EARTH_RADIUS, meshgrid: bool = True) -> tuple(np.ndarray, np.ndarray):
         """Get local coordinates from GEO coordinates.
 
-        ..math::
-            r = \sqrt{\left\{ (R\cos{\theta} - R_0)^2 + R^2\sin{\theta}^2 \right\}}
-            \phi = \arctan{\frac{R\sin{\theta}}{R\cos{\theta} - R_0}}
+        $$
+            r = \\sqrt{\\left\\{ (R\\cos{\\theta} - R_0)^2 + R^2\\sin{\\theta}^2 \\right\\}}, \\\\
+            \phi = \\arctan{\\frac{R\\sin{\\theta}}{R\\cos{\\theta} - R_0}}
+        $$
 
         Args:
             t (np.ndarray | Numeric): Angles in radians.
