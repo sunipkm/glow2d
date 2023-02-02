@@ -1000,7 +1000,9 @@
 <span class="normal">778</span>
 <span class="normal">779</span>
 <span class="normal">780</span>
-<span class="normal">781</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span> <span class="nc">glow2d_polar</span><span class="p">:</span>
+<span class="normal">781</span>
+<span class="normal">782</span>
+<span class="normal">783</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span> <span class="nc">glow2d_polar</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Use GLOW model output evaluated on a 2D grid using `glow2d_geo` and convert it to a local ZA, R coordinate system at the origin location.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
@@ -1388,9 +1390,10 @@
     <span class="k">def</span> <span class="nf">get_global_coords</span><span class="p">(</span><span class="n">t</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">|</span> <span class="n">Numeric</span><span class="p">,</span> <span class="n">r</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">|</span> <span class="n">Numeric</span><span class="p">,</span> <span class="n">r0</span><span class="p">:</span> <span class="n">Numeric</span> <span class="o">=</span> <span class="n">EARTH_RADIUS</span><span class="p">,</span> <span class="n">meshgrid</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Get GEO coordinates from local coordinates.</span>
 
-<span class="sd">        ..math::</span>
-<span class="sd">            R = \sqrt{\left\{ (r\cos{\phi} + R_0)^2 + r^2\sin{\phi}^2 \right\}}</span>
-<span class="sd">            \theta = \arctan{\frac{r\sin{\phi}}{r\cos{\phi} + R_0}}</span>
+<span class="sd">        $$</span>
+<span class="sd">            R = \\sqrt{\\left\\{ (r\\cos{\\phi} + R_0)^2 + r^2\\sin{\\phi}^2 \\right\\}}, \\\\</span>
+<span class="sd">            \\theta = \\arctan{\\frac{r\\sin{\\phi}}{r\\cos{\\phi} + R_0}}</span>
+<span class="sd">        $$</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            t (np.ndarray | Numeric): Angles in radians.</span>
@@ -1431,9 +1434,10 @@
     <span class="k">def</span> <span class="nf">get_local_coords</span><span class="p">(</span><span class="n">t</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">|</span> <span class="n">Numeric</span><span class="p">,</span> <span class="n">r</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">|</span> <span class="n">Numeric</span><span class="p">,</span> <span class="n">r0</span><span class="p">:</span> <span class="n">Numeric</span> <span class="o">=</span> <span class="n">EARTH_RADIUS</span><span class="p">,</span> <span class="n">meshgrid</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Get local coordinates from GEO coordinates.</span>
 
-<span class="sd">        ..math::</span>
-<span class="sd">            r = \sqrt{\left\{ (R\cos{\theta} - R_0)^2 + R^2\sin{\theta}^2 \right\}}</span>
-<span class="sd">            \phi = \arctan{\frac{R\sin{\theta}}{R\cos{\theta} - R_0}}</span>
+<span class="sd">        $$</span>
+<span class="sd">            r = \\sqrt{\\left\\{ (R\\cos{\\theta} - R_0)^2 + R^2\\sin{\\theta}^2 \\right\\}}, \\\\</span>
+<span class="sd">            \phi = \\arctan{\\frac{R\\sin{\\theta}}{R\\cos{\\theta} - R_0}}</span>
+<span class="sd">        $$</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            t (np.ndarray | Numeric): Angles in radians.</span>
@@ -2002,10 +2006,12 @@
   <div class="doc doc-contents ">
   
       <p>Get GEO coordinates from local coordinates.</p>
-<p>..math::
-    R = \sqrt{\left{ (r\cos{\phi} + R_0)^2 + r^2\sin{\phi}^2 
-ight}}
-        heta = rctan{rac{r\sin{\phi}}{r\cos{\phi} + R_0}}</p>
+<p>
+<script type="math/tex; mode=display">
+    R = \sqrt{\left\{ (r\cos{\phi} + R_0)^2 + r^2\sin{\phi}^2 \right\}}, \\
+    \theta = \arctan{\frac{r\sin{\phi}}{r\cos{\phi} + R_0}}
+</script>
+</p>
 
   <p><strong>Parameters:</strong></p>
   <table>
@@ -2146,13 +2152,15 @@ ight}}
 <span class="normal">652</span>
 <span class="normal">653</span>
 <span class="normal">654</span>
-<span class="normal">655</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
+<span class="normal">655</span>
+<span class="normal">656</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
 <span class="k">def</span> <span class="nf">get_global_coords</span><span class="p">(</span><span class="n">t</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">|</span> <span class="n">Numeric</span><span class="p">,</span> <span class="n">r</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">|</span> <span class="n">Numeric</span><span class="p">,</span> <span class="n">r0</span><span class="p">:</span> <span class="n">Numeric</span> <span class="o">=</span> <span class="n">EARTH_RADIUS</span><span class="p">,</span> <span class="n">meshgrid</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Get GEO coordinates from local coordinates.</span>
 
-<span class="sd">    ..math::</span>
-<span class="sd">        R = \sqrt{\left\{ (r\cos{\phi} + R_0)^2 + r^2\sin{\phi}^2 \right\}}</span>
-<span class="sd">        \theta = \arctan{\frac{r\sin{\phi}}{r\cos{\phi} + R_0}}</span>
+<span class="sd">    $$</span>
+<span class="sd">        R = \\sqrt{\\left\\{ (r\\cos{\\phi} + R_0)^2 + r^2\\sin{\\phi}^2 \\right\\}}, \\\\</span>
+<span class="sd">        \\theta = \\arctan{\\frac{r\\sin{\\phi}}{r\\cos{\\phi} + R_0}}</span>
+<span class="sd">    $$</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        t (np.ndarray | Numeric): Angles in radians.</span>
@@ -2294,9 +2302,7 @@ ight}}
 
       <details class="quote">
         <summary>Source code in <code>glow2d/_glow2d.py</code></summary>
-        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">741</span>
-<span class="normal">742</span>
-<span class="normal">743</span>
+        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">743</span>
 <span class="normal">744</span>
 <span class="normal">745</span>
 <span class="normal">746</span>
@@ -2313,7 +2319,9 @@ ight}}
 <span class="normal">757</span>
 <span class="normal">758</span>
 <span class="normal">759</span>
-<span class="normal">760</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
+<span class="normal">760</span>
+<span class="normal">761</span>
+<span class="normal">762</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
 <span class="k">def</span> <span class="nf">get_jacobian_glob2loc_glob</span><span class="p">(</span><span class="n">gr</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">gt</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">r0</span><span class="p">:</span> <span class="n">Numeric</span> <span class="o">=</span> <span class="n">EARTH_RADIUS</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Jacobian J for global to local coordinate transform, evaluated at points in global coordinate.</span>
 
@@ -2439,9 +2447,7 @@ ight}}
 
       <details class="quote">
         <summary>Source code in <code>glow2d/_glow2d.py</code></summary>
-        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">699</span>
-<span class="normal">700</span>
-<span class="normal">701</span>
+        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">701</span>
 <span class="normal">702</span>
 <span class="normal">703</span>
 <span class="normal">704</span>
@@ -2458,7 +2464,9 @@ ight}}
 <span class="normal">715</span>
 <span class="normal">716</span>
 <span class="normal">717</span>
-<span class="normal">718</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
+<span class="normal">718</span>
+<span class="normal">719</span>
+<span class="normal">720</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
 <span class="k">def</span> <span class="nf">get_jacobian_glob2loc_loc</span><span class="p">(</span><span class="n">r</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">t</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">r0</span><span class="p">:</span> <span class="n">Numeric</span> <span class="o">=</span> <span class="n">EARTH_RADIUS</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Jacobian J for global to local coordinate transform, evaluated at points in local coordinate.</span>
 
@@ -2584,9 +2592,7 @@ ight}}
 
       <details class="quote">
         <summary>Source code in <code>glow2d/_glow2d.py</code></summary>
-        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">762</span>
-<span class="normal">763</span>
-<span class="normal">764</span>
+        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">764</span>
 <span class="normal">765</span>
 <span class="normal">766</span>
 <span class="normal">767</span>
@@ -2603,7 +2609,9 @@ ight}}
 <span class="normal">778</span>
 <span class="normal">779</span>
 <span class="normal">780</span>
-<span class="normal">781</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
+<span class="normal">781</span>
+<span class="normal">782</span>
+<span class="normal">783</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
 <span class="k">def</span> <span class="nf">get_jacobian_loc2glob_glob</span><span class="p">(</span><span class="n">gr</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">gt</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">r0</span><span class="p">:</span> <span class="n">Numeric</span> <span class="o">=</span> <span class="n">EARTH_RADIUS</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Jacobian J for global to local coordinate transform, evaluated at points in local coordinate.</span>
 
@@ -2729,9 +2737,7 @@ ight}}
 
       <details class="quote">
         <summary>Source code in <code>glow2d/_glow2d.py</code></summary>
-        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">720</span>
-<span class="normal">721</span>
-<span class="normal">722</span>
+        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">722</span>
 <span class="normal">723</span>
 <span class="normal">724</span>
 <span class="normal">725</span>
@@ -2748,7 +2754,9 @@ ight}}
 <span class="normal">736</span>
 <span class="normal">737</span>
 <span class="normal">738</span>
-<span class="normal">739</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
+<span class="normal">739</span>
+<span class="normal">740</span>
+<span class="normal">741</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
 <span class="k">def</span> <span class="nf">get_jacobian_loc2glob_loc</span><span class="p">(</span><span class="n">r</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">t</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">r0</span><span class="p">:</span> <span class="n">Numeric</span> <span class="o">=</span> <span class="n">EARTH_RADIUS</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Jacobian J for local to global coordinate transform, evaluated at points in local coordinate.</span>
 
@@ -2791,10 +2799,12 @@ ight}}
   <div class="doc doc-contents ">
   
       <p>Get local coordinates from GEO coordinates.</p>
-<p>..math::
-    r = \sqrt{\left{ (R\cos{   heta} - R_0)^2 + R^2\sin{       heta}^2 
-ight}}
-    \phi = rctan{rac{R\sin{   heta}}{R\cos{   heta} - R_0}}</p>
+<p>
+<script type="math/tex; mode=display">
+    r = \sqrt{\left\{ (R\cos{\theta} - R_0)^2 + R^2\sin{\theta}^2 \right\}}, \\
+    \phi = \arctan{\frac{R\sin{\theta}}{R\cos{\theta} - R_0}}
+</script>
+</p>
 
   <p><strong>Parameters:</strong></p>
   <table>
@@ -2894,8 +2904,7 @@ ight}}
 
       <details class="quote">
         <summary>Source code in <code>glow2d/_glow2d.py</code></summary>
-        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">657</span>
-<span class="normal">658</span>
+        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">658</span>
 <span class="normal">659</span>
 <span class="normal">660</span>
 <span class="normal">661</span>
@@ -2934,13 +2943,16 @@ ight}}
 <span class="normal">694</span>
 <span class="normal">695</span>
 <span class="normal">696</span>
-<span class="normal">697</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
+<span class="normal">697</span>
+<span class="normal">698</span>
+<span class="normal">699</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
 <span class="k">def</span> <span class="nf">get_local_coords</span><span class="p">(</span><span class="n">t</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">|</span> <span class="n">Numeric</span><span class="p">,</span> <span class="n">r</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">|</span> <span class="n">Numeric</span><span class="p">,</span> <span class="n">r0</span><span class="p">:</span> <span class="n">Numeric</span> <span class="o">=</span> <span class="n">EARTH_RADIUS</span><span class="p">,</span> <span class="n">meshgrid</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Get local coordinates from GEO coordinates.</span>
 
-<span class="sd">    ..math::</span>
-<span class="sd">        r = \sqrt{\left\{ (R\cos{\theta} - R_0)^2 + R^2\sin{\theta}^2 \right\}}</span>
-<span class="sd">        \phi = \arctan{\frac{R\sin{\theta}}{R\cos{\theta} - R_0}}</span>
+<span class="sd">    $$</span>
+<span class="sd">        r = \\sqrt{\\left\\{ (R\\cos{\\theta} - R_0)^2 + R^2\\sin{\\theta}^2 \\right\\}}, \\\\</span>
+<span class="sd">        \phi = \\arctan{\\frac{R\\sin{\\theta}}{R\\cos{\\theta} - R_0}}</span>
+<span class="sd">    $$</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        t (np.ndarray | Numeric): Angles in radians.</span>
