@@ -1,0 +1,493 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      
+      
+        <link rel="next" href="gen_2d/">
+      
+      <link rel="icon" href="assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.4.2, mkdocs-material-9.0.10">
+    
+    
+      
+        <title>GLOW2D</title>
+      
+    
+    
+      <link rel="stylesheet" href="assets/stylesheets/main.0d440cfe.min.css">
+      
+        
+        <link rel="stylesheet" href="assets/stylesheets/palette.2505c338.min.css">
+      
+      
+
+    
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="assets/_mkdocstrings.css">
+    
+    <script>__md_scope=new URL(".",location),__md_hash=e=>[...e].reduce((e,_)=>(e<<5)-e+_.charCodeAt(0),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="" data-md-color-accent="">
+  
+    
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#glow2d" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="." title="GLOW2D" class="md-header__button md-logo" aria-label="GLOW2D" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54Z"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2Z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            GLOW2D
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Overview
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="." title="GLOW2D" class="md-nav__button md-logo" aria-label="GLOW2D" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54Z"/></svg>
+
+    </a>
+    GLOW2D
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+      
+
+  
+  
+    
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          Overview
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="." class="md-nav__link md-nav__link--active">
+        Overview
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#principle" class="md-nav__link">
+    Principle
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#installation" class="md-nav__link">
+    Installation
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#dependencies" class="md-nav__link">
+    Dependencies
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#usage" class="md-nav__link">
+    Usage
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="gen_2d/" class="md-nav__link">
+        GLOW 2D Generation
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="overview/" class="md-nav__link">
+        GLOW 2D Polar Coordinate Transformation
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#principle" class="md-nav__link">
+    Principle
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#installation" class="md-nav__link">
+    Installation
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#dependencies" class="md-nav__link">
+    Dependencies
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#usage" class="md-nav__link">
+    Usage
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="glow2d">GLOW2D</h1>
+<p>This package builds off of the GLobal airglOW model. The GLOW model is evaluated on an altitude grid at a location. For non-zenith observation geometries, the model requires evaluation at multiple points along the line of sight. The <code>glow2d</code> library wraps the <code>ncarglow.no_precipitation()</code> function to generate the output on a 2D grid in a geocentric (GEO) coordinate system and in a local (ZA, R) coordinate system.</p>
+<h2 id="principle">Principle</h2>
+<p>GLOW model is evaluated at one geolocation (latitude, longitude) at a given time. Assuming spherical geometry, for a given bearing, the GLOW model can be evaluated at different geolocations at a given time in a geocentric coordinate system <script type="math/tex">(R, \theta, \phi)</script>. The local polar coordinate system, defined at the starting location as <script type="math/tex">r, \zeta, \phi</script>, is related to the geocentric coordinate system through the equations:
+<script type="math/tex; mode=display">
+    r = \sqrt{(R\cos{\theta} - R_0)^2 + R^2\sin^2{\theta}}, \\
+    \zeta = \arctan{\frac{R\sin\theta}{R\cos\theta - R_0}},\\
+    \phi = \phi
+</script>
+<script type="math/tex">R_0</script> is the distance to the origin of the local polar coordinate system from the center of the earth.</p>
+<p align="center">
+<img src="geometry.png" width="250" alt="Geometry of observation">
+</br>
+Fig. 1: Geometry of observation
+</p>
+
+<p>A volume element in the <script type="math/tex">(R, \theta, \phi)</script> coordinate system is related to a volume element in the <script type="math/tex">(r, \zeta, \phi)</script> coordinate system through the following equation:
+<script type="math/tex; mode=display">
+    dR d\theta d\phi = \left|J_{Rr}\right| dr d\zeta d\phi,
+</script>
+where <script type="math/tex">\left|J_{Rr}\right|</script> is the determinant
+<script type="math/tex; mode=display">
+    \left|\begin{array}{cc} \frac{\partial r}{\partial R} & \frac{\partial r}{\partial \theta} \\
+                        \frac{\partial \zeta}{\partial R} & \frac{\partial \zeta}{\partial \theta} \end{array}\right|
+            = \frac{R}{r^3}\left(R^2 + R_0^2 - 2 R R_0 \cos{\theta}\right).
+</script>
+The determinant is evaluated at a position <script type="math/tex">(R, \theta, \phi</script>. Note, that the determinant does not depend on <script type="math/tex">\phi</script>, i.e. the geometry is azimuthally symmetric, and <script type="math/tex">r</script> is known given <script type="math/tex">R, \theta</script>.</p>
+<p>GLOW model is executed in the <script type="math/tex">R, \theta~(,~\phi)</script> coordinate system on a uniform grid. The non-linearity of the coordinate transformation from <script type="math/tex">R, \theta~(,~\phi)</script> to <script type="math/tex">r, \zeta~(,~\phi)</script> results in a non-uniform grid in <script type="math/tex">r, \zeta</script> coordinates for points in <script type="math/tex">R, \theta</script> coordinates. An interpolation is performed to an uniform grid in <script type="math/tex">r, \zeta</script> coordinates, followed by a normalization by <script type="math/tex">\left|J_{Rr}\right|</script> for density outputs, such as the volume emission rate.</p>
+<p>The emission reaching a detector of area <script type="math/tex">A</script>, subtending a solid angle <script type="math/tex">d\zeta d\phi</script> is, then,
+<script type="math/tex; mode=display">
+    IER(\zeta) = A \int_0^\phi \int_0^\infty \int_{\zeta - \delta\zeta}^{\zeta + \delta\zeta}
+        \frac{VER(r, \zeta)}{4\pi r^2}r^2 dr d\zeta d\phi.
+</script>
+Note, since the volume emission rate is isotropic, the number of photons incident from one point in the sky onto the detector is given by <script type="math/tex">A\frac{VER(r, \zeta)}{4\pi r^2}</script>.</p>
+<h2 id="installation">Installation</h2>
+<p>Directly using <code>pip</code>:</p>
+<pre><code class="language-sh">$ pip install glow2d@git+https://github.com/sunipkm/glow2d
+</code></pre>
+<p>Indirectly by <code>git clone</code>:</p>
+<pre><code class="language-sh">$ git clone https://github.com/sunipkm/glow2d &amp;&amp; cd glow2d
+$ pip install .
+</code></pre>
+<h2 id="dependencies">Dependencies</h2>
+<p>The following non-trivial dependencies are present:
+- <a href="https://github.com/sunipkm/ncar-glow">ncarglow</a>
+- <a href="https://github.com/sunipkm/geomagindices">geomagindices</a>
+- <a href="https://pypi.org/project/geopy/">geopy</a>
+- <a href="https://pypi.org/project/haversine/">haversine</a>
+- <a href="https://pypi.org/project/xarray/">xarray</a></p>
+<p>This code uses a modified version of the <a href="https://pypi.org/project/ncarglow/">ncarglow</a> package, available <a href="https://github.com/sunipkm/ncar-glow.git">here</a>. This package uses a modified API that allows passing the geomagnetic indices as parameters, which is useful for fitting data to GLOW model.
+A heavily modified version of <a href="https://pypi.org/project/geomagindices/">geomagindices</a> is used to get the \F_{10.7}\ and $A_p$ indices from the <a href="https://www.gfz-potsdam.de/en/kp-index/">new data source</a>.</p>
+<h2 id="usage">Usage</h2>
+<p>For example:</p>
+<pre><code class="language-py">from datetime import datetime
+from glow2d import glow2d_polar as grc
+
+time = datetime(2022, 2, 15, 20, 0, 0).astimezone('UTC') # 20:00 hours local in UTC
+lat, lon = 42.64981361744372, -71.31681056737486 # location of observation
+bearing = 40 # 40 deg northeast, refer to geopy.GreatCircleDistance().destination() for more info.
+
+iono_loc, iono_geo = grc.no_precipitation(time, lat, lon, bearing, full_output=True) # generate output in local and GEO coordinates
+</code></pre>
+<p>The <code>iono_loc</code> dataset is:</p>
+<pre><code>&lt;xarray.Dataset&gt;
+Dimensions:     (za: 200, r: 500, wavelength: 15, energy: 100)
+Coordinates:
+  * za          (za) float64 1.571 1.563 1.555 1.547 ... 0.01579 0.007893 0.0
+  * r           (r) float64 0.0 7.391 14.78 ... 3.673e+03 3.681e+03 3.688e+03
+  * wavelength  (wavelength) &lt;U21 '3371' '4278' '5200' ... '1356' '1493' '1304'
+  * energy      (energy) float64 0.2 0.8 1.2 1.8 2.2 ... 457.3 480.7 505.4 531.3
+Data variables: (12/18)
+    Tn          (za, r) float64 0.0 0.0 0.0 0.0 0.0 0.0 ... 0.0 0.0 0.0 0.0 0.0
+    O           (za, r) float64 0.0 0.0 0.0 0.0 0.0 0.0 ... 0.0 0.0 0.0 0.0 0.0
+    N2          (za, r) float64 0.0 0.0 0.0 0.0 0.0 0.0 ... 0.0 0.0 0.0 0.0 0.0
+    O2          (za, r) float64 0.0 0.0 0.0 0.0 0.0 0.0 ... 0.0 0.0 0.0 0.0 0.0
+    NO          (za, r) float64 0.0 0.0 0.0 0.0 0.0 0.0 ... 0.0 0.0 0.0 0.0 0.0
+    NeIn        (za, r) float64 0.0 0.0 0.0 0.0 0.0 0.0 ... 0.0 0.0 0.0 0.0 0.0
+    ...          ...
+    pedersen    (za, r) float64 0.0 0.0 0.0 0.0 0.0 0.0 ... 0.0 0.0 0.0 0.0 0.0
+    hall        (za, r) float64 0.0 0.0 0.0 0.0 0.0 0.0 ... 0.0 0.0 0.0 0.0 0.0
+    Te          (za, r) float64 0.0 0.0 0.0 0.0 0.0 0.0 ... 0.0 0.0 0.0 0.0 0.0
+    Ti          (za, r) float64 0.0 0.0 0.0 0.0 0.0 0.0 ... 0.0 0.0 0.0 0.0 0.0
+    ver         (za, r, wavelength) float64 0.0 0.0 0.0 0.0 ... 0.0 0.0 0.0 0.0
+    precip      (r, energy) float64 0.0 0.0 0.0 0.0 0.0 ... 0.0 0.0 0.0 0.0 0.0
+Attributes:
+    geomag_params:                       Ap     Kp   f107 resolution       f1...
+    time:           2022-02-15T11:00:00+00:00
+    glatlon:        (42.64981361744372, -71.31681056737486)
+</code></pre>
+<p>The <code>iono_geo</code> dataset is:</p>
+<pre><code>&lt;xarray.Dataset&gt;
+Dimensions:         (angle: 100, alt_km: 250, wavelength: 15, state: 12,
+                     energy: 100)
+Coordinates:
+  * alt_km          (alt_km) float64 60.0 60.6 61.2 61.8 ... 953.4 957.9 962.4
+  * wavelength      (wavelength) &lt;U21 '3371' '4278' '5200' ... '1493' '1304'
+  * state           (state) &lt;U6 'O+(2P)' 'O+(2D)' 'O+(4S)' ... 'O(1S)' 'O(1D)'
+  * energy          (energy) float64 0.2 0.8 1.2 1.8 ... 457.3 480.7 505.4 531.3
+  * angle           (angle) float64 0.0 0.005323 0.01065 ... 0.5163 0.5217 0.527
+    lat             (angle) float64 42.65 42.88 43.12 ... 60.15 60.25 60.34
+    lon             (angle) float64 -71.32 -71.05 -70.78 ... -31.7 -31.12 -30.53
+Data variables: (12/21)
+    Tn              (angle, alt_km) float64 237.0 236.0 235.0 ... 815.0 815.0
+    O               (angle, alt_km) float64 0.0 0.0 0.0 ... 1.2e+03 1.11e+03
+    N2              (angle, alt_km) float64 4.49e+15 4.17e+15 ... 0.0102 0.00893
+    O2              (angle, alt_km) float64 1.2e+15 1.12e+15 ... 1.9e-05
+    NO              (angle, alt_km) float64 7.81e+07 7.81e+07 ... 5.92e-08
+    NeIn            (angle, alt_km) float64 100.0 100.0 ... 2.35e+04 2.34e+04
+    ...              ...
+    Ti              (angle, alt_km) float64 236.9 235.9 ... 2.715e+03 2.726e+03
+    ver             (angle, alt_km, wavelength) float64 0.0 0.0 0.0 ... 0.0 0.0
+    production      (angle, alt_km, state) float64 0.0 nan nan ... 0.0 0.0 0.0
+    loss            (angle, alt_km, state) float64 nan nan nan ... 0.0 1.1 0.01
+    precip          (angle, energy) float64 0.0 0.0 0.0 0.0 ... 0.0 0.0 0.0 0.0
+    excitedDensity  (angle, alt_km, state) float64 nan nan nan ... 0.0 0.0 0.01
+...
+Attributes:
+    geomag_params:                       Ap     Kp   f107 resolution       f1...
+    time:           2022-02-15T11:00:00+00:00
+    glatlon:        (42.64981361744372, -71.31681056737486)
+</code></pre>
+<p>All angles are in radians, and distances in km. Due to the nature of the coordinate transformation, local coordinate outputs do not contain any <code>NaN</code> values.</p>
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    <script id="__config" type="application/json">{"base": ".", "features": [], "search": "assets/javascripts/workers/search.db81ec45.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
+    
+    
+      <script src="assets/javascripts/bundle.6df46069.min.js"></script>
+      
+        <script src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS_HTML"></script>
+      
+    
+  </body>
+</html>
