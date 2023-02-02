@@ -1,5 +1,6 @@
 # %% Imports
 from __future__ import annotations
+import sys
 import pylab as pl
 import xarray as xr
 import numpy as np
@@ -234,7 +235,7 @@ for file_suffix in bdss:
         iono_minmax = get_all_minmax(ionos, 'ver', {'wavelength': wl}, True)
         plot_geo(bds, wl, file_suffix, vmin=bds_minmax[0], vmax=bds_minmax[1])
         plot_geo_local(bds, wl, file_suffix, vmin=bds_minmax[0], vmax=bds_minmax[1])
-        plot_local(iono, wl, file_suffix, vmin=1000, vmax=iono_minmax[1])
+        plot_local(iono, wl, file_suffix, vmin=1e-3, vmax=iono_minmax[1])
 # %%
 from matplotlib import ticker
 fig, ax = plt.subplots(dpi=300, subplot_kw=dict(projection='polar'), figsize=(6.4, 4.8))

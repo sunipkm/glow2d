@@ -5,6 +5,7 @@ fort.12
 __pycache__/
 bin/
 build/
+dist/
 **/.DS_Store
 **/.vscode
 # Compiled Dynamic libraries

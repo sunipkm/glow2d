@@ -4,8 +4,6 @@ from typing import SupportsFloat as Numeric
 import warnings
 import xarray as xr
 import numpy as np
-from scipy.signal import savgol_filter
-from skimage.transform import resize
 import ncarglow as glow
 from datetime import datetime
 import pytz
@@ -33,7 +31,7 @@ class glow2d_geo:
     The result is presented in a geocentric coordinate system.
     """
 
-    def __init__(self, time: datetime, lat: Numeric, lon: Numeric, heading: Numeric, max_alt: Numeric = 1000, n_pts: int = 50, n_bins: int = 100, *, n_alt: int = None, uniformize_glow: bool = True, n_threads: int = None, full_circ: bool = False, show_progress: bool = True):
+    def __init__(self, time: datetime, lat: Numeric, lon: Numeric, heading: Numeric, max_alt: Numeric = 1000, n_pts: int = 50, n_bins: int = 100, *, n_alt: int = None, uniformize_glow: bool = True, n_threads: int = None, full_circ: bool = False, show_progress: bool = True, **kwargs):
         """Create a GLOWRaycast object.
 
         Args:
@@ -49,6 +47,7 @@ class glow2d_geo:
             n_threads (int, optional): Number of threads for parallel GLOW runs. Set to `None` to use all system threads. Defaults to `None`.
             full_circ (bool, optional): For testing only, do not use. Defaults to False.
             show_progress (bool, optional): Use TQDM to show progress of GLOW model calculations. Defaults to True.
+            kwargs (dict, optional): Passed to `ncarglow.no_precipitation`.
 
         Raises:
             ValueError: Number of position bins can not be odd.
@@ -78,6 +77,7 @@ class glow2d_geo:
                       )  # find maximum distance where LOS intersects exobase # 6400 * np.pi
         # points on the earth where we need to sample
         self._show_prog = show_progress
+        self._kwargs = kwargs
         distpts = np.linspace(0, max_d, n_pts, endpoint=True)
         self._locs = []
         self._nbins = n_bins  # number of energy bins (for later)
@@ -144,7 +144,7 @@ class glow2d_geo:
     # calculate glow model for one location
     def _calc_glow_single_noprecip(self, index):
         d = self._locs[index]
-        iono = glow.no_precipitation(self._time, d[0], d[1], self._nbins)
+        iono = glow.no_precipitation(self._time, d[0], d[1], self._nbins, **self._kwargs)
         if self._uniform_glow:
             iono = self._uniformize_glow(iono)
         return iono
@@ -184,39 +184,11 @@ class glow2d_geo:
         }
         _ = list(map(lambda x: bds[x].attrs.update(
             {'units': unit_desc_dict[x][0], 'description': unit_desc_dict[x][1]}), unit_desc_dict.keys()))
-        # Fix units
-        unit_keys = [
-            'O',
-            'N2',
-            'O2',
-            'NO',
-            'NeIn',
-            'NeOut',
-            'ionrate',
-            'O+',
-            'O2+',
-            'NO+',
-            'N2D',
-        ]
-        scale = (bds.alt_km.values + EARTH_RADIUS) * 1e5  # in distance in cm
-        scale *= 1e-3  # factor in to convert to millirad
-        sc2d = np.stack([scale]*len(bds.angle.values))
-        for key in unit_keys:
-            bds[key] *= sc2d
-            bds[key].attrs['units'] = 'cm^{-2} mr^{-1}'
-        sc3d = np.stack([sc2d]*len(bds.state), axis=2)
-        bds['production'] *= sc3d
-        bds['production'].attrs['units'] = 'cm^{-2} mr^{-1} s^{-1}'
-        bds['excitedDensity'] *= sc3d
-        bds['excitedDensity'].attrs['units'] = 'cm^{-2} mr^{-1}'
-        sc3d = np.stack([sc2d]*len(bds.wavelength), axis=2)
-        bds['ver'] *= sc3d
-        bds['ver'].attrs['units'] = 'cm^{-2} mr^{-1} s^{-1}'
         self._bds = bds
         return self._bds  # return the calculated
 
     @classmethod
-    def no_precipitation_geo(cls, time: datetime, lat: Numeric, lon: Numeric, heading: Numeric, max_alt: Numeric = 1000, n_pts: int = 50, n_bins: int = 100, *, n_alt: int = None, uniformize_glow: bool = True, n_threads: int = None, resamp: Numeric = 1.5, show_progress: bool = True) -> xr.Dataset:
+    def no_precipitation_geo(cls, time: datetime, lat: Numeric, lon: Numeric, heading: Numeric, max_alt: Numeric = 1000, n_pts: int = 50, n_bins: int = 100, *, n_alt: int = None, uniformize_glow: bool = True, n_threads: int = None, resamp: Numeric = 1.5, show_progress: bool = True, **kwargs) -> xr.Dataset:
         """Run GLOW model looking along heading from the current location and return the model output in
         (T, R) geocentric coordinates where T is angle in radians from the current location along the great circle
         following current heading, and R is altitude in kilometers, which may be non-uniform depending on the `uniformize_glow` flag.
@@ -234,6 +206,7 @@ class glow2d_geo:
             n_threads (int, optional): Number of threads for parallel GLOW runs. Set to `None` to use all system threads. Defaults to `None`.
             full_circ (bool, optional): For testing only, do not use. Defaults to `False`.
             show_progress (bool, optional): Use TQDM to show progress of GLOW model calculations. Defaults to `True`.
+            kwargs (dict, optional): Passed to `ncarglow.no_precipitation`.
 
         Returns:
             bds (xarray.Dataset): Ionospheric parameters and brightnesses (with production and loss) in GEO coordinates.
@@ -247,7 +220,7 @@ class glow2d_geo:
             ResourceWarning: Number of threads requested is more than available system threads.
         """
         grobj = cls(time, lat, lon, heading, max_alt,
-                    n_pts, n_bins, n_alt=n_alt, uniformize_glow=uniformize_glow, n_threads=n_threads, resamp=resamp, show_progress=show_progress)
+                    n_pts, n_bins, n_alt=n_alt, uniformize_glow=uniformize_glow, n_threads=n_threads, resamp=resamp, show_progress=show_progress, **kwargs)
         bds = grobj.run_no_precipitation()
         return bds
 
@@ -279,7 +252,7 @@ class glow2d_polar:
         self._iono = None
 
     @classmethod
-    def no_precipitation(cls, time: datetime, lat: Numeric, lon: Numeric, heading: Numeric, max_alt: Numeric = 1000, n_pts: int = 50, n_bins: int = 100, *, n_alt: int = None, with_prodloss: bool = False, n_threads: int = None, full_output: bool = False, resamp: Numeric = 1.5, show_progress: bool = True) -> xr.Dataset | tuple(xr.Dataset, xr.Dataset):
+    def no_precipitation(cls, time: datetime, lat: Numeric, lon: Numeric, heading: Numeric, max_alt: Numeric = 1000, n_pts: int = 50, n_bins: int = 100, *, n_alt: int = None, with_prodloss: bool = False, n_threads: int = None, full_output: bool = False, resamp: Numeric = 1.5, show_progress: bool = True, **kwargs) -> xr.Dataset | tuple(xr.Dataset, xr.Dataset):
         """Run GLOW model looking along heading from the current location and return the model output in
         (ZA, R) local coordinates where ZA is zenith angle in radians and R is distance in kilometers.
 
@@ -297,6 +270,7 @@ class glow2d_polar:
             full_output (bool, optional): Returns only local coordinate GLOW output if False, and a tuple of local and GEO outputs if True. Defaults to False.
             resamp (Numeric, optional): Number of R and ZA points in local coordinate output. ``len(R) = len(alt_km) * resamp`` and ``len(ZA) = n_pts * resamp``. Must be > 0.5. Defaults to 1.5.
             show_progress (bool, optional): Use TQDM to show progress of GLOW model calculations. Defaults to True.
+            kwargs (dict, optional): Passed to `ncarglow.no_precipitation`.
 
         Returns:
             iono (xarray.Dataset): Ionospheric parameters and brightnesses (with or without production and loss) in local coordinates. This is a reference and should not be modified.
@@ -317,7 +291,7 @@ class glow2d_polar:
             ResourceWarning: Number of threads requested is more than available system threads.
         """
         grobj = glow2d_geo(time, lat, lon, heading, max_alt, n_pts, n_bins, n_alt=n_alt, uniformize_glow=True,
-                           n_threads=n_threads, show_progress=show_progress)
+                           n_threads=n_threads, show_progress=show_progress, **kwargs)
         bds = grobj.run_no_precipitation()
         grobj = cls(bds, with_prodloss=with_prodloss, resamp=resamp)
         iono = grobj.transform_coord()
@@ -327,7 +301,7 @@ class glow2d_polar:
             return (iono, bds)
 
     @classmethod
-    def no_precipitation_geo(cls, time: datetime, lat: Numeric, lon: Numeric, heading: Numeric, max_alt: Numeric = 1000, n_pts: int = 50, n_bins: int = 100, *, n_alt: int = None, n_threads: int = None, resamp: Numeric = 1.5, show_progress: bool = True) -> xr.Dataset:
+    def no_precipitation_geo(cls, time: datetime, lat: Numeric, lon: Numeric, heading: Numeric, max_alt: Numeric = 1000, n_pts: int = 50, n_bins: int = 100, *, n_alt: int = None, n_threads: int = None, resamp: Numeric = 1.5, show_progress: bool = True, **kwargs) -> xr.Dataset:
         """Run GLOW model looking along heading from the current location and return the model output in
         (T, R) geocentric coordinates where T is angle in radians from the current location along the great circle
         following current heading, and R is altitude in kilometers. R is in an uniform grid with `n_alt` points.
@@ -344,6 +318,7 @@ class glow2d_polar:
             n_threads (int, optional): Number of threads for parallel GLOW runs. Set to `None` to use all system threads. Defaults to `None`.
             full_circ (bool, optional): For testing only, do not use. Defaults to `False`.
             show_progress (bool, optional): Use TQDM to show progress of GLOW model calculations. Defaults to `True`.
+            kwargs (dict, optional): Passed to `ncarglow.no_precipitation`.
 
         Returns:
             bds (xarray.Dataset): Ionospheric parameters and brightnesses (with production and loss) in GEO coordinates.
@@ -357,7 +332,7 @@ class glow2d_polar:
             ResourceWarning: Number of threads requested is more than available system threads.
         """
         grobj = glow2d_geo(time, lat, lon, heading, max_alt,
-                           n_pts, n_bins, n_alt=n_alt, uniformize_glow=True, n_threads=n_threads, resamp=resamp, show_progress=show_progress)
+                           n_pts, n_bins, n_alt=n_alt, uniformize_glow=True, n_threads=n_threads, resamp=resamp, show_progress=show_progress, **kwargs)
         bds = grobj.run_no_precipitation()
         return bds
 

@@ -5,7 +5,7 @@ This package builds off of the GLobal airglOW model. The GLOW model is evaluated
 ## Installation
 Directly using `pip`:
 ```sh
-$ pip install glow2d @ git+https://github.com/sunipkm/glow2d
+$ pip install glow2d@git+https://github.com/sunipkm/glow2d
 ```
 
 Indirectly by `git clone`:
@@ -14,6 +14,18 @@ $ git clone https://github.com/sunipkm/glow2d && cd glow2d
 $ pip install .
 ```
 
+## Dependencies
+The following non-trivial dependencies are present:
+- [ncarglow](https://github.com/sunipkm/ncar-glow)
+- [geomagindices](https://github.com/sunipkm/geomagindices)
+- [geopy](https://pypi.org/project/geopy/)
+- [haversine](https://pypi.org/project/haversine/)
+- [xarray](https://pypi.org/project/xarray/)
+
+This code uses a modified version of the [ncarglow](https://pypi.org/project/ncarglow/) package, available [here](https://github.com/sunipkm/ncar-glow.git). This package uses a modified API that allows passing the geomagnetic indices as parameters, which is useful for fitting data to GLOW model.
+A heavily modified version of [geomagindices](https://pypi.org/project/geomagindices/) is used to get the $F_{10.7}$ and $A_p$ indices from the [new data source](https://www.gfz-potsdam.de/en/kp-index/).
+
+## Usage
 For example:
 
 ```py
