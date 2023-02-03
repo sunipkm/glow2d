@@ -3,7 +3,7 @@
 This package builds off of the GLobal airglOW model. The GLOW model is evaluated on an altitude grid at a location. For non-zenith observation geometries, the model requires evaluation at multiple points along the line of sight. The `glow2d` library wraps the `ncarglow.no_precipitation()` function to generate the output on a 2D grid in a geocentric (GEO) coordinate system and in a local (ZA, R) coordinate system.
 
 ## Principle
-GLOW model is evaluated at one geolocation (latitude, longitude) at a given time. Assuming spherical geometry, for a given bearing, the GLOW model can be evaluated at different geolocations at a given time in a geocentric coordinate system \((R, \theta, \phi)\). The local polar coordinate system, defined at the starting location as \(r, \zeta, \phi\), is related to the geocentric coordinate system through the equations:
+GLOW model is evaluated at one geolocation (latitude, longitude) at a given time. Assuming spherical geometry, for a given bearing, the GLOW model can be evaluated at different geolocations at a given time in a geocentric coordinate system \((R, \theta, \phi)\). The local polar coordinate system, defined at the starting location as \((r, \zeta, \phi)\), is related to the geocentric coordinate system through the equations:
 $$
     r = \sqrt{(R\cos{\theta} - R_0)^2 + R^2\sin^2{\theta}}, \\
     \zeta = \arctan{\frac{R\sin\theta}{R\cos\theta - R_0}},\\
@@ -27,7 +27,7 @@ $$
                         \frac{\partial \zeta}{\partial R} & \frac{\partial \zeta}{\partial \theta} \end{array}\right|
             = \frac{R}{r^3}\left(R^2 + R_0^2 - 2 R R_0 \cos{\theta}\right).
 $$
-The determinant is evaluated at a position \((R, \theta, \phi\). Note, that the determinant does not depend on \(\phi\), i.e. the geometry is azimuthally symmetric, and \(r\) is known given \(R, \theta\).
+The determinant is evaluated at a position \((R, \theta, \phi)\). Note, that the determinant does not depend on \(\phi\), i.e. the geometry is azimuthally symmetric, and \(r\) is known given \(R, \theta\).
 
 GLOW model is executed in the \(R, \theta~(,~\phi)\) coordinate system on a uniform grid. The non-linearity of the coordinate transformation from \(R, \theta~(,~\phi)\) to \(r, \zeta~(,~\phi)\) results in a non-uniform grid in \(r, \zeta\) coordinates for points in \(R, \theta\) coordinates. An interpolation is performed to an uniform grid in \(r, \zeta\) coordinates, followed by a normalization by \(\left|J_{Rr}\right|\) for density outputs, such as the volume emission rate.
 
@@ -52,6 +52,7 @@ $ pip install .
 
 ## Dependencies
 The following non-trivial dependencies are present:
+
 - [ncarglow](https://github.com/sunipkm/ncar-glow)
 - [geomagindices](https://github.com/sunipkm/geomagindices)
 - [geopy](https://pypi.org/project/geopy/)
@@ -59,7 +60,7 @@ The following non-trivial dependencies are present:
 - [xarray](https://pypi.org/project/xarray/)
 
 This code uses a modified version of the [ncarglow](https://pypi.org/project/ncarglow/) package, available [here](https://github.com/sunipkm/ncar-glow.git). This package uses a modified API that allows passing the geomagnetic indices as parameters, which is useful for fitting data to GLOW model.
-A heavily modified version of [geomagindices](https://pypi.org/project/geomagindices/) is used to get the \F_{10.7}\ and $A_p$ indices from the [new data source](https://www.gfz-potsdam.de/en/kp-index/).
+A heavily modified version of [geomagindices](https://pypi.org/project/geomagindices/) is used to get the \(F_{10.7}\) and \(A_p\) indices from the [new data source](https://www.gfz-potsdam.de/en/kp-index/).
 
 ## Usage
 For example:
