@@ -5,7 +5,7 @@ This package builds off of the GLobal airglOW model. The GLOW model is evaluated
 ## Installation
 Directly using `pip`:
 ```sh
-$ pip install glow2d@git+https://github.com/sunipkm/glow2d
+$ pip install glow2d
 ```
 
 Indirectly by `git clone`:
@@ -17,13 +17,13 @@ $ pip install .
 ## Dependencies
 The following non-trivial dependencies are present:
 - [ncarglow](https://github.com/sunipkm/ncar-glow)
-- [geomagindices](https://github.com/sunipkm/geomagindices)
+- [geomagdata](https://pypi.org/projects/geomagdata)
 - [geopy](https://pypi.org/project/geopy/)
 - [haversine](https://pypi.org/project/haversine/)
 - [xarray](https://pypi.org/project/xarray/)
 
-This code uses a modified version of the [ncarglow](https://pypi.org/project/ncarglow/) package, available [here](https://github.com/sunipkm/ncar-glow.git). This package uses a modified API that allows passing the geomagnetic indices as parameters, which is useful for fitting data to GLOW model.
-A heavily modified version of [geomagindices](https://pypi.org/project/geomagindices/) is used to get the $F_{10.7}$ and $A_p$ indices from the [new data source](https://www.gfz-potsdam.de/en/kp-index/).
+This code uses [glowpython](https://pypi.org/project/glowpython/) package to run the GLOW model.
+[geomagdata](https://pypi.org/project/geomagdata/) is used to get the $F_{10.7}$ and $A_p$ indices from the [new data source](https://www.gfz-potsdam.de/en/kp-index/).
 
 ## Usage
 For example:
@@ -36,7 +36,7 @@ time = datetime(2022, 2, 15, 20, 0, 0).astimezone('UTC') # 20:00 hours local in 
 lat, lon = 42.64981361744372, -71.31681056737486 # location of observation
 bearing = 40 # 40 deg northeast, refer to geopy.GreatCircleDistance().destination() for more info.
 
-iono_loc, iono_geo = grc.no_precipitation(time, lat, lon, bearing, full_output=True) # generate output in local and GEO coordinates
+iono_loc, iono_geo = grc.polar_model(time, lat, lon, bearing, full_output=True) # generate output in local and GEO coordinates
 ```
 
 The `iono_loc` dataset is:

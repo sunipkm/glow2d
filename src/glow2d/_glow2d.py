@@ -6,7 +6,7 @@ import warnings
 import xarray
 import xarray as xr
 import numpy as np
-import ncarglow as glow
+import glowpython as glow
 from datetime import datetime
 import pytz
 from geopy import Point
@@ -51,7 +51,7 @@ class glow2d_geo:
             n_threads (int, optional): Number of threads for parallel GLOW runs. Set to `None` to use all system threads. Defaults to `None`.
             full_circ (bool, optional): For testing only, do not use. Defaults to False.
             show_progress (bool, optional): Use TQDM to show progress of GLOW model calculations. Defaults to True.
-            kwargs (dict, optional): Passed to `ncarglow.no_precipitation`.
+            kwargs (dict, optional): Passed to `glowpython.generic`.
 
         Raises:
             ValueError: Number of position bins can not be odd.
@@ -138,7 +138,7 @@ class glow2d_geo:
                 out[:, idx] += np.interp(alt, alt_km, inp[:, idx])
             data_vars[key] = (('alt_km', 'state'), out)
         prodloss = xarray.Dataset(data_vars=data_vars,
-                              coords={'alt_km': alt, 'state': iono.state.values})
+                                  coords={'alt_km': alt, 'state': iono.state.values})
         precip = iono['precip']
         bds: xarray.Dataset = xr.merge((bds, ver, prodloss, precip))
         _ = list(map(lambda x: bds[x].attrs.update(iono[x].attrs), tuple(bds.data_vars.keys())))
@@ -148,7 +148,7 @@ class glow2d_geo:
     # calculate glow model for one location
     def _calc_glow_single_noprecip(self, index):
         d = self._locs[index]
-        iono = glow.no_precipitation(self._time, d[0], d[1], self._nbins, **self._kwargs)
+        iono = glow.generic(self._time, d[0], d[1], self._nbins, **self._kwargs)
         if self._uniform_glow:
             iono = self._uniformize_glow(iono)
         return iono
@@ -171,7 +171,7 @@ class glow2d_geo:
         bds = bds.assign_coords(lon=('angle', latlon[:, 1]))
         return bds
 
-    def run_no_precipitation(self) -> xarray.Dataset:
+    def run_model(self) -> xarray.Dataset:
         """Run the GLOW model calculation to get the model output in GEO coordinates.
 
         Returns:
@@ -190,42 +190,6 @@ class glow2d_geo:
             {'units': unit_desc_dict[x][0], 'description': unit_desc_dict[x][1]}), unit_desc_dict.keys()))
         self._bds = bds
         return self._bds  # return the calculated
-
-    @classmethod
-    def no_precipitation_geo(cls, time: datetime, lat: Numeric, lon: Numeric, heading: Numeric, max_alt: Numeric = 1000, n_pts: int = 50, n_bins: int = 100, *, n_alt: int = None, uniformize_glow: bool = True, n_threads: int = None, resamp: Numeric = 1.5, show_progress: bool = True, **kwargs) -> xarray.Dataset:
-        """Run GLOW model looking along heading from the current location and return the model output in
-        (T, R) geocentric coordinates where T is angle in radians from the current location along the great circle
-        following current heading, and R is altitude in kilometers, which may be non-uniform depending on the `uniformize_glow` flag.
-
-        Args:
-            time (datetime): Datetime of GLOW calculation.
-            lat (Numeric): Latitude of starting location.
-            lon (Numeric): Longitude of starting location.
-            heading (Numeric): Heading (look direction).
-            max_alt (Numeric, optional): Maximum altitude where intersection is considered (km). Defaults to 1000, i.e. exobase.
-            n_pts (int, optional): Number of GEO coordinate angular grid points (i.e. number of GLOW runs), must be even and > 20. Defaults to 50.
-            n_bins (int, optional): Number of energy bins. Defaults to 100.
-            n_alt (int, optional): Number of altitude bins, must be > 100. Defaults to `None`, i.e. uses same number of bins as a single GLOW run.
-            uniformize_glow (bool, optional): Interpolate GLOW output to an uniform altitude grid. `n_alt` is ignored if this option is set to `False`. Defaults to `True`.
-            n_threads (int, optional): Number of threads for parallel GLOW runs. Set to `None` to use all system threads. Defaults to `None`.
-            show_progress (bool, optional): Use TQDM to show progress of GLOW model calculations. Defaults to `True`.
-            kwargs (dict, optional): Passed to `ncarglow.no_precipitation`.
-
-        Returns:
-            bds (xarray.Dataset): Ionospheric parameters and brightnesses (with production and loss) in GEO coordinates.
-
-        Raises:
-            ValueError: Number of position bins can not be odd.
-            ValueError: Number of position bins can not be < 20.
-            ValueError: Resampling can not be < 0.5.
-
-        Warns:
-            ResourceWarning: Number of threads requested is more than available system threads.
-        """
-        grobj = cls(time, lat, lon, heading, max_alt,
-                    n_pts, n_bins, n_alt=n_alt, uniformize_glow=uniformize_glow, n_threads=n_threads, resamp=resamp, show_progress=show_progress, **kwargs)
-        bds = grobj.run_no_precipitation()
-        return bds
 
 
 class glow2d_polar:
@@ -254,92 +218,6 @@ class glow2d_polar:
         self._iono = None
         self._r0 = altitude + EARTH_RADIUS
 
-    @classmethod
-    def no_precipitation(cls, time: datetime, lat: Numeric, lon: Numeric, heading: Numeric, altitude: Numeric = 0, max_alt: Numeric = 1000, n_pts: int = 50, n_bins: int = 100, *, n_alt: int = None, with_prodloss: bool = False, n_threads: int = None, full_output: bool = False, resamp: Numeric = 1.5, show_progress: bool = True, **kwargs) -> xarray.Dataset | tuple(xarray.Dataset, xarray.Dataset):
-        """Run GLOW model looking along heading from the current location and return the model output in
-        (ZA, R) local coordinates where ZA is zenith angle in radians and R is distance in kilometers.
-
-        Args:
-            time (datetime): Datetime of GLOW calculation.
-            lat (Numeric): Latitude of starting location.
-            lon (Numeric): Longitude of starting location.
-            heading (Numeric): Heading (look direction).
-            altitude (Numeric, optional): Altitude of local polar coordinate system origin in km above ASL. Must be < 100 km. Defaults to 0.
-            max_alt (Numeric, optional): Maximum altitude where intersection is considered (km). Defaults to 1000, i.e. exobase.
-            n_pts (int, optional): Number of GEO coordinate angular grid points (i.e. number of GLOW runs), must be even and > 20. Defaults to 50.
-            n_bins (int, optional): Number of energy bins. Defaults to 100.
-            n_alt (int, optional): Number of altitude bins, must be > 100. Defaults to None, i.e. uses same number of bins as a single GLOW run.
-            with_prodloss (bool, optional): Calculate production and loss parameters in local coordinates. Defaults to False.
-            n_threads (int, optional):  Number of threads for parallel GLOW runs. Set to None to use all system threads. Defaults to None.
-            full_output (bool, optional): Returns only local coordinate GLOW output if False, and a tuple of local and GEO outputs if True. Defaults to False.
-            resamp (Numeric, optional): Number of R and ZA points in local coordinate output. ``len(R) = len(alt_km) * resamp`` and ``len(ZA) = n_pts * resamp``. Must be > 0.5. Defaults to 1.5.
-            show_progress (bool, optional): Use TQDM to show progress of GLOW model calculations. Defaults to True.
-            kwargs (dict, optional): Passed to `ncarglow.no_precipitation`.
-
-        Returns:
-            iono (xarray.Dataset): Ionospheric parameters and brightnesses (with or without production and loss) in local coordinates. This is a reference and should not be modified.
-
-            iono, bds (xarray.Dataset, xarray.Dataset): These values are returned only if ``full_output == True``. Both are references and should not be modified.
-
-            - Ionospheric parameters and brightnesses (with or without production and loss) in local coordinates.
-            - Ionospheric parameters and brightnesses (with production and loss) in GEO coordinates.
-
-
-        Raises:
-            ValueError: Number of position bins can not be odd.
-            ValueError: Number of position bins can not be < 20.
-            ValueError: n_alt can not be < 100.
-            ValueError: Resampling can not be < 0.5.
-            ValueError: altitude must be in the range [0, 100].
-
-        Warns:
-            ResourceWarning: Number of threads requested is more than available system threads.
-        """
-        grobj = glow2d_geo(time, lat, lon, heading, max_alt, n_pts, n_bins, n_alt=n_alt, uniformize_glow=True,
-                           n_threads=n_threads, show_progress=show_progress, **kwargs)
-        bds = grobj.run_no_precipitation()
-        grobj = cls(bds, altitude, with_prodloss=with_prodloss, resamp=resamp)
-        iono = grobj.transform_coord()
-        if not full_output:
-            return iono
-        else:
-            return (iono, bds)
-
-    @classmethod
-    def no_precipitation_geo(cls, time: datetime, lat: Numeric, lon: Numeric, heading: Numeric, max_alt: Numeric = 1000, n_pts: int = 50, n_bins: int = 100, *, n_alt: int = None, n_threads: int = None, show_progress: bool = True, **kwargs) -> xarray.Dataset:
-        """Run GLOW model looking along heading from the current location and return the model output in
-        (T, R) geocentric coordinates where T is angle in radians from the current location along the great circle
-        following current heading, and R is altitude in kilometers. R is in an uniform grid with `n_alt` points.
-
-        Args:
-            time (datetime): Datetime of GLOW calculation.
-            lat (Numeric): Latitude of starting location.
-            lon (Numeric): Longitude of starting location.
-            heading (Numeric): Heading (look direction).
-            max_alt (Numeric, optional): Maximum altitude where intersection is considered (km). Defaults to 1000, i.e. exobase.
-            n_pts (int, optional): Number of GEO coordinate angular grid points (i.e. number of GLOW runs), must be even and > 20. Defaults to 50.
-            n_bins (int, optional): Number of energy bins. Defaults to 100.
-            n_alt (int, optional): Number of altitude bins, must be > 100. Defaults to `None`, i.e. uses same number of bins as a single GLOW run.
-            n_threads (int, optional): Number of threads for parallel GLOW runs. Set to `None` to use all system threads. Defaults to `None`.
-            show_progress (bool, optional): Use TQDM to show progress of GLOW model calculations. Defaults to `True`.
-            kwargs (dict, optional): Passed to `ncarglow.no_precipitation`.
-
-        Returns:
-            bds (xarray.Dataset): Ionospheric parameters and brightnesses (with production and loss) in GEO coordinates.
-
-        Raises:
-            ValueError: Number of position bins can not be odd.
-            ValueError: Number of position bins can not be < 20.
-            ValueError: Resampling can not be < 0.5.
-
-        Warns:
-            ResourceWarning: Number of threads requested is more than available system threads.
-        """
-        grobj = glow2d_geo(time, lat, lon, heading, max_alt,
-                           n_pts, n_bins, n_alt=n_alt, uniformize_glow=True, n_threads=n_threads, show_progress=show_progress, **kwargs)
-        bds = grobj.run_no_precipitation()
-        return bds
-
     def transform_coord(self) -> xarray.Dataset:
         """Run the coordinate transform to convert GLOW output from GEO to local coordinate system.
 
@@ -349,7 +227,7 @@ class glow2d_polar:
         if self._iono is not None:
             return self._iono
         tt, rr = self.get_local_coords(
-            self._bds.angle.values, self._bds.alt_km.values + EARTH_RADIUS, r0 = self._r0)  # get local coords from geocentric coords
+            self._bds.angle.values, self._bds.alt_km.values + EARTH_RADIUS, r0=self._r0)  # get local coords from geocentric coords
 
         self._rmin, self._rmax = self._bds.alt_km.values.min(), rr.max()  # nearest and farthest local pts
         # highest and lowest za
@@ -376,9 +254,9 @@ class glow2d_polar:
         self._nt = nt = np.linspace(
             tmin, tmax, self._nt_num, endpoint=True)  # local look angle
         # get meshgrid of the R, T coord system from regular r, za grid
-        self._ntt, self._nrr = self.get_global_coords(nt, nr, r0 = self._r0)
+        self._ntt, self._nrr = self.get_global_coords(nt, nr, r0=self._r0)
         # calculate jacobian
-        jacobian = self.get_jacobian_glob2loc_glob(self._nrr, self._ntt, r0 = self._r0)
+        jacobian = self.get_jacobian_glob2loc_glob(self._nrr, self._ntt, r0=self._r0)
         # convert to pixel coordinates
         self._ntt = self._ntt.flatten()  # flatten T, works as _global_from_local LUT
         self._nrr = self._nrr.flatten()  # flatten R, works as _global_from_local LUT
@@ -439,7 +317,7 @@ class glow2d_polar:
         # start = perf_counter_ns()
         # dataset of (angle, alt_km) vars
         iono = xarray.Dataset(data_vars=data_vars, coords={
-                          'za': nt, 'r': nr})
+            'za': nt, 'r': nr})
         # end = perf_counter_ns()
         # print('Single_key dataset: %.3f us'%((end - start)*1e-3))
         # start = perf_counter_ns()
@@ -515,13 +393,14 @@ class glow2d_polar:
             d.append(out)
         d = np.asarray(d).T
         precip = xarray.Dataset({'precip': (('r', 'energy'), d)}, coords={
-                            'r': nr, 'energy': coord_energy})
+            'r': nr, 'energy': coord_energy})
         # end = perf_counter_ns()
         # print('Precip interp and ds: %.3f us'%((end - start)*1e-3))
 
         # start = perf_counter_ns()
         iono = xr.merge((iono, ver, prodloss, precip))  # merge all datasets
-        bds_attr['altitude'] = {'values': self._r0 - EARTH_RADIUS, 'units': 'km', 'description': 'Altitude of local polar coordinate origin ASL'}
+        bds_attr['altitude'] = {'values': self._r0 - EARTH_RADIUS, 'units': 'km',
+                                'description': 'Altitude of local polar coordinate origin ASL'}
         iono.attrs.update(bds_attr)  # copy original attrs
 
         _ = list(map(lambda x: iono[x].attrs.update(bds[x].attrs), tuple(iono.data_vars.keys())))  # update attrs from bds
@@ -536,9 +415,9 @@ class glow2d_polar:
         # print('Merging: %.3f us'%((end - start)*1e-3))
         self._iono = iono
         return iono
-    
+
     @staticmethod
-    def get_emission(iono: xarray.Dataset, feature: str = '5577', za_min: Numeric | Iterable = np.deg2rad(20), za_max: Numeric | Iterable = np.deg2rad(25), num_zapts: int = 10, *, rmin: Numeric=None, rmax: Numeric=None, num_rpts: int = 100) -> float | np.ndarray:
+    def get_emission(iono: xarray.Dataset, feature: str = '5577', za_min: Numeric | Iterable = np.deg2rad(20), za_max: Numeric | Iterable = np.deg2rad(25), num_zapts: int = 10, *, rmin: Numeric = None, rmax: Numeric = None, num_rpts: int = 100) -> float | np.ndarray:
         """Calculate number of photons per azimuth angle (radians) per unit area per second coming from a region of (`rmin`, `rmax`, `za_min`, `za_max`).
 
         Args:
@@ -567,7 +446,8 @@ class glow2d_polar:
         if isinstance(za_min, Iterable) or isinstance(za_max, Iterable):
             if len(za_min) != len(za_max):
                 raise ValueError('ZA min and max arrays must be of the same dimension.')
-            callable = partial(glow2d_polar.get_emission, iono=iono, feature=feature, num_zapts=num_zapts, rmin=rmin, rmax=rmax, num_rpts=num_rpts)
+            callable = partial(glow2d_polar.get_emission, iono=iono, feature=feature,
+                               num_zapts=num_zapts, rmin=rmin, rmax=rmax, num_rpts=num_rpts)
             out = list(map(lambda idx: callable(za_min=za_min[idx], za_max=za_max[idx]), range(len(za_min))))
             return np.asarray(out, dtype=float)
         if not (0 <= za_min <= np.deg2rad(90)):
@@ -577,12 +457,12 @@ class glow2d_polar:
         if za_min > za_max:
             raise ValueError('ZA min > ZA max')
         if feature not in iono.wavelength.values:
-            raise ValueError('Feature %s is invalid. Valid features: %s'%(feature, str(iono.wavelength.values)))
+            raise ValueError('Feature %s is invalid. Valid features: %s' % (feature, str(iono.wavelength.values)))
         za: np.ndarray = iono.za.values
         zaxis = iono.za.values
         r: np.ndarray = iono.r.values
         rr = iono.r.values
-        
+
         if za_min is not None or za_max is not None:
             if (za_min == 0) and (za_max == np.deg2rad(90)):
                 pass
@@ -597,10 +477,10 @@ class glow2d_polar:
             rr = np.linspace(rmin, rmax, num_rpts, endpoint=True)
 
         ver = iono.ver.loc[dict(wavelength=feature)].values
-        ver = interp2d(r, za, ver)(rr, zaxis) # interpolate to integration axes
+        ver = interp2d(r, za, ver)(rr, zaxis)  # interpolate to integration axes
 
-        ver = ver*np.sin(zaxis[:, None]) # integration is VER * sin(phi) * d(phi) * d(r)
-        return simps(simps(ver.T, zaxis), rr) # do the double integral
+        ver = ver*np.sin(zaxis[:, None])  # integration is VER * sin(phi) * d(phi) * d(r)
+        return simps(simps(ver.T, zaxis), rr)  # do the double integral
 
     # get global coord index from local coord index, implemented as LUT
     def _global_from_local(self, pt: tuple(int, int)) -> tuple(float, float):
@@ -714,7 +594,7 @@ class glow2d_polar:
         $$
             |J_{R\\rightarrow r}| = \\frac{R}{r^3}\\left(R^2 + R_0^2 - 2 R R_0 \\cos{\\theta}\\right)
         $$
-        
+
         Args:
             r (np.ndarray): 2-dimensional array of r.
             t (np.ndarray): 2-dimensional array of phi.
@@ -739,7 +619,7 @@ class glow2d_polar:
         $$
             |J_{r\\rightarrow R}| = \\frac{r}{R^3}\\left(r^2 + R_0^2 + 2 r R_0 \\cos{\\phi}\\right)
         $$
-        
+
         Args:
             r (np.ndarray): 2-dimensional array of r.
             t (np.ndarray): 2-dimensional array of phi.
@@ -789,7 +669,7 @@ class glow2d_polar:
         $$
             |J_{r\\rightarrow R}| = \\frac{r}{R^3}\\left(r^2 + R_0^2 + 2 r R_0 \\cos{\\phi}\\right)
         $$
-        
+
         Args:
             gr (np.ndarray): 2-dimensional array of R.
             gt (np.ndarray): 2-dimensional array of Theta.
@@ -808,6 +688,92 @@ class glow2d_polar:
         return jac
 
 
+def geo_model(time: datetime, lat: Numeric, lon: Numeric, heading: Numeric, max_alt: Numeric = 1000, n_pts: int = 50, n_bins: int = 100, *, n_alt: int = None, n_threads: int = None, show_progress: bool = True, **kwargs) -> xarray.Dataset:
+    """Run GLOW model looking along heading from the current location and return the model output in
+    (T, R) geocentric coordinates where T is angle in radians from the current location along the great circle
+    following current heading, and R is altitude in kilometers. R is in an uniform grid with `n_alt` points.
+
+    Args:
+        time (datetime): Datetime of GLOW calculation.
+        lat (Numeric): Latitude of starting location.
+        lon (Numeric): Longitude of starting location.
+        heading (Numeric): Heading (look direction).
+        max_alt (Numeric, optional): Maximum altitude where intersection is considered (km). Defaults to 1000, i.e. exobase.
+        n_pts (int, optional): Number of GEO coordinate angular grid points (i.e. number of GLOW runs), must be even and > 20. Defaults to 50.
+        n_bins (int, optional): Number of energy bins. Defaults to 100.
+        n_alt (int, optional): Number of altitude bins, must be > 100. Defaults to `None`, i.e. uses same number of bins as a single GLOW run.
+        n_threads (int, optional): Number of threads for parallel GLOW runs. Set to `None` to use all system threads. Defaults to `None`.
+        show_progress (bool, optional): Use TQDM to show progress of GLOW model calculations. Defaults to `True`.
+        kwargs (dict, optional): Passed to `glowpython.generic`.
+
+    Returns:
+        bds (xarray.Dataset): Ionospheric parameters and brightnesses (with production and loss) in GEO coordinates.
+
+    Raises:
+        ValueError: Number of position bins can not be odd.
+        ValueError: Number of position bins can not be < 20.
+        ValueError: Resampling can not be < 0.5.
+
+    Warns:
+        ResourceWarning: Number of threads requested is more than available system threads.
+    """
+    grobj = glow2d_geo(time, lat, lon, heading, max_alt,
+                       n_pts, n_bins, n_alt=n_alt, uniformize_glow=True, n_threads=n_threads, show_progress=show_progress, **kwargs)
+    bds = grobj.run_model()
+    return bds
+
+
+def polar_model(time: datetime, lat: Numeric, lon: Numeric, heading: Numeric, altitude: Numeric = 0, max_alt: Numeric = 1000, n_pts: int = 50, n_bins: int = 100, *, n_alt: int = None, with_prodloss: bool = False, n_threads: int = None, full_output: bool = False, resamp: Numeric = 1.5, show_progress: bool = True, **kwargs) -> xarray.Dataset | tuple(xarray.Dataset, xarray.Dataset):
+    """Run GLOW model looking along heading from the current location and return the model output in
+    (ZA, R) local coordinates where ZA is zenith angle in radians and R is distance in kilometers.
+
+    Args:
+        time (datetime): Datetime of GLOW calculation.
+        lat (Numeric): Latitude of starting location.
+        lon (Numeric): Longitude of starting location.
+        heading (Numeric): Heading (look direction).
+        altitude (Numeric, optional): Altitude of local polar coordinate system origin in km above ASL. Must be < 100 km. Defaults to 0.
+        max_alt (Numeric, optional): Maximum altitude where intersection is considered (km). Defaults to 1000, i.e. exobase.
+        n_pts (int, optional): Number of GEO coordinate angular grid points (i.e. number of GLOW runs), must be even and > 20. Defaults to 50.
+        n_bins (int, optional): Number of energy bins. Defaults to 100.
+        n_alt (int, optional): Number of altitude bins, must be > 100. Defaults to None, i.e. uses same number of bins as a single GLOW run.
+        with_prodloss (bool, optional): Calculate production and loss parameters in local coordinates. Defaults to False.
+        n_threads (int, optional):  Number of threads for parallel GLOW runs. Set to None to use all system threads. Defaults to None.
+        full_output (bool, optional): Returns only local coordinate GLOW output if False, and a tuple of local and GEO outputs if True. Defaults to False.
+        resamp (Numeric, optional): Number of R and ZA points in local coordinate output. ``len(R) = len(alt_km) * resamp`` and ``len(ZA) = n_pts * resamp``. Must be > 0.5. Defaults to 1.5.
+        show_progress (bool, optional): Use TQDM to show progress of GLOW model calculations. Defaults to True.
+        kwargs (dict, optional): Passed to `glowpython.generic`.
+
+    Returns:
+        iono (xarray.Dataset): Ionospheric parameters and brightnesses (with or without production and loss) in local coordinates. This is a reference and should not be modified.
+
+        iono, bds (xarray.Dataset, xarray.Dataset): These values are returned only if ``full_output == True``. Both are references and should not be modified.
+
+        - Ionospheric parameters and brightnesses (with or without production and loss) in local coordinates.
+        - Ionospheric parameters and brightnesses (with production and loss) in GEO coordinates.
+
+
+    Raises:
+        ValueError: Number of position bins can not be odd.
+        ValueError: Number of position bins can not be < 20.
+        ValueError: n_alt can not be < 100.
+        ValueError: Resampling can not be < 0.5.
+        ValueError: altitude must be in the range [0, 100].
+
+    Warns:
+        ResourceWarning: Number of threads requested is more than available system threads.
+    """
+    grobj = glow2d_geo(time, lat, lon, heading, max_alt, n_pts, n_bins, n_alt=n_alt, uniformize_glow=True,
+                       n_threads=n_threads, show_progress=show_progress, **kwargs)
+    bds = grobj.run_model()
+    grobj = glow2d_polar(bds, altitude, with_prodloss=with_prodloss, resamp=resamp)
+    iono = grobj.transform_coord()
+    if not full_output:
+        return iono
+    else:
+        return (iono, bds)
+
+
 # %%
 if __name__ == '__main__':
     import matplotlib.pyplot as plt
@@ -817,7 +783,7 @@ if __name__ == '__main__':
     lat, lon = 42.64981361744372, -71.31681056737486
     grobj = glow2d_geo(time, 42.64981361744372, -71.31681056737486, 40, n_threads=6, n_pts=100, show_progress=True)
     st = perf_counter_ns()
-    bds = grobj.run_no_precipitation()
+    bds = grobj.run_model()
     end = perf_counter_ns()
     print('Time to generate:', (end - st)*1e-6, 'ms')
     st = perf_counter_ns()
@@ -827,7 +793,8 @@ if __name__ == '__main__':
     print('Time to convert:', (end - st)*1e-6, 'ms')
     print()
     feature = '5577'
-    print(f'Number of photons between 70 - 75 deg ZA ({feature} A):', grobj.get_emission(iono, feature=feature, za_min=np.deg2rad(70), za_max=np.deg2rad(75)))
+    print(f'Number of photons between 70 - 75 deg ZA ({feature} A):',
+          grobj.get_emission(iono, feature=feature, za_min=np.deg2rad(70), za_max=np.deg2rad(75)))
 
     za_min = np.arange(0, 90, 2.5, dtype=float)
     za_max = za_min + 2.5

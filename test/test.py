@@ -60,7 +60,7 @@ for file_suffix, time in tdict.items():
     lat, lon = 42.64981361744372, -71.31681056737486
     grobj = glow2d_geo(time, 42.64981361744372, -71.31681056737486, 40, n_pts = 100)
     st = perf_counter_ns()
-    bds = grobj.run_no_precipitation()
+    bds = grobj.run_model()
     end = perf_counter_ns()
     print(f'Time to generate : {(end - st)*1e-6: 8.6f} ms')
     st = perf_counter_ns()
