@@ -325,7 +325,7 @@
 <h1 id="glow2d">GLOW2D</h1>
 <p>This package builds off of the GLobal airglOW model. The GLOW model is evaluated on an altitude grid at a location. For non-zenith observation geometries, the model requires evaluation at multiple points along the line of sight. The <code>glow2d</code> library wraps the <code>ncarglow.no_precipitation()</code> function to generate the output on a 2D grid in a geocentric (GEO) coordinate system and in a local (ZA, R) coordinate system.</p>
 <h2 id="principle">Principle</h2>
-<p>GLOW model is evaluated at one geolocation (latitude, longitude) at a given time. Assuming spherical geometry, for a given bearing, the GLOW model can be evaluated at different geolocations at a given time in a geocentric coordinate system <script type="math/tex">(R, \theta, \phi)</script>. The local polar coordinate system, defined at the starting location as <script type="math/tex">r, \zeta, \phi</script>, is related to the geocentric coordinate system through the equations:
+<p>GLOW model is evaluated at one geolocation (latitude, longitude) at a given time. Assuming spherical geometry, for a given bearing, the GLOW model can be evaluated at different geolocations at a given time in a geocentric coordinate system <script type="math/tex">(R, \theta, \phi)</script>. The local polar coordinate system, defined at the starting location as <script type="math/tex">(r, \zeta, \phi)</script>, is related to the geocentric coordinate system through the equations:
 <script type="math/tex; mode=display">
     r = \sqrt{(R\cos{\theta} - R_0)^2 + R^2\sin^2{\theta}}, \\
     \zeta = \arctan{\frac{R\sin\theta}{R\cos\theta - R_0}},\\
@@ -348,7 +348,7 @@ where <script type="math/tex">\left|J_{Rr}\right|</script> is the determinant
                         \frac{\partial \zeta}{\partial R} & \frac{\partial \zeta}{\partial \theta} \end{array}\right|
             = \frac{R}{r^3}\left(R^2 + R_0^2 - 2 R R_0 \cos{\theta}\right).
 </script>
-The determinant is evaluated at a position <script type="math/tex">(R, \theta, \phi</script>. Note, that the determinant does not depend on <script type="math/tex">\phi</script>, i.e. the geometry is azimuthally symmetric, and <script type="math/tex">r</script> is known given <script type="math/tex">R, \theta</script>.</p>
+The determinant is evaluated at a position <script type="math/tex">(R, \theta, \phi)</script>. Note, that the determinant does not depend on <script type="math/tex">\phi</script>, i.e. the geometry is azimuthally symmetric, and <script type="math/tex">r</script> is known given <script type="math/tex">R, \theta</script>.</p>
 <p>GLOW model is executed in the <script type="math/tex">R, \theta~(,~\phi)</script> coordinate system on a uniform grid. The non-linearity of the coordinate transformation from <script type="math/tex">R, \theta~(,~\phi)</script> to <script type="math/tex">r, \zeta~(,~\phi)</script> results in a non-uniform grid in <script type="math/tex">r, \zeta</script> coordinates for points in <script type="math/tex">R, \theta</script> coordinates. An interpolation is performed to an uniform grid in <script type="math/tex">r, \zeta</script> coordinates, followed by a normalization by <script type="math/tex">\left|J_{Rr}\right|</script> for density outputs, such as the volume emission rate.</p>
 <p>The emission reaching a detector of area <script type="math/tex">A</script>, subtending a solid angle <script type="math/tex">d\zeta d\phi</script> is, then,
 <script type="math/tex; mode=display">
@@ -365,14 +365,16 @@ Note, since the volume emission rate is isotropic, the number of photons inciden
 $ pip install .
 </code></pre>
 <h2 id="dependencies">Dependencies</h2>
-<p>The following non-trivial dependencies are present:
-- <a href="https://github.com/sunipkm/ncar-glow">ncarglow</a>
-- <a href="https://github.com/sunipkm/geomagindices">geomagindices</a>
-- <a href="https://pypi.org/project/geopy/">geopy</a>
-- <a href="https://pypi.org/project/haversine/">haversine</a>
-- <a href="https://pypi.org/project/xarray/">xarray</a></p>
+<p>The following non-trivial dependencies are present:</p>
+<ul>
+<li><a href="https://github.com/sunipkm/ncar-glow">ncarglow</a></li>
+<li><a href="https://github.com/sunipkm/geomagindices">geomagindices</a></li>
+<li><a href="https://pypi.org/project/geopy/">geopy</a></li>
+<li><a href="https://pypi.org/project/haversine/">haversine</a></li>
+<li><a href="https://pypi.org/project/xarray/">xarray</a></li>
+</ul>
 <p>This code uses a modified version of the <a href="https://pypi.org/project/ncarglow/">ncarglow</a> package, available <a href="https://github.com/sunipkm/ncar-glow.git">here</a>. This package uses a modified API that allows passing the geomagnetic indices as parameters, which is useful for fitting data to GLOW model.
-A heavily modified version of <a href="https://pypi.org/project/geomagindices/">geomagindices</a> is used to get the \F_{10.7}\ and $A_p$ indices from the <a href="https://www.gfz-potsdam.de/en/kp-index/">new data source</a>.</p>
+A heavily modified version of <a href="https://pypi.org/project/geomagindices/">geomagindices</a> is used to get the <script type="math/tex">F_{10.7}</script> and <script type="math/tex">A_p</script> indices from the <a href="https://www.gfz-potsdam.de/en/kp-index/">new data source</a>.</p>
 <h2 id="usage">Usage</h2>
 <p>For example:</p>
 <pre><code class="language-py">from datetime import datetime
