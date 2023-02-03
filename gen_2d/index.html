@@ -19,7 +19,7 @@
     
     
       
-        <title>GLOW 2D Generation - GLOW2D</title>
+        <title>GLOW 2D Generation in GEO Coordinates - GLOW2D</title>
       
     
     
@@ -56,12 +56,16 @@
   
     
     
+      
     
     
     
-    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="" data-md-color-accent="">
+    
+    <body dir="ltr" data-md-color-scheme="slate" data-md-color-primary="" data-md-color-accent="">
   
     
+    
+      <script>var palette=__md_get("__palette");if(palette&&"object"==typeof palette.color)for(var key of Object.keys(palette.color))document.body.setAttribute("data-md-color-"+key,palette.color[key])</script>
     
     <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
     <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
@@ -69,7 +73,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#glow-2d-generation" class="md-skip">
+        <a href="#glow-2d-generation-in-geo-coordinates" class="md-skip">
           Skip to content
         </a>
       
@@ -102,14 +106,67 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              GLOW 2D Generation
+              GLOW 2D Generation in GEO Coordinates
             
           </span>
         </div>
       </div>
     </div>
     
+      <form class="md-header__option" data-md-component="palette">
+        
+          
+          <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="" data-md-color-accent=""  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+          
+            <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_2" hidden>
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 2a7 7 0 0 1 7 7c0 2.38-1.19 4.47-3 5.74V17a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1v-2.26C6.19 13.47 5 11.38 5 9a7 7 0 0 1 7-7M9 21v-1h6v1a1 1 0 0 1-1 1h-4a1 1 0 0 1-1-1m3-17a5 5 0 0 0-5 5c0 2.05 1.23 3.81 3 4.58V16h4v-2.42c1.77-.77 3-2.53 3-4.58a5 5 0 0 0-5-5Z"/></svg>
+            </label>
+          
+        
+          
+          <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="" data-md-color-accent=""  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_2">
+          
+            <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 2a7 7 0 0 0-7 7c0 2.38 1.19 4.47 3 5.74V17a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1v-2.26c1.81-1.27 3-3.36 3-5.74a7 7 0 0 0-7-7M9 21a1 1 0 0 0 1 1h4a1 1 0 0 0 1-1v-1H9v1Z"/></svg>
+            </label>
+          
+        
+      </form>
     
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41Z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
     
     
   </nav>
@@ -180,12 +237,12 @@
       
       
         <label class="md-nav__link md-nav__link--active" for="__toc">
-          GLOW 2D Generation
+          GLOW 2D Generation in GEO Coordinates
           <span class="md-nav__icon md-icon"></span>
         </label>
       
       <a href="./" class="md-nav__link md-nav__link--active">
-        GLOW 2D Generation
+        GLOW 2D Generation in GEO Coordinates
       </a>
       
         
@@ -204,6 +261,20 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#glow2dgeo_model" class="md-nav__link">
+    glow2d.geo_model
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#glow2d.geo_model" class="md-nav__link">
+    glow2d.geo_model
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#glow2d.glow2d_geo" class="md-nav__link">
     glow2d.glow2d_geo
   </a>
@@ -218,15 +289,8 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#glow2d._glow2d.glow2d_geo.no_precipitation_geo" class="md-nav__link">
-    no_precipitation_geo()
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#glow2d._glow2d.glow2d_geo.run_no_precipitation" class="md-nav__link">
-    run_no_precipitation()
+  <a href="#glow2d._glow2d.glow2d_geo.run_model" class="md-nav__link">
+    run_model()
   </a>
   
 </li>
@@ -248,7 +312,7 @@
   
     <li class="md-nav__item">
       <a href="../overview/" class="md-nav__link">
-        GLOW 2D Polar Coordinate Transformation
+        GLOW 2D Local Polar Coordinate Transformation
       </a>
     </li>
   
@@ -281,6 +345,20 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#glow2dgeo_model" class="md-nav__link">
+    glow2d.geo_model
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#glow2d.geo_model" class="md-nav__link">
+    glow2d.geo_model
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#glow2d.glow2d_geo" class="md-nav__link">
     glow2d.glow2d_geo
   </a>
@@ -295,15 +373,8 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#glow2d._glow2d.glow2d_geo.no_precipitation_geo" class="md-nav__link">
-    no_precipitation_geo()
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#glow2d._glow2d.glow2d_geo.run_no_precipitation" class="md-nav__link">
-    run_no_precipitation()
+  <a href="#glow2d._glow2d.glow2d_geo.run_model" class="md-nav__link">
+    run_model()
   </a>
   
 </li>
@@ -324,8 +395,268 @@
 
 
 
-<h1 id="glow-2d-generation">GLOW 2D Generation</h1>
+<h1 id="glow-2d-generation-in-geo-coordinates">GLOW 2D Generation in GEO Coordinates</h1>
+<h2 id="glow2dgeo_model"><code>glow2d.geo_model</code></h2>
 
+
+<div class="doc doc-object doc-function">
+
+
+<a id="glow2d.geo_model"></a>
+  <div class="doc doc-contents first">
+  
+      <p>Run GLOW model looking along heading from the current location and return the model output in
+(T, R) geocentric coordinates where T is angle in radians from the current location along the great circle
+following current heading, and R is altitude in kilometers. R is in an uniform grid with <code>n_alt</code> points.</p>
+
+  <p><strong>Parameters:</strong></p>
+  <table>
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Type</th>
+        <th>Description</th>
+        <th>Default</th>
+      </tr>
+    </thead>
+    <tbody>
+        <tr>
+          <td><code>time</code></td>
+          <td>
+                <code><span title="datetime.datetime">datetime</span></code>
+          </td>
+          <td><p>Datetime of GLOW calculation.</p></td>
+          <td>
+              <em>required</em>
+          </td>
+        </tr>
+        <tr>
+          <td><code>lat</code></td>
+          <td>
+                <code><span title="typing.SupportsFloat">Numeric</span></code>
+          </td>
+          <td><p>Latitude of starting location.</p></td>
+          <td>
+              <em>required</em>
+          </td>
+        </tr>
+        <tr>
+          <td><code>lon</code></td>
+          <td>
+                <code><span title="typing.SupportsFloat">Numeric</span></code>
+          </td>
+          <td><p>Longitude of starting location.</p></td>
+          <td>
+              <em>required</em>
+          </td>
+        </tr>
+        <tr>
+          <td><code>heading</code></td>
+          <td>
+                <code><span title="typing.SupportsFloat">Numeric</span></code>
+          </td>
+          <td><p>Heading (look direction).</p></td>
+          <td>
+              <em>required</em>
+          </td>
+        </tr>
+        <tr>
+          <td><code>max_alt</code></td>
+          <td>
+                <code><span title="typing.SupportsFloat">Numeric</span></code>
+          </td>
+          <td><p>Maximum altitude where intersection is considered (km). Defaults to 1000, i.e. exobase.</p></td>
+          <td>
+                <code>1000</code>
+          </td>
+        </tr>
+        <tr>
+          <td><code>n_pts</code></td>
+          <td>
+                <code>int</code>
+          </td>
+          <td><p>Number of GEO coordinate angular grid points (i.e. number of GLOW runs), must be even and &gt; 20. Defaults to 50.</p></td>
+          <td>
+                <code>50</code>
+          </td>
+        </tr>
+        <tr>
+          <td><code>n_bins</code></td>
+          <td>
+                <code>int</code>
+          </td>
+          <td><p>Number of energy bins. Defaults to 100.</p></td>
+          <td>
+                <code>100</code>
+          </td>
+        </tr>
+        <tr>
+          <td><code>n_alt</code></td>
+          <td>
+                <code>int</code>
+          </td>
+          <td><p>Number of altitude bins, must be &gt; 100. Defaults to <code>None</code>, i.e. uses same number of bins as a single GLOW run.</p></td>
+          <td>
+                <code>None</code>
+          </td>
+        </tr>
+        <tr>
+          <td><code>n_threads</code></td>
+          <td>
+                <code>int</code>
+          </td>
+          <td><p>Number of threads for parallel GLOW runs. Set to <code>None</code> to use all system threads. Defaults to <code>None</code>.</p></td>
+          <td>
+                <code>None</code>
+          </td>
+        </tr>
+        <tr>
+          <td><code>show_progress</code></td>
+          <td>
+                <code>bool</code>
+          </td>
+          <td><p>Use TQDM to show progress of GLOW model calculations. Defaults to <code>True</code>.</p></td>
+          <td>
+                <code>True</code>
+          </td>
+        </tr>
+        <tr>
+          <td><code>kwargs</code></td>
+          <td>
+                <code>dict</code>
+          </td>
+          <td><p>Passed to <code>glowpython.generic</code>.</p></td>
+          <td>
+                <code>{}</code>
+          </td>
+        </tr>
+    </tbody>
+  </table>
+
+  <p><strong>Returns:</strong></p>
+  <table>
+    <thead>
+      <tr>
+<th>Name</th>        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+        <tr>
+<td><code>bds</code></td>          <td>
+                <code>xarray.<span title="xarray.Dataset">Dataset</span></code>
+          </td>
+          <td><p>Ionospheric parameters and brightnesses (with production and loss) in GEO coordinates.</p></td>
+        </tr>
+    </tbody>
+  </table>
+
+  <p><strong>Raises:</strong></p>
+  <table>
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+        <tr>
+          <td>
+                <code>ValueError</code>
+          </td>
+          <td><p>Number of position bins can not be odd.</p></td>
+        </tr>
+        <tr>
+          <td>
+                <code>ValueError</code>
+          </td>
+          <td><p>Number of position bins can not be &lt; 20.</p></td>
+        </tr>
+        <tr>
+          <td>
+                <code>ValueError</code>
+          </td>
+          <td><p>Resampling can not be &lt; 0.5.</p></td>
+        </tr>
+    </tbody>
+  </table>
+
+<details class="warns">
+  <summary>Warns</summary>
+  <p>ResourceWarning: Number of threads requested is more than available system threads.</p>
+</details>
+      <details class="quote">
+        <summary>Source code in <code>glow2d/_glow2d.py</code></summary>
+        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-691">691</a></span>
+<span class="normal"><a href="#__codelineno-0-692">692</a></span>
+<span class="normal"><a href="#__codelineno-0-693">693</a></span>
+<span class="normal"><a href="#__codelineno-0-694">694</a></span>
+<span class="normal"><a href="#__codelineno-0-695">695</a></span>
+<span class="normal"><a href="#__codelineno-0-696">696</a></span>
+<span class="normal"><a href="#__codelineno-0-697">697</a></span>
+<span class="normal"><a href="#__codelineno-0-698">698</a></span>
+<span class="normal"><a href="#__codelineno-0-699">699</a></span>
+<span class="normal"><a href="#__codelineno-0-700">700</a></span>
+<span class="normal"><a href="#__codelineno-0-701">701</a></span>
+<span class="normal"><a href="#__codelineno-0-702">702</a></span>
+<span class="normal"><a href="#__codelineno-0-703">703</a></span>
+<span class="normal"><a href="#__codelineno-0-704">704</a></span>
+<span class="normal"><a href="#__codelineno-0-705">705</a></span>
+<span class="normal"><a href="#__codelineno-0-706">706</a></span>
+<span class="normal"><a href="#__codelineno-0-707">707</a></span>
+<span class="normal"><a href="#__codelineno-0-708">708</a></span>
+<span class="normal"><a href="#__codelineno-0-709">709</a></span>
+<span class="normal"><a href="#__codelineno-0-710">710</a></span>
+<span class="normal"><a href="#__codelineno-0-711">711</a></span>
+<span class="normal"><a href="#__codelineno-0-712">712</a></span>
+<span class="normal"><a href="#__codelineno-0-713">713</a></span>
+<span class="normal"><a href="#__codelineno-0-714">714</a></span>
+<span class="normal"><a href="#__codelineno-0-715">715</a></span>
+<span class="normal"><a href="#__codelineno-0-716">716</a></span>
+<span class="normal"><a href="#__codelineno-0-717">717</a></span>
+<span class="normal"><a href="#__codelineno-0-718">718</a></span>
+<span class="normal"><a href="#__codelineno-0-719">719</a></span>
+<span class="normal"><a href="#__codelineno-0-720">720</a></span>
+<span class="normal"><a href="#__codelineno-0-721">721</a></span>
+<span class="normal"><a href="#__codelineno-0-722">722</a></span>
+<span class="normal"><a href="#__codelineno-0-723">723</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-691" name="__codelineno-0-691"></a><span class="k">def</span> <span class="nf">geo_model</span><span class="p">(</span><span class="n">time</span><span class="p">:</span> <span class="n">datetime</span><span class="p">,</span> <span class="n">lat</span><span class="p">:</span> <span class="n">Numeric</span><span class="p">,</span> <span class="n">lon</span><span class="p">:</span> <span class="n">Numeric</span><span class="p">,</span> <span class="n">heading</span><span class="p">:</span> <span class="n">Numeric</span><span class="p">,</span> <span class="n">max_alt</span><span class="p">:</span> <span class="n">Numeric</span> <span class="o">=</span> <span class="mi">1000</span><span class="p">,</span> <span class="n">n_pts</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">50</span><span class="p">,</span> <span class="n">n_bins</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">100</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">n_alt</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">n_threads</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">show_progress</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">xarray</span><span class="o">.</span><span class="n">Dataset</span><span class="p">:</span>
+<a id="__codelineno-0-692" name="__codelineno-0-692"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Run GLOW model looking along heading from the current location and return the model output in</span>
+<a id="__codelineno-0-693" name="__codelineno-0-693"></a><span class="sd">    (T, R) geocentric coordinates where T is angle in radians from the current location along the great circle</span>
+<a id="__codelineno-0-694" name="__codelineno-0-694"></a><span class="sd">    following current heading, and R is altitude in kilometers. R is in an uniform grid with `n_alt` points.</span>
+<a id="__codelineno-0-695" name="__codelineno-0-695"></a>
+<a id="__codelineno-0-696" name="__codelineno-0-696"></a><span class="sd">    Args:</span>
+<a id="__codelineno-0-697" name="__codelineno-0-697"></a><span class="sd">        time (datetime): Datetime of GLOW calculation.</span>
+<a id="__codelineno-0-698" name="__codelineno-0-698"></a><span class="sd">        lat (Numeric): Latitude of starting location.</span>
+<a id="__codelineno-0-699" name="__codelineno-0-699"></a><span class="sd">        lon (Numeric): Longitude of starting location.</span>
+<a id="__codelineno-0-700" name="__codelineno-0-700"></a><span class="sd">        heading (Numeric): Heading (look direction).</span>
+<a id="__codelineno-0-701" name="__codelineno-0-701"></a><span class="sd">        max_alt (Numeric, optional): Maximum altitude where intersection is considered (km). Defaults to 1000, i.e. exobase.</span>
+<a id="__codelineno-0-702" name="__codelineno-0-702"></a><span class="sd">        n_pts (int, optional): Number of GEO coordinate angular grid points (i.e. number of GLOW runs), must be even and &gt; 20. Defaults to 50.</span>
+<a id="__codelineno-0-703" name="__codelineno-0-703"></a><span class="sd">        n_bins (int, optional): Number of energy bins. Defaults to 100.</span>
+<a id="__codelineno-0-704" name="__codelineno-0-704"></a><span class="sd">        n_alt (int, optional): Number of altitude bins, must be &gt; 100. Defaults to `None`, i.e. uses same number of bins as a single GLOW run.</span>
+<a id="__codelineno-0-705" name="__codelineno-0-705"></a><span class="sd">        n_threads (int, optional): Number of threads for parallel GLOW runs. Set to `None` to use all system threads. Defaults to `None`.</span>
+<a id="__codelineno-0-706" name="__codelineno-0-706"></a><span class="sd">        show_progress (bool, optional): Use TQDM to show progress of GLOW model calculations. Defaults to `True`.</span>
+<a id="__codelineno-0-707" name="__codelineno-0-707"></a><span class="sd">        kwargs (dict, optional): Passed to `glowpython.generic`.</span>
+<a id="__codelineno-0-708" name="__codelineno-0-708"></a>
+<a id="__codelineno-0-709" name="__codelineno-0-709"></a><span class="sd">    Returns:</span>
+<a id="__codelineno-0-710" name="__codelineno-0-710"></a><span class="sd">        bds (xarray.Dataset): Ionospheric parameters and brightnesses (with production and loss) in GEO coordinates.</span>
+<a id="__codelineno-0-711" name="__codelineno-0-711"></a>
+<a id="__codelineno-0-712" name="__codelineno-0-712"></a><span class="sd">    Raises:</span>
+<a id="__codelineno-0-713" name="__codelineno-0-713"></a><span class="sd">        ValueError: Number of position bins can not be odd.</span>
+<a id="__codelineno-0-714" name="__codelineno-0-714"></a><span class="sd">        ValueError: Number of position bins can not be &lt; 20.</span>
+<a id="__codelineno-0-715" name="__codelineno-0-715"></a><span class="sd">        ValueError: Resampling can not be &lt; 0.5.</span>
+<a id="__codelineno-0-716" name="__codelineno-0-716"></a>
+<a id="__codelineno-0-717" name="__codelineno-0-717"></a><span class="sd">    Warns:</span>
+<a id="__codelineno-0-718" name="__codelineno-0-718"></a><span class="sd">        ResourceWarning: Number of threads requested is more than available system threads.</span>
+<a id="__codelineno-0-719" name="__codelineno-0-719"></a><span class="sd">    &quot;&quot;&quot;</span>
+<a id="__codelineno-0-720" name="__codelineno-0-720"></a>    <span class="n">grobj</span> <span class="o">=</span> <span class="n">glow2d_geo</span><span class="p">(</span><span class="n">time</span><span class="p">,</span> <span class="n">lat</span><span class="p">,</span> <span class="n">lon</span><span class="p">,</span> <span class="n">heading</span><span class="p">,</span> <span class="n">max_alt</span><span class="p">,</span>
+<a id="__codelineno-0-721" name="__codelineno-0-721"></a>                       <span class="n">n_pts</span><span class="p">,</span> <span class="n">n_bins</span><span class="p">,</span> <span class="n">n_alt</span><span class="o">=</span><span class="n">n_alt</span><span class="p">,</span> <span class="n">uniformize_glow</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">n_threads</span><span class="o">=</span><span class="n">n_threads</span><span class="p">,</span> <span class="n">show_progress</span><span class="o">=</span><span class="n">show_progress</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+<a id="__codelineno-0-722" name="__codelineno-0-722"></a>    <span class="n">bds</span> <span class="o">=</span> <span class="n">grobj</span><span class="o">.</span><span class="n">run_model</span><span class="p">()</span>
+<a id="__codelineno-0-723" name="__codelineno-0-723"></a>    <span class="k">return</span> <span class="n">bds</span>
+</code></pre></div></td></tr></table></div>
+      </details>
+  </div>
+
+</div>
 
 <div class="doc doc-object doc-class">
 
@@ -340,397 +671,325 @@ The result is presented in a geocentric coordinate system.</p>
 
         <details class="quote">
           <summary>Source code in <code>glow2d/_glow2d.py</code></summary>
-          <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 32</span>
-<span class="normal"> 33</span>
-<span class="normal"> 34</span>
-<span class="normal"> 35</span>
-<span class="normal"> 36</span>
-<span class="normal"> 37</span>
-<span class="normal"> 38</span>
-<span class="normal"> 39</span>
-<span class="normal"> 40</span>
-<span class="normal"> 41</span>
-<span class="normal"> 42</span>
-<span class="normal"> 43</span>
-<span class="normal"> 44</span>
-<span class="normal"> 45</span>
-<span class="normal"> 46</span>
-<span class="normal"> 47</span>
-<span class="normal"> 48</span>
-<span class="normal"> 49</span>
-<span class="normal"> 50</span>
-<span class="normal"> 51</span>
-<span class="normal"> 52</span>
-<span class="normal"> 53</span>
-<span class="normal"> 54</span>
-<span class="normal"> 55</span>
-<span class="normal"> 56</span>
-<span class="normal"> 57</span>
-<span class="normal"> 58</span>
-<span class="normal"> 59</span>
-<span class="normal"> 60</span>
-<span class="normal"> 61</span>
-<span class="normal"> 62</span>
-<span class="normal"> 63</span>
-<span class="normal"> 64</span>
-<span class="normal"> 65</span>
-<span class="normal"> 66</span>
-<span class="normal"> 67</span>
-<span class="normal"> 68</span>
-<span class="normal"> 69</span>
-<span class="normal"> 70</span>
-<span class="normal"> 71</span>
-<span class="normal"> 72</span>
-<span class="normal"> 73</span>
-<span class="normal"> 74</span>
-<span class="normal"> 75</span>
-<span class="normal"> 76</span>
-<span class="normal"> 77</span>
-<span class="normal"> 78</span>
-<span class="normal"> 79</span>
-<span class="normal"> 80</span>
-<span class="normal"> 81</span>
-<span class="normal"> 82</span>
-<span class="normal"> 83</span>
-<span class="normal"> 84</span>
-<span class="normal"> 85</span>
-<span class="normal"> 86</span>
-<span class="normal"> 87</span>
-<span class="normal"> 88</span>
-<span class="normal"> 89</span>
-<span class="normal"> 90</span>
-<span class="normal"> 91</span>
-<span class="normal"> 92</span>
-<span class="normal"> 93</span>
-<span class="normal"> 94</span>
-<span class="normal"> 95</span>
-<span class="normal"> 96</span>
-<span class="normal"> 97</span>
-<span class="normal"> 98</span>
-<span class="normal"> 99</span>
-<span class="normal">100</span>
-<span class="normal">101</span>
-<span class="normal">102</span>
-<span class="normal">103</span>
-<span class="normal">104</span>
-<span class="normal">105</span>
-<span class="normal">106</span>
-<span class="normal">107</span>
-<span class="normal">108</span>
-<span class="normal">109</span>
-<span class="normal">110</span>
-<span class="normal">111</span>
-<span class="normal">112</span>
-<span class="normal">113</span>
-<span class="normal">114</span>
-<span class="normal">115</span>
-<span class="normal">116</span>
-<span class="normal">117</span>
-<span class="normal">118</span>
-<span class="normal">119</span>
-<span class="normal">120</span>
-<span class="normal">121</span>
-<span class="normal">122</span>
-<span class="normal">123</span>
-<span class="normal">124</span>
-<span class="normal">125</span>
-<span class="normal">126</span>
-<span class="normal">127</span>
-<span class="normal">128</span>
-<span class="normal">129</span>
-<span class="normal">130</span>
-<span class="normal">131</span>
-<span class="normal">132</span>
-<span class="normal">133</span>
-<span class="normal">134</span>
-<span class="normal">135</span>
-<span class="normal">136</span>
-<span class="normal">137</span>
-<span class="normal">138</span>
-<span class="normal">139</span>
-<span class="normal">140</span>
-<span class="normal">141</span>
-<span class="normal">142</span>
-<span class="normal">143</span>
-<span class="normal">144</span>
-<span class="normal">145</span>
-<span class="normal">146</span>
-<span class="normal">147</span>
-<span class="normal">148</span>
-<span class="normal">149</span>
-<span class="normal">150</span>
-<span class="normal">151</span>
-<span class="normal">152</span>
-<span class="normal">153</span>
-<span class="normal">154</span>
-<span class="normal">155</span>
-<span class="normal">156</span>
-<span class="normal">157</span>
-<span class="normal">158</span>
-<span class="normal">159</span>
-<span class="normal">160</span>
-<span class="normal">161</span>
-<span class="normal">162</span>
-<span class="normal">163</span>
-<span class="normal">164</span>
-<span class="normal">165</span>
-<span class="normal">166</span>
-<span class="normal">167</span>
-<span class="normal">168</span>
-<span class="normal">169</span>
-<span class="normal">170</span>
-<span class="normal">171</span>
-<span class="normal">172</span>
-<span class="normal">173</span>
-<span class="normal">174</span>
-<span class="normal">175</span>
-<span class="normal">176</span>
-<span class="normal">177</span>
-<span class="normal">178</span>
-<span class="normal">179</span>
-<span class="normal">180</span>
-<span class="normal">181</span>
-<span class="normal">182</span>
-<span class="normal">183</span>
-<span class="normal">184</span>
-<span class="normal">185</span>
-<span class="normal">186</span>
-<span class="normal">187</span>
-<span class="normal">188</span>
-<span class="normal">189</span>
-<span class="normal">190</span>
-<span class="normal">191</span>
-<span class="normal">192</span>
-<span class="normal">193</span>
-<span class="normal">194</span>
-<span class="normal">195</span>
-<span class="normal">196</span>
-<span class="normal">197</span>
-<span class="normal">198</span>
-<span class="normal">199</span>
-<span class="normal">200</span>
-<span class="normal">201</span>
-<span class="normal">202</span>
-<span class="normal">203</span>
-<span class="normal">204</span>
-<span class="normal">205</span>
-<span class="normal">206</span>
-<span class="normal">207</span>
-<span class="normal">208</span>
-<span class="normal">209</span>
-<span class="normal">210</span>
-<span class="normal">211</span>
-<span class="normal">212</span>
-<span class="normal">213</span>
-<span class="normal">214</span>
-<span class="normal">215</span>
-<span class="normal">216</span>
-<span class="normal">217</span>
-<span class="normal">218</span>
-<span class="normal">219</span>
-<span class="normal">220</span>
-<span class="normal">221</span>
-<span class="normal">222</span>
-<span class="normal">223</span>
-<span class="normal">224</span>
-<span class="normal">225</span>
-<span class="normal">226</span>
-<span class="normal">227</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span> <span class="nc">glow2d_geo</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Compute GLOW model on the great circle passing through the origin location along the specified bearing. </span>
-<span class="sd">    The result is presented in a geocentric coordinate system.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">time</span><span class="p">:</span> <span class="n">datetime</span><span class="p">,</span> <span class="n">lat</span><span class="p">:</span> <span class="n">Numeric</span><span class="p">,</span> <span class="n">lon</span><span class="p">:</span> <span class="n">Numeric</span><span class="p">,</span> <span class="n">heading</span><span class="p">:</span> <span class="n">Numeric</span><span class="p">,</span> <span class="n">max_alt</span><span class="p">:</span> <span class="n">Numeric</span> <span class="o">=</span> <span class="mi">1000</span><span class="p">,</span> <span class="n">n_pts</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">50</span><span class="p">,</span> <span class="n">n_bins</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">100</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">n_alt</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">uniformize_glow</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">n_threads</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">full_circ</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">show_progress</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Create a GLOWRaycast object.</span>
-
-<span class="sd">        Args:</span>
-<span class="sd">            time (datetime): Datetime of GLOW calculation.</span>
-<span class="sd">            lat (Numeric): Latitude of starting location.</span>
-<span class="sd">            lon (Numeric): Longitude of starting location.</span>
-<span class="sd">            heading (Numeric): Heading (look direction).</span>
-<span class="sd">            max_alt (Numeric, optional): Maximum altitude where intersection is considered (km). Defaults to 1000, i.e. exobase.</span>
-<span class="sd">            n_pts (int, optional): Number of GEO coordinate angular grid points (i.e. number of GLOW runs), must be even and &gt; 20. Defaults to 50.</span>
-<span class="sd">            n_bins (int, optional): Number of energy bins. Defaults to 100.</span>
-<span class="sd">            n_alt (int, optional): Number of altitude bins, must be &gt; 100. Used only when `uniformize_glow` is set to `True` (default). Defaults to `None`, i.e. uses same number of bins as a single GLOW run.</span>
-<span class="sd">            uniformize_glow (bool, optional): Interpolate GLOW output to an uniform altitude grid. `n_alt` is ignored if this option is set to `False`. Defaults to `True`.</span>
-<span class="sd">            n_threads (int, optional): Number of threads for parallel GLOW runs. Set to `None` to use all system threads. Defaults to `None`.</span>
-<span class="sd">            full_circ (bool, optional): For testing only, do not use. Defaults to False.</span>
-<span class="sd">            show_progress (bool, optional): Use TQDM to show progress of GLOW model calculations. Defaults to True.</span>
-<span class="sd">            kwargs (dict, optional): Passed to `ncarglow.no_precipitation`.</span>
-
-<span class="sd">        Raises:</span>
-<span class="sd">            ValueError: Number of position bins can not be odd.</span>
-<span class="sd">            ValueError: Number of position bins can not be &lt; 20.</span>
-<span class="sd">            ValueError: Number of altitude bins can not be &lt; 100.</span>
-
-<span class="sd">        Warns:</span>
-<span class="sd">            ResourceWarning: Number of threads requested is more than available system threads.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="n">n_pts</span> <span class="o">%</span> <span class="mi">2</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Number of position bins can not be odd.&#39;</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">n_pts</span> <span class="o">&lt;</span> <span class="mi">20</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Number of position bins can not be &lt; 20.&#39;</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">n_threads</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">n_threads</span> <span class="o">=</span> <span class="n">N_CPUS</span>
-        <span class="k">if</span> <span class="n">n_threads</span> <span class="o">&gt;</span> <span class="n">N_CPUS</span><span class="p">:</span>
-            <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s1">&#39;Number of requested threads (</span><span class="si">%d</span><span class="s1"> &gt; </span><span class="si">%d</span><span class="s1">)&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">n_threads</span><span class="p">,</span> <span class="n">N_CPUS</span><span class="p">),</span> <span class="ne">ResourceWarning</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_uniform_glow</span> <span class="o">=</span> <span class="n">uniformize_glow</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_pt</span> <span class="o">=</span> <span class="n">Point</span><span class="p">(</span><span class="n">lat</span><span class="p">,</span> <span class="n">lon</span><span class="p">)</span>  <span class="c1"># instrument loc</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_time</span> <span class="o">=</span> <span class="n">time</span>  <span class="c1"># time of calc</span>
-        <span class="k">if</span> <span class="n">n_alt</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">n_alt</span> <span class="o">&lt;</span> <span class="mi">100</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Number of altitude bins can not be &lt; 100&#39;</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">n_alt</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">n_alt</span> <span class="o">=</span> <span class="mi">100</span>  <span class="c1"># default</span>
-        <span class="n">max_d</span> <span class="o">=</span> <span class="mi">6400</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="k">if</span> <span class="n">full_circ</span> <span class="k">else</span> <span class="n">EARTH_RADIUS</span> <span class="o">*</span> \
-            <span class="n">np</span><span class="o">.</span><span class="n">arccos</span><span class="p">(</span><span class="n">EARTH_RADIUS</span> <span class="o">/</span> <span class="p">(</span><span class="n">EARTH_RADIUS</span> <span class="o">+</span> <span class="n">max_alt</span><span class="p">)</span>
-                      <span class="p">)</span>  <span class="c1"># find maximum distance where LOS intersects exobase # 6400 * np.pi</span>
-        <span class="c1"># points on the earth where we need to sample</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_show_prog</span> <span class="o">=</span> <span class="n">show_progress</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_kwargs</span> <span class="o">=</span> <span class="n">kwargs</span>
-        <span class="n">distpts</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">max_d</span><span class="p">,</span> <span class="n">n_pts</span><span class="p">,</span> <span class="n">endpoint</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_locs</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_nbins</span> <span class="o">=</span> <span class="n">n_bins</span>  <span class="c1"># number of energy bins (for later)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_nthr</span> <span class="o">=</span> <span class="n">n_threads</span>  <span class="c1"># number of threads (for later)</span>
-        <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">distpts</span><span class="p">:</span>  <span class="c1"># for each distance point</span>
-            <span class="n">dest</span> <span class="o">=</span> <span class="n">GreatCircleDistance</span><span class="p">(</span>
-                <span class="n">kilometers</span><span class="o">=</span><span class="n">d</span><span class="p">)</span><span class="o">.</span><span class="n">destination</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_pt</span><span class="p">,</span> <span class="n">heading</span><span class="p">)</span>  <span class="c1"># calculate lat, lon of location at that distance along the great circle</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_locs</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">dest</span><span class="o">.</span><span class="n">latitude</span><span class="p">,</span> <span class="n">dest</span><span class="o">.</span><span class="n">longitude</span><span class="p">))</span>  <span class="c1"># store it</span>
-        <span class="k">if</span> <span class="n">full_circ</span><span class="p">:</span>  <span class="c1"># for fun, _get_angle() does not wrap around for &gt; 180 deg</span>
-            <span class="n">npt</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_locs</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
-            <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">distpts</span><span class="p">:</span>
-                <span class="n">dest</span> <span class="o">=</span> <span class="n">GreatCircleDistance</span><span class="p">(</span>
-                    <span class="n">kilometers</span><span class="o">=</span><span class="n">d</span><span class="p">)</span><span class="o">.</span><span class="n">destination</span><span class="p">(</span><span class="n">npt</span><span class="p">,</span> <span class="n">heading</span><span class="p">)</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_locs</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">dest</span><span class="o">.</span><span class="n">latitude</span><span class="p">,</span> <span class="n">dest</span><span class="o">.</span><span class="n">longitude</span><span class="p">))</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_angs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_angle</span><span class="p">()</span>  <span class="c1"># get the corresponding angles</span>
-        <span class="k">if</span> <span class="n">full_circ</span><span class="p">:</span>  <span class="c1"># fill the rest if full circle</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_angs</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_angs</span><span class="p">)</span> <span class="o">//</span> <span class="mi">2</span><span class="p">:]</span> <span class="o">=</span> <span class="mi">2</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">-</span> \
-                <span class="bp">self</span><span class="o">.</span><span class="n">_angs</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_angs</span><span class="p">)</span> <span class="o">//</span> <span class="mi">2</span><span class="p">:]</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_bds</span> <span class="o">=</span> <span class="kc">None</span>
-
-    <span class="k">def</span> <span class="nf">_get_angle</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>  <span class="c1"># get haversine angles between two lat, lon coords</span>
-        <span class="n">angs</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="k">for</span> <span class="n">pt</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_locs</span><span class="p">:</span>
-            <span class="n">ang</span> <span class="o">=</span> <span class="n">haversine</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_locs</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">pt</span><span class="p">,</span> <span class="n">unit</span><span class="o">=</span><span class="n">Unit</span><span class="o">.</span><span class="n">RADIANS</span><span class="p">)</span>
-            <span class="n">angs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ang</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">angs</span><span class="p">)</span>
-
-    <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">_uniformize_glow</span><span class="p">(</span><span class="n">iono</span><span class="p">:</span> <span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span><span class="p">:</span>
-        <span class="n">alt_km</span> <span class="o">=</span> <span class="n">iono</span><span class="o">.</span><span class="n">alt_km</span><span class="o">.</span><span class="n">values</span>
-        <span class="n">alt</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">alt_km</span><span class="o">.</span><span class="n">min</span><span class="p">(),</span> <span class="n">alt_km</span><span class="o">.</span><span class="n">max</span><span class="p">(),</span> <span class="nb">len</span><span class="p">(</span><span class="n">alt_km</span><span class="p">))</span>  <span class="c1"># change to custom</span>
-        <span class="n">unit_keys</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;Tn&quot;</span><span class="p">,</span> <span class="s2">&quot;O&quot;</span><span class="p">,</span> <span class="s2">&quot;N2&quot;</span><span class="p">,</span> <span class="s2">&quot;O2&quot;</span><span class="p">,</span> <span class="s2">&quot;NO&quot;</span><span class="p">,</span> <span class="s2">&quot;NeIn&quot;</span><span class="p">,</span> <span class="s2">&quot;NeOut&quot;</span><span class="p">,</span> <span class="s2">&quot;ionrate&quot;</span><span class="p">,</span>
-                     <span class="s2">&quot;O+&quot;</span><span class="p">,</span> <span class="s2">&quot;O2+&quot;</span><span class="p">,</span> <span class="s2">&quot;NO+&quot;</span><span class="p">,</span> <span class="s2">&quot;N2D&quot;</span><span class="p">,</span> <span class="s2">&quot;pedersen&quot;</span><span class="p">,</span> <span class="s2">&quot;hall&quot;</span><span class="p">,</span> <span class="s2">&quot;Te&quot;</span><span class="p">,</span> <span class="s2">&quot;Ti&quot;</span><span class="p">]</span>
-        <span class="n">state_keys</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;production&#39;</span><span class="p">,</span> <span class="s1">&#39;loss&#39;</span><span class="p">,</span> <span class="s1">&#39;excitedDensity&#39;</span><span class="p">]</span>
-        <span class="n">data_vars</span> <span class="o">=</span> <span class="p">{}</span>
-        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">unit_keys</span><span class="p">:</span>
-            <span class="n">out</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">interp</span><span class="p">(</span><span class="n">alt</span><span class="p">,</span> <span class="n">alt_km</span><span class="p">,</span> <span class="n">iono</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">)</span>
-            <span class="n">data_vars</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="p">((</span><span class="s1">&#39;alt_km&#39;</span><span class="p">),</span> <span class="n">out</span><span class="p">)</span>
-        <span class="n">bds</span> <span class="o">=</span> <span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span><span class="p">(</span><span class="n">data_vars</span><span class="o">=</span><span class="n">data_vars</span><span class="p">,</span> <span class="n">coords</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;alt_km&#39;</span><span class="p">:</span> <span class="n">alt</span><span class="p">})</span>
-        <span class="n">ver</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">iono</span><span class="p">[</span><span class="s1">&#39;ver&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
-        <span class="k">for</span> <span class="n">idx</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">iono</span><span class="o">.</span><span class="n">wavelength</span><span class="p">)):</span>
-            <span class="n">ver</span><span class="p">[:,</span> <span class="n">idx</span><span class="p">]</span> <span class="o">+=</span> <span class="n">np</span><span class="o">.</span><span class="n">interp</span><span class="p">(</span><span class="n">alt</span><span class="p">,</span> <span class="n">alt_km</span><span class="p">,</span> <span class="n">iono</span><span class="p">[</span><span class="s1">&#39;ver&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">[:,</span> <span class="n">idx</span><span class="p">])</span>
-        <span class="n">ver</span> <span class="o">=</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">(</span>
-            <span class="n">ver</span><span class="p">,</span>
-            <span class="n">coords</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;alt_km&#39;</span><span class="p">:</span> <span class="n">alt</span><span class="p">,</span> <span class="s1">&#39;wavelength&#39;</span><span class="p">:</span> <span class="n">iono</span><span class="o">.</span><span class="n">wavelength</span><span class="o">.</span><span class="n">values</span><span class="p">},</span>
-            <span class="n">dims</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;alt_km&#39;</span><span class="p">,</span> <span class="s1">&#39;wavelength&#39;</span><span class="p">),</span>
-            <span class="n">name</span><span class="o">=</span><span class="s1">&#39;ver&#39;</span>
-        <span class="p">)</span>
-        <span class="n">data_vars</span> <span class="o">=</span> <span class="p">{}</span>
-        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">state_keys</span><span class="p">:</span>
-            <span class="n">out</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">iono</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
-            <span class="n">inp</span> <span class="o">=</span> <span class="n">iono</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="o">.</span><span class="n">values</span>
-            <span class="k">for</span> <span class="n">idx</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">iono</span><span class="o">.</span><span class="n">state</span><span class="p">)):</span>
-                <span class="n">out</span><span class="p">[:,</span> <span class="n">idx</span><span class="p">]</span> <span class="o">+=</span> <span class="n">np</span><span class="o">.</span><span class="n">interp</span><span class="p">(</span><span class="n">alt</span><span class="p">,</span> <span class="n">alt_km</span><span class="p">,</span> <span class="n">inp</span><span class="p">[:,</span> <span class="n">idx</span><span class="p">])</span>
-            <span class="n">data_vars</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="p">((</span><span class="s1">&#39;alt_km&#39;</span><span class="p">,</span> <span class="s1">&#39;state&#39;</span><span class="p">),</span> <span class="n">out</span><span class="p">)</span>
-        <span class="n">prodloss</span> <span class="o">=</span> <span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span><span class="p">(</span><span class="n">data_vars</span><span class="o">=</span><span class="n">data_vars</span><span class="p">,</span>
-                              <span class="n">coords</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;alt_km&#39;</span><span class="p">:</span> <span class="n">alt</span><span class="p">,</span> <span class="s1">&#39;state&#39;</span><span class="p">:</span> <span class="n">iono</span><span class="o">.</span><span class="n">state</span><span class="o">.</span><span class="n">values</span><span class="p">})</span>
-        <span class="n">precip</span> <span class="o">=</span> <span class="n">iono</span><span class="p">[</span><span class="s1">&#39;precip&#39;</span><span class="p">]</span>
-        <span class="n">bds</span><span class="p">:</span> <span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span> <span class="o">=</span> <span class="n">xr</span><span class="o">.</span><span class="n">merge</span><span class="p">((</span><span class="n">bds</span><span class="p">,</span> <span class="n">ver</span><span class="p">,</span> <span class="n">prodloss</span><span class="p">,</span> <span class="n">precip</span><span class="p">))</span>
-        <span class="n">_</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">bds</span><span class="p">[</span><span class="n">x</span><span class="p">]</span><span class="o">.</span><span class="n">attrs</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">iono</span><span class="p">[</span><span class="n">x</span><span class="p">]</span><span class="o">.</span><span class="n">attrs</span><span class="p">),</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">bds</span><span class="o">.</span><span class="n">data_vars</span><span class="o">.</span><span class="n">keys</span><span class="p">())))</span>
-        <span class="n">bds</span><span class="o">.</span><span class="n">attrs</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">iono</span><span class="o">.</span><span class="n">attrs</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">bds</span>
-
-    <span class="c1"># calculate glow model for one location</span>
-    <span class="k">def</span> <span class="nf">_calc_glow_single_noprecip</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">index</span><span class="p">):</span>
-        <span class="n">d</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_locs</span><span class="p">[</span><span class="n">index</span><span class="p">]</span>
-        <span class="n">iono</span> <span class="o">=</span> <span class="n">glow</span><span class="o">.</span><span class="n">no_precipitation</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_time</span><span class="p">,</span> <span class="n">d</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">d</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">_nbins</span><span class="p">,</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">_kwargs</span><span class="p">)</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_uniform_glow</span><span class="p">:</span>
-            <span class="n">iono</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_uniformize_glow</span><span class="p">(</span><span class="n">iono</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">iono</span>
-
-    <span class="k">def</span> <span class="nf">_calc_glow_noprecip</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span><span class="p">:</span>  <span class="c1"># run glow model calculation</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_show_prog</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_dss</span> <span class="o">=</span> <span class="n">MAP_FCN</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_calc_glow_single_noprecip</span><span class="p">,</span> <span class="nb">range</span><span class="p">(</span>
-                <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_locs</span><span class="p">)),</span> <span class="n">max_workers</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_nthr</span><span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">ppool</span> <span class="o">=</span> <span class="n">Pool</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_nthr</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_dss</span> <span class="o">=</span> <span class="n">ppool</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_calc_glow_single_noprecip</span><span class="p">,</span> <span class="nb">range</span><span class="p">(</span>
-                <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_locs</span><span class="p">)))</span>
-
-        <span class="c1"># for dest in tqdm(self._locs):</span>
-        <span class="c1">#     self._dss.append(glow.no_precipitation(time, dest[0], dest[1], self._nbins))</span>
-        <span class="n">bds</span><span class="p">:</span> <span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span> <span class="o">=</span> <span class="n">xr</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_dss</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">Index</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_angs</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;angle&#39;</span><span class="p">))</span>
-        <span class="n">latlon</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_locs</span><span class="p">)</span>
-        <span class="n">bds</span> <span class="o">=</span> <span class="n">bds</span><span class="o">.</span><span class="n">assign_coords</span><span class="p">(</span><span class="n">lat</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;angle&#39;</span><span class="p">,</span> <span class="n">latlon</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]))</span>
-        <span class="n">bds</span> <span class="o">=</span> <span class="n">bds</span><span class="o">.</span><span class="n">assign_coords</span><span class="p">(</span><span class="n">lon</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;angle&#39;</span><span class="p">,</span> <span class="n">latlon</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]))</span>
-        <span class="k">return</span> <span class="n">bds</span>
-
-    <span class="k">def</span> <span class="nf">run_no_precipitation</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Run the GLOW model calculation to get the model output in GEO coordinates.</span>
-
-<span class="sd">        Returns:</span>
-<span class="sd">            xr.Dataset: GLOW model output in GEO coordinates.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_bds</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_bds</span>
-        <span class="c1"># calculate the GLOW model for each lat-lon point determined in init()</span>
-        <span class="n">bds</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_calc_glow_noprecip</span><span class="p">()</span>
-        <span class="n">unit_desc_dict</span> <span class="o">=</span> <span class="p">{</span>
-            <span class="s1">&#39;angle&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;radians&#39;</span><span class="p">,</span> <span class="s1">&#39;Angle of location w.r.t. radius vector at origin (starting location)&#39;</span><span class="p">),</span>
-            <span class="s1">&#39;lat&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;degree&#39;</span><span class="p">,</span> <span class="s1">&#39;Latitude of locations&#39;</span><span class="p">),</span>
-            <span class="s1">&#39;lon&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;degree&#39;</span><span class="p">,</span> <span class="s1">&#39;Longitude of location&#39;</span><span class="p">)</span>
-        <span class="p">}</span>
-        <span class="n">_</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">bds</span><span class="p">[</span><span class="n">x</span><span class="p">]</span><span class="o">.</span><span class="n">attrs</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
-            <span class="p">{</span><span class="s1">&#39;units&#39;</span><span class="p">:</span> <span class="n">unit_desc_dict</span><span class="p">[</span><span class="n">x</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span> <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="n">unit_desc_dict</span><span class="p">[</span><span class="n">x</span><span class="p">][</span><span class="mi">1</span><span class="p">]}),</span> <span class="n">unit_desc_dict</span><span class="o">.</span><span class="n">keys</span><span class="p">()))</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_bds</span> <span class="o">=</span> <span class="n">bds</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_bds</span>  <span class="c1"># return the calculated</span>
-
-    <span class="nd">@classmethod</span>
-    <span class="k">def</span> <span class="nf">no_precipitation_geo</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">time</span><span class="p">:</span> <span class="n">datetime</span><span class="p">,</span> <span class="n">lat</span><span class="p">:</span> <span class="n">Numeric</span><span class="p">,</span> <span class="n">lon</span><span class="p">:</span> <span class="n">Numeric</span><span class="p">,</span> <span class="n">heading</span><span class="p">:</span> <span class="n">Numeric</span><span class="p">,</span> <span class="n">max_alt</span><span class="p">:</span> <span class="n">Numeric</span> <span class="o">=</span> <span class="mi">1000</span><span class="p">,</span> <span class="n">n_pts</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">50</span><span class="p">,</span> <span class="n">n_bins</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">100</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">n_alt</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">uniformize_glow</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">n_threads</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">resamp</span><span class="p">:</span> <span class="n">Numeric</span> <span class="o">=</span> <span class="mf">1.5</span><span class="p">,</span> <span class="n">show_progress</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Run GLOW model looking along heading from the current location and return the model output in</span>
-<span class="sd">        (T, R) geocentric coordinates where T is angle in radians from the current location along the great circle</span>
-<span class="sd">        following current heading, and R is altitude in kilometers, which may be non-uniform depending on the `uniformize_glow` flag.</span>
-
-<span class="sd">        Args:</span>
-<span class="sd">            time (datetime): Datetime of GLOW calculation.</span>
-<span class="sd">            lat (Numeric): Latitude of starting location.</span>
-<span class="sd">            lon (Numeric): Longitude of starting location.</span>
-<span class="sd">            heading (Numeric): Heading (look direction).</span>
-<span class="sd">            max_alt (Numeric, optional): Maximum altitude where intersection is considered (km). Defaults to 1000, i.e. exobase.</span>
-<span class="sd">            n_pts (int, optional): Number of GEO coordinate angular grid points (i.e. number of GLOW runs), must be even and &gt; 20. Defaults to 50.</span>
-<span class="sd">            n_bins (int, optional): Number of energy bins. Defaults to 100.</span>
-<span class="sd">            n_alt (int, optional): Number of altitude bins, must be &gt; 100. Defaults to `None`, i.e. uses same number of bins as a single GLOW run.</span>
-<span class="sd">            uniformize_glow (bool, optional): Interpolate GLOW output to an uniform altitude grid. `n_alt` is ignored if this option is set to `False`. Defaults to `True`.</span>
-<span class="sd">            n_threads (int, optional): Number of threads for parallel GLOW runs. Set to `None` to use all system threads. Defaults to `None`.</span>
-<span class="sd">            show_progress (bool, optional): Use TQDM to show progress of GLOW model calculations. Defaults to `True`.</span>
-<span class="sd">            kwargs (dict, optional): Passed to `ncarglow.no_precipitation`.</span>
-
-<span class="sd">        Returns:</span>
-<span class="sd">            bds (xarray.Dataset): Ionospheric parameters and brightnesses (with production and loss) in GEO coordinates.</span>
-
-<span class="sd">        Raises:</span>
-<span class="sd">            ValueError: Number of position bins can not be odd.</span>
-<span class="sd">            ValueError: Number of position bins can not be &lt; 20.</span>
-<span class="sd">            ValueError: Resampling can not be &lt; 0.5.</span>
-
-<span class="sd">        Warns:</span>
-<span class="sd">            ResourceWarning: Number of threads requested is more than available system threads.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">grobj</span> <span class="o">=</span> <span class="bp">cls</span><span class="p">(</span><span class="n">time</span><span class="p">,</span> <span class="n">lat</span><span class="p">,</span> <span class="n">lon</span><span class="p">,</span> <span class="n">heading</span><span class="p">,</span> <span class="n">max_alt</span><span class="p">,</span>
-                    <span class="n">n_pts</span><span class="p">,</span> <span class="n">n_bins</span><span class="p">,</span> <span class="n">n_alt</span><span class="o">=</span><span class="n">n_alt</span><span class="p">,</span> <span class="n">uniformize_glow</span><span class="o">=</span><span class="n">uniformize_glow</span><span class="p">,</span> <span class="n">n_threads</span><span class="o">=</span><span class="n">n_threads</span><span class="p">,</span> <span class="n">resamp</span><span class="o">=</span><span class="n">resamp</span><span class="p">,</span> <span class="n">show_progress</span><span class="o">=</span><span class="n">show_progress</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-        <span class="n">bds</span> <span class="o">=</span> <span class="n">grobj</span><span class="o">.</span><span class="n">run_no_precipitation</span><span class="p">()</span>
-        <span class="k">return</span> <span class="n">bds</span>
+          <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-33"> 33</a></span>
+<span class="normal"><a href="#__codelineno-0-34"> 34</a></span>
+<span class="normal"><a href="#__codelineno-0-35"> 35</a></span>
+<span class="normal"><a href="#__codelineno-0-36"> 36</a></span>
+<span class="normal"><a href="#__codelineno-0-37"> 37</a></span>
+<span class="normal"><a href="#__codelineno-0-38"> 38</a></span>
+<span class="normal"><a href="#__codelineno-0-39"> 39</a></span>
+<span class="normal"><a href="#__codelineno-0-40"> 40</a></span>
+<span class="normal"><a href="#__codelineno-0-41"> 41</a></span>
+<span class="normal"><a href="#__codelineno-0-42"> 42</a></span>
+<span class="normal"><a href="#__codelineno-0-43"> 43</a></span>
+<span class="normal"><a href="#__codelineno-0-44"> 44</a></span>
+<span class="normal"><a href="#__codelineno-0-45"> 45</a></span>
+<span class="normal"><a href="#__codelineno-0-46"> 46</a></span>
+<span class="normal"><a href="#__codelineno-0-47"> 47</a></span>
+<span class="normal"><a href="#__codelineno-0-48"> 48</a></span>
+<span class="normal"><a href="#__codelineno-0-49"> 49</a></span>
+<span class="normal"><a href="#__codelineno-0-50"> 50</a></span>
+<span class="normal"><a href="#__codelineno-0-51"> 51</a></span>
+<span class="normal"><a href="#__codelineno-0-52"> 52</a></span>
+<span class="normal"><a href="#__codelineno-0-53"> 53</a></span>
+<span class="normal"><a href="#__codelineno-0-54"> 54</a></span>
+<span class="normal"><a href="#__codelineno-0-55"> 55</a></span>
+<span class="normal"><a href="#__codelineno-0-56"> 56</a></span>
+<span class="normal"><a href="#__codelineno-0-57"> 57</a></span>
+<span class="normal"><a href="#__codelineno-0-58"> 58</a></span>
+<span class="normal"><a href="#__codelineno-0-59"> 59</a></span>
+<span class="normal"><a href="#__codelineno-0-60"> 60</a></span>
+<span class="normal"><a href="#__codelineno-0-61"> 61</a></span>
+<span class="normal"><a href="#__codelineno-0-62"> 62</a></span>
+<span class="normal"><a href="#__codelineno-0-63"> 63</a></span>
+<span class="normal"><a href="#__codelineno-0-64"> 64</a></span>
+<span class="normal"><a href="#__codelineno-0-65"> 65</a></span>
+<span class="normal"><a href="#__codelineno-0-66"> 66</a></span>
+<span class="normal"><a href="#__codelineno-0-67"> 67</a></span>
+<span class="normal"><a href="#__codelineno-0-68"> 68</a></span>
+<span class="normal"><a href="#__codelineno-0-69"> 69</a></span>
+<span class="normal"><a href="#__codelineno-0-70"> 70</a></span>
+<span class="normal"><a href="#__codelineno-0-71"> 71</a></span>
+<span class="normal"><a href="#__codelineno-0-72"> 72</a></span>
+<span class="normal"><a href="#__codelineno-0-73"> 73</a></span>
+<span class="normal"><a href="#__codelineno-0-74"> 74</a></span>
+<span class="normal"><a href="#__codelineno-0-75"> 75</a></span>
+<span class="normal"><a href="#__codelineno-0-76"> 76</a></span>
+<span class="normal"><a href="#__codelineno-0-77"> 77</a></span>
+<span class="normal"><a href="#__codelineno-0-78"> 78</a></span>
+<span class="normal"><a href="#__codelineno-0-79"> 79</a></span>
+<span class="normal"><a href="#__codelineno-0-80"> 80</a></span>
+<span class="normal"><a href="#__codelineno-0-81"> 81</a></span>
+<span class="normal"><a href="#__codelineno-0-82"> 82</a></span>
+<span class="normal"><a href="#__codelineno-0-83"> 83</a></span>
+<span class="normal"><a href="#__codelineno-0-84"> 84</a></span>
+<span class="normal"><a href="#__codelineno-0-85"> 85</a></span>
+<span class="normal"><a href="#__codelineno-0-86"> 86</a></span>
+<span class="normal"><a href="#__codelineno-0-87"> 87</a></span>
+<span class="normal"><a href="#__codelineno-0-88"> 88</a></span>
+<span class="normal"><a href="#__codelineno-0-89"> 89</a></span>
+<span class="normal"><a href="#__codelineno-0-90"> 90</a></span>
+<span class="normal"><a href="#__codelineno-0-91"> 91</a></span>
+<span class="normal"><a href="#__codelineno-0-92"> 92</a></span>
+<span class="normal"><a href="#__codelineno-0-93"> 93</a></span>
+<span class="normal"><a href="#__codelineno-0-94"> 94</a></span>
+<span class="normal"><a href="#__codelineno-0-95"> 95</a></span>
+<span class="normal"><a href="#__codelineno-0-96"> 96</a></span>
+<span class="normal"><a href="#__codelineno-0-97"> 97</a></span>
+<span class="normal"><a href="#__codelineno-0-98"> 98</a></span>
+<span class="normal"><a href="#__codelineno-0-99"> 99</a></span>
+<span class="normal"><a href="#__codelineno-0-100">100</a></span>
+<span class="normal"><a href="#__codelineno-0-101">101</a></span>
+<span class="normal"><a href="#__codelineno-0-102">102</a></span>
+<span class="normal"><a href="#__codelineno-0-103">103</a></span>
+<span class="normal"><a href="#__codelineno-0-104">104</a></span>
+<span class="normal"><a href="#__codelineno-0-105">105</a></span>
+<span class="normal"><a href="#__codelineno-0-106">106</a></span>
+<span class="normal"><a href="#__codelineno-0-107">107</a></span>
+<span class="normal"><a href="#__codelineno-0-108">108</a></span>
+<span class="normal"><a href="#__codelineno-0-109">109</a></span>
+<span class="normal"><a href="#__codelineno-0-110">110</a></span>
+<span class="normal"><a href="#__codelineno-0-111">111</a></span>
+<span class="normal"><a href="#__codelineno-0-112">112</a></span>
+<span class="normal"><a href="#__codelineno-0-113">113</a></span>
+<span class="normal"><a href="#__codelineno-0-114">114</a></span>
+<span class="normal"><a href="#__codelineno-0-115">115</a></span>
+<span class="normal"><a href="#__codelineno-0-116">116</a></span>
+<span class="normal"><a href="#__codelineno-0-117">117</a></span>
+<span class="normal"><a href="#__codelineno-0-118">118</a></span>
+<span class="normal"><a href="#__codelineno-0-119">119</a></span>
+<span class="normal"><a href="#__codelineno-0-120">120</a></span>
+<span class="normal"><a href="#__codelineno-0-121">121</a></span>
+<span class="normal"><a href="#__codelineno-0-122">122</a></span>
+<span class="normal"><a href="#__codelineno-0-123">123</a></span>
+<span class="normal"><a href="#__codelineno-0-124">124</a></span>
+<span class="normal"><a href="#__codelineno-0-125">125</a></span>
+<span class="normal"><a href="#__codelineno-0-126">126</a></span>
+<span class="normal"><a href="#__codelineno-0-127">127</a></span>
+<span class="normal"><a href="#__codelineno-0-128">128</a></span>
+<span class="normal"><a href="#__codelineno-0-129">129</a></span>
+<span class="normal"><a href="#__codelineno-0-130">130</a></span>
+<span class="normal"><a href="#__codelineno-0-131">131</a></span>
+<span class="normal"><a href="#__codelineno-0-132">132</a></span>
+<span class="normal"><a href="#__codelineno-0-133">133</a></span>
+<span class="normal"><a href="#__codelineno-0-134">134</a></span>
+<span class="normal"><a href="#__codelineno-0-135">135</a></span>
+<span class="normal"><a href="#__codelineno-0-136">136</a></span>
+<span class="normal"><a href="#__codelineno-0-137">137</a></span>
+<span class="normal"><a href="#__codelineno-0-138">138</a></span>
+<span class="normal"><a href="#__codelineno-0-139">139</a></span>
+<span class="normal"><a href="#__codelineno-0-140">140</a></span>
+<span class="normal"><a href="#__codelineno-0-141">141</a></span>
+<span class="normal"><a href="#__codelineno-0-142">142</a></span>
+<span class="normal"><a href="#__codelineno-0-143">143</a></span>
+<span class="normal"><a href="#__codelineno-0-144">144</a></span>
+<span class="normal"><a href="#__codelineno-0-145">145</a></span>
+<span class="normal"><a href="#__codelineno-0-146">146</a></span>
+<span class="normal"><a href="#__codelineno-0-147">147</a></span>
+<span class="normal"><a href="#__codelineno-0-148">148</a></span>
+<span class="normal"><a href="#__codelineno-0-149">149</a></span>
+<span class="normal"><a href="#__codelineno-0-150">150</a></span>
+<span class="normal"><a href="#__codelineno-0-151">151</a></span>
+<span class="normal"><a href="#__codelineno-0-152">152</a></span>
+<span class="normal"><a href="#__codelineno-0-153">153</a></span>
+<span class="normal"><a href="#__codelineno-0-154">154</a></span>
+<span class="normal"><a href="#__codelineno-0-155">155</a></span>
+<span class="normal"><a href="#__codelineno-0-156">156</a></span>
+<span class="normal"><a href="#__codelineno-0-157">157</a></span>
+<span class="normal"><a href="#__codelineno-0-158">158</a></span>
+<span class="normal"><a href="#__codelineno-0-159">159</a></span>
+<span class="normal"><a href="#__codelineno-0-160">160</a></span>
+<span class="normal"><a href="#__codelineno-0-161">161</a></span>
+<span class="normal"><a href="#__codelineno-0-162">162</a></span>
+<span class="normal"><a href="#__codelineno-0-163">163</a></span>
+<span class="normal"><a href="#__codelineno-0-164">164</a></span>
+<span class="normal"><a href="#__codelineno-0-165">165</a></span>
+<span class="normal"><a href="#__codelineno-0-166">166</a></span>
+<span class="normal"><a href="#__codelineno-0-167">167</a></span>
+<span class="normal"><a href="#__codelineno-0-168">168</a></span>
+<span class="normal"><a href="#__codelineno-0-169">169</a></span>
+<span class="normal"><a href="#__codelineno-0-170">170</a></span>
+<span class="normal"><a href="#__codelineno-0-171">171</a></span>
+<span class="normal"><a href="#__codelineno-0-172">172</a></span>
+<span class="normal"><a href="#__codelineno-0-173">173</a></span>
+<span class="normal"><a href="#__codelineno-0-174">174</a></span>
+<span class="normal"><a href="#__codelineno-0-175">175</a></span>
+<span class="normal"><a href="#__codelineno-0-176">176</a></span>
+<span class="normal"><a href="#__codelineno-0-177">177</a></span>
+<span class="normal"><a href="#__codelineno-0-178">178</a></span>
+<span class="normal"><a href="#__codelineno-0-179">179</a></span>
+<span class="normal"><a href="#__codelineno-0-180">180</a></span>
+<span class="normal"><a href="#__codelineno-0-181">181</a></span>
+<span class="normal"><a href="#__codelineno-0-182">182</a></span>
+<span class="normal"><a href="#__codelineno-0-183">183</a></span>
+<span class="normal"><a href="#__codelineno-0-184">184</a></span>
+<span class="normal"><a href="#__codelineno-0-185">185</a></span>
+<span class="normal"><a href="#__codelineno-0-186">186</a></span>
+<span class="normal"><a href="#__codelineno-0-187">187</a></span>
+<span class="normal"><a href="#__codelineno-0-188">188</a></span>
+<span class="normal"><a href="#__codelineno-0-189">189</a></span>
+<span class="normal"><a href="#__codelineno-0-190">190</a></span>
+<span class="normal"><a href="#__codelineno-0-191">191</a></span>
+<span class="normal"><a href="#__codelineno-0-192">192</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-33" name="__codelineno-0-33"></a><span class="k">class</span> <span class="nc">glow2d_geo</span><span class="p">:</span>
+<a id="__codelineno-0-34" name="__codelineno-0-34"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Compute GLOW model on the great circle passing through the origin location along the specified bearing. </span>
+<a id="__codelineno-0-35" name="__codelineno-0-35"></a><span class="sd">    The result is presented in a geocentric coordinate system.</span>
+<a id="__codelineno-0-36" name="__codelineno-0-36"></a><span class="sd">    &quot;&quot;&quot;</span>
+<a id="__codelineno-0-37" name="__codelineno-0-37"></a>
+<a id="__codelineno-0-38" name="__codelineno-0-38"></a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">time</span><span class="p">:</span> <span class="n">datetime</span><span class="p">,</span> <span class="n">lat</span><span class="p">:</span> <span class="n">Numeric</span><span class="p">,</span> <span class="n">lon</span><span class="p">:</span> <span class="n">Numeric</span><span class="p">,</span> <span class="n">heading</span><span class="p">:</span> <span class="n">Numeric</span><span class="p">,</span> <span class="n">max_alt</span><span class="p">:</span> <span class="n">Numeric</span> <span class="o">=</span> <span class="mi">1000</span><span class="p">,</span> <span class="n">n_pts</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">50</span><span class="p">,</span> <span class="n">n_bins</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">100</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">n_alt</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">uniformize_glow</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">n_threads</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">full_circ</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">show_progress</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<a id="__codelineno-0-39" name="__codelineno-0-39"></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;Create a GLOWRaycast object.</span>
+<a id="__codelineno-0-40" name="__codelineno-0-40"></a>
+<a id="__codelineno-0-41" name="__codelineno-0-41"></a><span class="sd">        Args:</span>
+<a id="__codelineno-0-42" name="__codelineno-0-42"></a><span class="sd">            time (datetime): Datetime of GLOW calculation.</span>
+<a id="__codelineno-0-43" name="__codelineno-0-43"></a><span class="sd">            lat (Numeric): Latitude of starting location.</span>
+<a id="__codelineno-0-44" name="__codelineno-0-44"></a><span class="sd">            lon (Numeric): Longitude of starting location.</span>
+<a id="__codelineno-0-45" name="__codelineno-0-45"></a><span class="sd">            heading (Numeric): Heading (look direction).</span>
+<a id="__codelineno-0-46" name="__codelineno-0-46"></a><span class="sd">            max_alt (Numeric, optional): Maximum altitude where intersection is considered (km). Defaults to 1000, i.e. exobase.</span>
+<a id="__codelineno-0-47" name="__codelineno-0-47"></a><span class="sd">            n_pts (int, optional): Number of GEO coordinate angular grid points (i.e. number of GLOW runs), must be even and &gt; 20. Defaults to 50.</span>
+<a id="__codelineno-0-48" name="__codelineno-0-48"></a><span class="sd">            n_bins (int, optional): Number of energy bins. Defaults to 100.</span>
+<a id="__codelineno-0-49" name="__codelineno-0-49"></a><span class="sd">            n_alt (int, optional): Number of altitude bins, must be &gt; 100. Used only when `uniformize_glow` is set to `True` (default). Defaults to `None`, i.e. uses same number of bins as a single GLOW run.</span>
+<a id="__codelineno-0-50" name="__codelineno-0-50"></a><span class="sd">            uniformize_glow (bool, optional): Interpolate GLOW output to an uniform altitude grid. `n_alt` is ignored if this option is set to `False`. Defaults to `True`.</span>
+<a id="__codelineno-0-51" name="__codelineno-0-51"></a><span class="sd">            n_threads (int, optional): Number of threads for parallel GLOW runs. Set to `None` to use all system threads. Defaults to `None`.</span>
+<a id="__codelineno-0-52" name="__codelineno-0-52"></a><span class="sd">            full_circ (bool, optional): For testing only, do not use. Defaults to False.</span>
+<a id="__codelineno-0-53" name="__codelineno-0-53"></a><span class="sd">            show_progress (bool, optional): Use TQDM to show progress of GLOW model calculations. Defaults to True.</span>
+<a id="__codelineno-0-54" name="__codelineno-0-54"></a><span class="sd">            kwargs (dict, optional): Passed to `glowpython.generic`.</span>
+<a id="__codelineno-0-55" name="__codelineno-0-55"></a>
+<a id="__codelineno-0-56" name="__codelineno-0-56"></a><span class="sd">        Raises:</span>
+<a id="__codelineno-0-57" name="__codelineno-0-57"></a><span class="sd">            ValueError: Number of position bins can not be odd.</span>
+<a id="__codelineno-0-58" name="__codelineno-0-58"></a><span class="sd">            ValueError: Number of position bins can not be &lt; 20.</span>
+<a id="__codelineno-0-59" name="__codelineno-0-59"></a><span class="sd">            ValueError: Number of altitude bins can not be &lt; 100.</span>
+<a id="__codelineno-0-60" name="__codelineno-0-60"></a>
+<a id="__codelineno-0-61" name="__codelineno-0-61"></a><span class="sd">        Warns:</span>
+<a id="__codelineno-0-62" name="__codelineno-0-62"></a><span class="sd">            ResourceWarning: Number of threads requested is more than available system threads.</span>
+<a id="__codelineno-0-63" name="__codelineno-0-63"></a><span class="sd">        &quot;&quot;&quot;</span>
+<a id="__codelineno-0-64" name="__codelineno-0-64"></a>        <span class="k">if</span> <span class="n">n_pts</span> <span class="o">%</span> <span class="mi">2</span><span class="p">:</span>
+<a id="__codelineno-0-65" name="__codelineno-0-65"></a>            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Number of position bins can not be odd.&#39;</span><span class="p">)</span>
+<a id="__codelineno-0-66" name="__codelineno-0-66"></a>        <span class="k">if</span> <span class="n">n_pts</span> <span class="o">&lt;</span> <span class="mi">20</span><span class="p">:</span>
+<a id="__codelineno-0-67" name="__codelineno-0-67"></a>            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Number of position bins can not be &lt; 20.&#39;</span><span class="p">)</span>
+<a id="__codelineno-0-68" name="__codelineno-0-68"></a>        <span class="k">if</span> <span class="n">n_threads</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+<a id="__codelineno-0-69" name="__codelineno-0-69"></a>            <span class="n">n_threads</span> <span class="o">=</span> <span class="n">N_CPUS</span>
+<a id="__codelineno-0-70" name="__codelineno-0-70"></a>        <span class="k">if</span> <span class="n">n_threads</span> <span class="o">&gt;</span> <span class="n">N_CPUS</span><span class="p">:</span>
+<a id="__codelineno-0-71" name="__codelineno-0-71"></a>            <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s1">&#39;Number of requested threads (</span><span class="si">%d</span><span class="s1"> &gt; </span><span class="si">%d</span><span class="s1">)&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">n_threads</span><span class="p">,</span> <span class="n">N_CPUS</span><span class="p">),</span> <span class="ne">ResourceWarning</span><span class="p">)</span>
+<a id="__codelineno-0-72" name="__codelineno-0-72"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">_uniform_glow</span> <span class="o">=</span> <span class="n">uniformize_glow</span>
+<a id="__codelineno-0-73" name="__codelineno-0-73"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">_pt</span> <span class="o">=</span> <span class="n">Point</span><span class="p">(</span><span class="n">lat</span><span class="p">,</span> <span class="n">lon</span><span class="p">)</span>  <span class="c1"># instrument loc</span>
+<a id="__codelineno-0-74" name="__codelineno-0-74"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">_time</span> <span class="o">=</span> <span class="n">time</span>  <span class="c1"># time of calc</span>
+<a id="__codelineno-0-75" name="__codelineno-0-75"></a>        <span class="k">if</span> <span class="n">n_alt</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">n_alt</span> <span class="o">&lt;</span> <span class="mi">100</span><span class="p">:</span>
+<a id="__codelineno-0-76" name="__codelineno-0-76"></a>            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Number of altitude bins can not be &lt; 100&#39;</span><span class="p">)</span>
+<a id="__codelineno-0-77" name="__codelineno-0-77"></a>        <span class="k">if</span> <span class="n">n_alt</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+<a id="__codelineno-0-78" name="__codelineno-0-78"></a>            <span class="n">n_alt</span> <span class="o">=</span> <span class="mi">100</span>  <span class="c1"># default</span>
+<a id="__codelineno-0-79" name="__codelineno-0-79"></a>        <span class="n">max_d</span> <span class="o">=</span> <span class="mi">6400</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="k">if</span> <span class="n">full_circ</span> <span class="k">else</span> <span class="n">EARTH_RADIUS</span> <span class="o">*</span> \
+<a id="__codelineno-0-80" name="__codelineno-0-80"></a>            <span class="n">np</span><span class="o">.</span><span class="n">arccos</span><span class="p">(</span><span class="n">EARTH_RADIUS</span> <span class="o">/</span> <span class="p">(</span><span class="n">EARTH_RADIUS</span> <span class="o">+</span> <span class="n">max_alt</span><span class="p">)</span>
+<a id="__codelineno-0-81" name="__codelineno-0-81"></a>                      <span class="p">)</span>  <span class="c1"># find maximum distance where LOS intersects exobase # 6400 * np.pi</span>
+<a id="__codelineno-0-82" name="__codelineno-0-82"></a>        <span class="c1"># points on the earth where we need to sample</span>
+<a id="__codelineno-0-83" name="__codelineno-0-83"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">_show_prog</span> <span class="o">=</span> <span class="n">show_progress</span>
+<a id="__codelineno-0-84" name="__codelineno-0-84"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">_kwargs</span> <span class="o">=</span> <span class="n">kwargs</span>
+<a id="__codelineno-0-85" name="__codelineno-0-85"></a>        <span class="n">distpts</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">max_d</span><span class="p">,</span> <span class="n">n_pts</span><span class="p">,</span> <span class="n">endpoint</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<a id="__codelineno-0-86" name="__codelineno-0-86"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">_locs</span> <span class="o">=</span> <span class="p">[]</span>
+<a id="__codelineno-0-87" name="__codelineno-0-87"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">_nbins</span> <span class="o">=</span> <span class="n">n_bins</span>  <span class="c1"># number of energy bins (for later)</span>
+<a id="__codelineno-0-88" name="__codelineno-0-88"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">_nthr</span> <span class="o">=</span> <span class="n">n_threads</span>  <span class="c1"># number of threads (for later)</span>
+<a id="__codelineno-0-89" name="__codelineno-0-89"></a>        <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">distpts</span><span class="p">:</span>  <span class="c1"># for each distance point</span>
+<a id="__codelineno-0-90" name="__codelineno-0-90"></a>            <span class="n">dest</span> <span class="o">=</span> <span class="n">GreatCircleDistance</span><span class="p">(</span>
+<a id="__codelineno-0-91" name="__codelineno-0-91"></a>                <span class="n">kilometers</span><span class="o">=</span><span class="n">d</span><span class="p">)</span><span class="o">.</span><span class="n">destination</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_pt</span><span class="p">,</span> <span class="n">heading</span><span class="p">)</span>  <span class="c1"># calculate lat, lon of location at that distance along the great circle</span>
+<a id="__codelineno-0-92" name="__codelineno-0-92"></a>            <span class="bp">self</span><span class="o">.</span><span class="n">_locs</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">dest</span><span class="o">.</span><span class="n">latitude</span><span class="p">,</span> <span class="n">dest</span><span class="o">.</span><span class="n">longitude</span><span class="p">))</span>  <span class="c1"># store it</span>
+<a id="__codelineno-0-93" name="__codelineno-0-93"></a>        <span class="k">if</span> <span class="n">full_circ</span><span class="p">:</span>  <span class="c1"># for fun, _get_angle() does not wrap around for &gt; 180 deg</span>
+<a id="__codelineno-0-94" name="__codelineno-0-94"></a>            <span class="n">npt</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_locs</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+<a id="__codelineno-0-95" name="__codelineno-0-95"></a>            <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">distpts</span><span class="p">:</span>
+<a id="__codelineno-0-96" name="__codelineno-0-96"></a>                <span class="n">dest</span> <span class="o">=</span> <span class="n">GreatCircleDistance</span><span class="p">(</span>
+<a id="__codelineno-0-97" name="__codelineno-0-97"></a>                    <span class="n">kilometers</span><span class="o">=</span><span class="n">d</span><span class="p">)</span><span class="o">.</span><span class="n">destination</span><span class="p">(</span><span class="n">npt</span><span class="p">,</span> <span class="n">heading</span><span class="p">)</span>
+<a id="__codelineno-0-98" name="__codelineno-0-98"></a>                <span class="bp">self</span><span class="o">.</span><span class="n">_locs</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">dest</span><span class="o">.</span><span class="n">latitude</span><span class="p">,</span> <span class="n">dest</span><span class="o">.</span><span class="n">longitude</span><span class="p">))</span>
+<a id="__codelineno-0-99" name="__codelineno-0-99"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">_angs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_angle</span><span class="p">()</span>  <span class="c1"># get the corresponding angles</span>
+<a id="__codelineno-0-100" name="__codelineno-0-100"></a>        <span class="k">if</span> <span class="n">full_circ</span><span class="p">:</span>  <span class="c1"># fill the rest if full circle</span>
+<a id="__codelineno-0-101" name="__codelineno-0-101"></a>            <span class="bp">self</span><span class="o">.</span><span class="n">_angs</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_angs</span><span class="p">)</span> <span class="o">//</span> <span class="mi">2</span><span class="p">:]</span> <span class="o">=</span> <span class="mi">2</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">-</span> \
+<a id="__codelineno-0-102" name="__codelineno-0-102"></a>                <span class="bp">self</span><span class="o">.</span><span class="n">_angs</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_angs</span><span class="p">)</span> <span class="o">//</span> <span class="mi">2</span><span class="p">:]</span>
+<a id="__codelineno-0-103" name="__codelineno-0-103"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">_bds</span> <span class="o">=</span> <span class="kc">None</span>
+<a id="__codelineno-0-104" name="__codelineno-0-104"></a>
+<a id="__codelineno-0-105" name="__codelineno-0-105"></a>    <span class="k">def</span> <span class="nf">_get_angle</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>  <span class="c1"># get haversine angles between two lat, lon coords</span>
+<a id="__codelineno-0-106" name="__codelineno-0-106"></a>        <span class="n">angs</span> <span class="o">=</span> <span class="p">[]</span>
+<a id="__codelineno-0-107" name="__codelineno-0-107"></a>        <span class="k">for</span> <span class="n">pt</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_locs</span><span class="p">:</span>
+<a id="__codelineno-0-108" name="__codelineno-0-108"></a>            <span class="n">ang</span> <span class="o">=</span> <span class="n">haversine</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_locs</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">pt</span><span class="p">,</span> <span class="n">unit</span><span class="o">=</span><span class="n">Unit</span><span class="o">.</span><span class="n">RADIANS</span><span class="p">)</span>
+<a id="__codelineno-0-109" name="__codelineno-0-109"></a>            <span class="n">angs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ang</span><span class="p">)</span>
+<a id="__codelineno-0-110" name="__codelineno-0-110"></a>        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">angs</span><span class="p">)</span>
+<a id="__codelineno-0-111" name="__codelineno-0-111"></a>
+<a id="__codelineno-0-112" name="__codelineno-0-112"></a>    <span class="nd">@staticmethod</span>
+<a id="__codelineno-0-113" name="__codelineno-0-113"></a>    <span class="k">def</span> <span class="nf">_uniformize_glow</span><span class="p">(</span><span class="n">iono</span><span class="p">:</span> <span class="n">xarray</span><span class="o">.</span><span class="n">Dataset</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">xarray</span><span class="o">.</span><span class="n">Dataset</span><span class="p">:</span>
+<a id="__codelineno-0-114" name="__codelineno-0-114"></a>        <span class="n">alt_km</span> <span class="o">=</span> <span class="n">iono</span><span class="o">.</span><span class="n">alt_km</span><span class="o">.</span><span class="n">values</span>
+<a id="__codelineno-0-115" name="__codelineno-0-115"></a>        <span class="n">alt</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">alt_km</span><span class="o">.</span><span class="n">min</span><span class="p">(),</span> <span class="n">alt_km</span><span class="o">.</span><span class="n">max</span><span class="p">(),</span> <span class="nb">len</span><span class="p">(</span><span class="n">alt_km</span><span class="p">))</span>  <span class="c1"># change to custom</span>
+<a id="__codelineno-0-116" name="__codelineno-0-116"></a>        <span class="n">unit_keys</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;Tn&quot;</span><span class="p">,</span> <span class="s2">&quot;O&quot;</span><span class="p">,</span> <span class="s2">&quot;N2&quot;</span><span class="p">,</span> <span class="s2">&quot;O2&quot;</span><span class="p">,</span> <span class="s2">&quot;NO&quot;</span><span class="p">,</span> <span class="s2">&quot;NeIn&quot;</span><span class="p">,</span> <span class="s2">&quot;NeOut&quot;</span><span class="p">,</span> <span class="s2">&quot;ionrate&quot;</span><span class="p">,</span>
+<a id="__codelineno-0-117" name="__codelineno-0-117"></a>                     <span class="s2">&quot;O+&quot;</span><span class="p">,</span> <span class="s2">&quot;O2+&quot;</span><span class="p">,</span> <span class="s2">&quot;NO+&quot;</span><span class="p">,</span> <span class="s2">&quot;N2D&quot;</span><span class="p">,</span> <span class="s2">&quot;pedersen&quot;</span><span class="p">,</span> <span class="s2">&quot;hall&quot;</span><span class="p">,</span> <span class="s2">&quot;Te&quot;</span><span class="p">,</span> <span class="s2">&quot;Ti&quot;</span><span class="p">]</span>
+<a id="__codelineno-0-118" name="__codelineno-0-118"></a>        <span class="n">state_keys</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;production&#39;</span><span class="p">,</span> <span class="s1">&#39;loss&#39;</span><span class="p">,</span> <span class="s1">&#39;excitedDensity&#39;</span><span class="p">]</span>
+<a id="__codelineno-0-119" name="__codelineno-0-119"></a>        <span class="n">data_vars</span> <span class="o">=</span> <span class="p">{}</span>
+<a id="__codelineno-0-120" name="__codelineno-0-120"></a>        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">unit_keys</span><span class="p">:</span>
+<a id="__codelineno-0-121" name="__codelineno-0-121"></a>            <span class="n">out</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">interp</span><span class="p">(</span><span class="n">alt</span><span class="p">,</span> <span class="n">alt_km</span><span class="p">,</span> <span class="n">iono</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">)</span>
+<a id="__codelineno-0-122" name="__codelineno-0-122"></a>            <span class="n">data_vars</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="p">((</span><span class="s1">&#39;alt_km&#39;</span><span class="p">),</span> <span class="n">out</span><span class="p">)</span>
+<a id="__codelineno-0-123" name="__codelineno-0-123"></a>        <span class="n">bds</span> <span class="o">=</span> <span class="n">xarray</span><span class="o">.</span><span class="n">Dataset</span><span class="p">(</span><span class="n">data_vars</span><span class="o">=</span><span class="n">data_vars</span><span class="p">,</span> <span class="n">coords</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;alt_km&#39;</span><span class="p">:</span> <span class="n">alt</span><span class="p">})</span>
+<a id="__codelineno-0-124" name="__codelineno-0-124"></a>        <span class="n">ver</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">iono</span><span class="p">[</span><span class="s1">&#39;ver&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+<a id="__codelineno-0-125" name="__codelineno-0-125"></a>        <span class="k">for</span> <span class="n">idx</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">iono</span><span class="o">.</span><span class="n">wavelength</span><span class="p">)):</span>
+<a id="__codelineno-0-126" name="__codelineno-0-126"></a>            <span class="n">ver</span><span class="p">[:,</span> <span class="n">idx</span><span class="p">]</span> <span class="o">+=</span> <span class="n">np</span><span class="o">.</span><span class="n">interp</span><span class="p">(</span><span class="n">alt</span><span class="p">,</span> <span class="n">alt_km</span><span class="p">,</span> <span class="n">iono</span><span class="p">[</span><span class="s1">&#39;ver&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">[:,</span> <span class="n">idx</span><span class="p">])</span>
+<a id="__codelineno-0-127" name="__codelineno-0-127"></a>        <span class="n">ver</span> <span class="o">=</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">(</span>
+<a id="__codelineno-0-128" name="__codelineno-0-128"></a>            <span class="n">ver</span><span class="p">,</span>
+<a id="__codelineno-0-129" name="__codelineno-0-129"></a>            <span class="n">coords</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;alt_km&#39;</span><span class="p">:</span> <span class="n">alt</span><span class="p">,</span> <span class="s1">&#39;wavelength&#39;</span><span class="p">:</span> <span class="n">iono</span><span class="o">.</span><span class="n">wavelength</span><span class="o">.</span><span class="n">values</span><span class="p">},</span>
+<a id="__codelineno-0-130" name="__codelineno-0-130"></a>            <span class="n">dims</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;alt_km&#39;</span><span class="p">,</span> <span class="s1">&#39;wavelength&#39;</span><span class="p">),</span>
+<a id="__codelineno-0-131" name="__codelineno-0-131"></a>            <span class="n">name</span><span class="o">=</span><span class="s1">&#39;ver&#39;</span>
+<a id="__codelineno-0-132" name="__codelineno-0-132"></a>        <span class="p">)</span>
+<a id="__codelineno-0-133" name="__codelineno-0-133"></a>        <span class="n">data_vars</span> <span class="o">=</span> <span class="p">{}</span>
+<a id="__codelineno-0-134" name="__codelineno-0-134"></a>        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">state_keys</span><span class="p">:</span>
+<a id="__codelineno-0-135" name="__codelineno-0-135"></a>            <span class="n">out</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">iono</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+<a id="__codelineno-0-136" name="__codelineno-0-136"></a>            <span class="n">inp</span> <span class="o">=</span> <span class="n">iono</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="o">.</span><span class="n">values</span>
+<a id="__codelineno-0-137" name="__codelineno-0-137"></a>            <span class="k">for</span> <span class="n">idx</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">iono</span><span class="o">.</span><span class="n">state</span><span class="p">)):</span>
+<a id="__codelineno-0-138" name="__codelineno-0-138"></a>                <span class="n">out</span><span class="p">[:,</span> <span class="n">idx</span><span class="p">]</span> <span class="o">+=</span> <span class="n">np</span><span class="o">.</span><span class="n">interp</span><span class="p">(</span><span class="n">alt</span><span class="p">,</span> <span class="n">alt_km</span><span class="p">,</span> <span class="n">inp</span><span class="p">[:,</span> <span class="n">idx</span><span class="p">])</span>
+<a id="__codelineno-0-139" name="__codelineno-0-139"></a>            <span class="n">data_vars</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="p">((</span><span class="s1">&#39;alt_km&#39;</span><span class="p">,</span> <span class="s1">&#39;state&#39;</span><span class="p">),</span> <span class="n">out</span><span class="p">)</span>
+<a id="__codelineno-0-140" name="__codelineno-0-140"></a>        <span class="n">prodloss</span> <span class="o">=</span> <span class="n">xarray</span><span class="o">.</span><span class="n">Dataset</span><span class="p">(</span><span class="n">data_vars</span><span class="o">=</span><span class="n">data_vars</span><span class="p">,</span>
+<a id="__codelineno-0-141" name="__codelineno-0-141"></a>                                  <span class="n">coords</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;alt_km&#39;</span><span class="p">:</span> <span class="n">alt</span><span class="p">,</span> <span class="s1">&#39;state&#39;</span><span class="p">:</span> <span class="n">iono</span><span class="o">.</span><span class="n">state</span><span class="o">.</span><span class="n">values</span><span class="p">})</span>
+<a id="__codelineno-0-142" name="__codelineno-0-142"></a>        <span class="n">precip</span> <span class="o">=</span> <span class="n">iono</span><span class="p">[</span><span class="s1">&#39;precip&#39;</span><span class="p">]</span>
+<a id="__codelineno-0-143" name="__codelineno-0-143"></a>        <span class="n">bds</span><span class="p">:</span> <span class="n">xarray</span><span class="o">.</span><span class="n">Dataset</span> <span class="o">=</span> <span class="n">xr</span><span class="o">.</span><span class="n">merge</span><span class="p">((</span><span class="n">bds</span><span class="p">,</span> <span class="n">ver</span><span class="p">,</span> <span class="n">prodloss</span><span class="p">,</span> <span class="n">precip</span><span class="p">))</span>
+<a id="__codelineno-0-144" name="__codelineno-0-144"></a>        <span class="n">_</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">bds</span><span class="p">[</span><span class="n">x</span><span class="p">]</span><span class="o">.</span><span class="n">attrs</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">iono</span><span class="p">[</span><span class="n">x</span><span class="p">]</span><span class="o">.</span><span class="n">attrs</span><span class="p">),</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">bds</span><span class="o">.</span><span class="n">data_vars</span><span class="o">.</span><span class="n">keys</span><span class="p">())))</span>
+<a id="__codelineno-0-145" name="__codelineno-0-145"></a>        <span class="n">bds</span><span class="o">.</span><span class="n">attrs</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">iono</span><span class="o">.</span><span class="n">attrs</span><span class="p">)</span>
+<a id="__codelineno-0-146" name="__codelineno-0-146"></a>        <span class="k">return</span> <span class="n">bds</span>
+<a id="__codelineno-0-147" name="__codelineno-0-147"></a>
+<a id="__codelineno-0-148" name="__codelineno-0-148"></a>    <span class="c1"># calculate glow model for one location</span>
+<a id="__codelineno-0-149" name="__codelineno-0-149"></a>    <span class="k">def</span> <span class="nf">_calc_glow_single_noprecip</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">index</span><span class="p">):</span>
+<a id="__codelineno-0-150" name="__codelineno-0-150"></a>        <span class="n">d</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_locs</span><span class="p">[</span><span class="n">index</span><span class="p">]</span>
+<a id="__codelineno-0-151" name="__codelineno-0-151"></a>        <span class="n">iono</span> <span class="o">=</span> <span class="n">glow</span><span class="o">.</span><span class="n">generic</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_time</span><span class="p">,</span> <span class="n">d</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">d</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">_nbins</span><span class="p">,</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">_kwargs</span><span class="p">)</span>
+<a id="__codelineno-0-152" name="__codelineno-0-152"></a>        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_uniform_glow</span><span class="p">:</span>
+<a id="__codelineno-0-153" name="__codelineno-0-153"></a>            <span class="n">iono</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_uniformize_glow</span><span class="p">(</span><span class="n">iono</span><span class="p">)</span>
+<a id="__codelineno-0-154" name="__codelineno-0-154"></a>        <span class="k">return</span> <span class="n">iono</span>
+<a id="__codelineno-0-155" name="__codelineno-0-155"></a>
+<a id="__codelineno-0-156" name="__codelineno-0-156"></a>    <span class="k">def</span> <span class="nf">_calc_glow_noprecip</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">xarray</span><span class="o">.</span><span class="n">Dataset</span><span class="p">:</span>  <span class="c1"># run glow model calculation</span>
+<a id="__codelineno-0-157" name="__codelineno-0-157"></a>        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_show_prog</span><span class="p">:</span>
+<a id="__codelineno-0-158" name="__codelineno-0-158"></a>            <span class="bp">self</span><span class="o">.</span><span class="n">_dss</span> <span class="o">=</span> <span class="n">MAP_FCN</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_calc_glow_single_noprecip</span><span class="p">,</span> <span class="nb">range</span><span class="p">(</span>
+<a id="__codelineno-0-159" name="__codelineno-0-159"></a>                <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_locs</span><span class="p">)),</span> <span class="n">max_workers</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_nthr</span><span class="p">)</span>
+<a id="__codelineno-0-160" name="__codelineno-0-160"></a>        <span class="k">else</span><span class="p">:</span>
+<a id="__codelineno-0-161" name="__codelineno-0-161"></a>            <span class="n">ppool</span> <span class="o">=</span> <span class="n">Pool</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_nthr</span><span class="p">)</span>
+<a id="__codelineno-0-162" name="__codelineno-0-162"></a>            <span class="bp">self</span><span class="o">.</span><span class="n">_dss</span> <span class="o">=</span> <span class="n">ppool</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_calc_glow_single_noprecip</span><span class="p">,</span> <span class="nb">range</span><span class="p">(</span>
+<a id="__codelineno-0-163" name="__codelineno-0-163"></a>                <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_locs</span><span class="p">)))</span>
+<a id="__codelineno-0-164" name="__codelineno-0-164"></a>
+<a id="__codelineno-0-165" name="__codelineno-0-165"></a>        <span class="c1"># for dest in tqdm(self._locs):</span>
+<a id="__codelineno-0-166" name="__codelineno-0-166"></a>        <span class="c1">#     self._dss.append(glow.no_precipitation(time, dest[0], dest[1], self._nbins))</span>
+<a id="__codelineno-0-167" name="__codelineno-0-167"></a>        <span class="n">bds</span><span class="p">:</span> <span class="n">xarray</span><span class="o">.</span><span class="n">Dataset</span> <span class="o">=</span> <span class="n">xr</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span>
+<a id="__codelineno-0-168" name="__codelineno-0-168"></a>            <span class="bp">self</span><span class="o">.</span><span class="n">_dss</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">Index</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_angs</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;angle&#39;</span><span class="p">))</span>
+<a id="__codelineno-0-169" name="__codelineno-0-169"></a>        <span class="n">latlon</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_locs</span><span class="p">)</span>
+<a id="__codelineno-0-170" name="__codelineno-0-170"></a>        <span class="n">bds</span> <span class="o">=</span> <span class="n">bds</span><span class="o">.</span><span class="n">assign_coords</span><span class="p">(</span><span class="n">lat</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;angle&#39;</span><span class="p">,</span> <span class="n">latlon</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]))</span>
+<a id="__codelineno-0-171" name="__codelineno-0-171"></a>        <span class="n">bds</span> <span class="o">=</span> <span class="n">bds</span><span class="o">.</span><span class="n">assign_coords</span><span class="p">(</span><span class="n">lon</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;angle&#39;</span><span class="p">,</span> <span class="n">latlon</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]))</span>
+<a id="__codelineno-0-172" name="__codelineno-0-172"></a>        <span class="k">return</span> <span class="n">bds</span>
+<a id="__codelineno-0-173" name="__codelineno-0-173"></a>
+<a id="__codelineno-0-174" name="__codelineno-0-174"></a>    <span class="k">def</span> <span class="nf">run_model</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">xarray</span><span class="o">.</span><span class="n">Dataset</span><span class="p">:</span>
+<a id="__codelineno-0-175" name="__codelineno-0-175"></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;Run the GLOW model calculation to get the model output in GEO coordinates.</span>
+<a id="__codelineno-0-176" name="__codelineno-0-176"></a>
+<a id="__codelineno-0-177" name="__codelineno-0-177"></a><span class="sd">        Returns:</span>
+<a id="__codelineno-0-178" name="__codelineno-0-178"></a><span class="sd">            xarray.Dataset: GLOW model output in GEO coordinates.</span>
+<a id="__codelineno-0-179" name="__codelineno-0-179"></a><span class="sd">        &quot;&quot;&quot;</span>
+<a id="__codelineno-0-180" name="__codelineno-0-180"></a>        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_bds</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+<a id="__codelineno-0-181" name="__codelineno-0-181"></a>            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_bds</span>
+<a id="__codelineno-0-182" name="__codelineno-0-182"></a>        <span class="c1"># calculate the GLOW model for each lat-lon point determined in init()</span>
+<a id="__codelineno-0-183" name="__codelineno-0-183"></a>        <span class="n">bds</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_calc_glow_noprecip</span><span class="p">()</span>
+<a id="__codelineno-0-184" name="__codelineno-0-184"></a>        <span class="n">unit_desc_dict</span> <span class="o">=</span> <span class="p">{</span>
+<a id="__codelineno-0-185" name="__codelineno-0-185"></a>            <span class="s1">&#39;angle&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;radians&#39;</span><span class="p">,</span> <span class="s1">&#39;Angle of location w.r.t. radius vector at origin (starting location)&#39;</span><span class="p">),</span>
+<a id="__codelineno-0-186" name="__codelineno-0-186"></a>            <span class="s1">&#39;lat&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;degree&#39;</span><span class="p">,</span> <span class="s1">&#39;Latitude of locations&#39;</span><span class="p">),</span>
+<a id="__codelineno-0-187" name="__codelineno-0-187"></a>            <span class="s1">&#39;lon&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;degree&#39;</span><span class="p">,</span> <span class="s1">&#39;Longitude of location&#39;</span><span class="p">)</span>
+<a id="__codelineno-0-188" name="__codelineno-0-188"></a>        <span class="p">}</span>
+<a id="__codelineno-0-189" name="__codelineno-0-189"></a>        <span class="n">_</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">bds</span><span class="p">[</span><span class="n">x</span><span class="p">]</span><span class="o">.</span><span class="n">attrs</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
+<a id="__codelineno-0-190" name="__codelineno-0-190"></a>            <span class="p">{</span><span class="s1">&#39;units&#39;</span><span class="p">:</span> <span class="n">unit_desc_dict</span><span class="p">[</span><span class="n">x</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span> <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="n">unit_desc_dict</span><span class="p">[</span><span class="n">x</span><span class="p">][</span><span class="mi">1</span><span class="p">]}),</span> <span class="n">unit_desc_dict</span><span class="o">.</span><span class="n">keys</span><span class="p">()))</span>
+<a id="__codelineno-0-191" name="__codelineno-0-191"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">_bds</span> <span class="o">=</span> <span class="n">bds</span>
+<a id="__codelineno-0-192" name="__codelineno-0-192"></a>        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_bds</span>  <span class="c1"># return the calculated</span>
 </code></pre></div></td></tr></table></div>
         </details>
 
@@ -896,7 +1155,7 @@ The result is presented in a geocentric coordinate system.</p>
           <td>
                 <code>dict</code>
           </td>
-          <td><p>Passed to <code>ncarglow.no_precipitation</code>.</p></td>
+          <td><p>Passed to <code>glowpython.generic</code>.</p></td>
           <td>
                 <code>{}</code>
           </td>
@@ -940,137 +1199,137 @@ The result is presented in a geocentric coordinate system.</p>
 </details>
       <details class="quote">
         <summary>Source code in <code>glow2d/_glow2d.py</code></summary>
-        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 37</span>
-<span class="normal"> 38</span>
-<span class="normal"> 39</span>
-<span class="normal"> 40</span>
-<span class="normal"> 41</span>
-<span class="normal"> 42</span>
-<span class="normal"> 43</span>
-<span class="normal"> 44</span>
-<span class="normal"> 45</span>
-<span class="normal"> 46</span>
-<span class="normal"> 47</span>
-<span class="normal"> 48</span>
-<span class="normal"> 49</span>
-<span class="normal"> 50</span>
-<span class="normal"> 51</span>
-<span class="normal"> 52</span>
-<span class="normal"> 53</span>
-<span class="normal"> 54</span>
-<span class="normal"> 55</span>
-<span class="normal"> 56</span>
-<span class="normal"> 57</span>
-<span class="normal"> 58</span>
-<span class="normal"> 59</span>
-<span class="normal"> 60</span>
-<span class="normal"> 61</span>
-<span class="normal"> 62</span>
-<span class="normal"> 63</span>
-<span class="normal"> 64</span>
-<span class="normal"> 65</span>
-<span class="normal"> 66</span>
-<span class="normal"> 67</span>
-<span class="normal"> 68</span>
-<span class="normal"> 69</span>
-<span class="normal"> 70</span>
-<span class="normal"> 71</span>
-<span class="normal"> 72</span>
-<span class="normal"> 73</span>
-<span class="normal"> 74</span>
-<span class="normal"> 75</span>
-<span class="normal"> 76</span>
-<span class="normal"> 77</span>
-<span class="normal"> 78</span>
-<span class="normal"> 79</span>
-<span class="normal"> 80</span>
-<span class="normal"> 81</span>
-<span class="normal"> 82</span>
-<span class="normal"> 83</span>
-<span class="normal"> 84</span>
-<span class="normal"> 85</span>
-<span class="normal"> 86</span>
-<span class="normal"> 87</span>
-<span class="normal"> 88</span>
-<span class="normal"> 89</span>
-<span class="normal"> 90</span>
-<span class="normal"> 91</span>
-<span class="normal"> 92</span>
-<span class="normal"> 93</span>
-<span class="normal"> 94</span>
-<span class="normal"> 95</span>
-<span class="normal"> 96</span>
-<span class="normal"> 97</span>
-<span class="normal"> 98</span>
-<span class="normal"> 99</span>
-<span class="normal">100</span>
-<span class="normal">101</span>
-<span class="normal">102</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">time</span><span class="p">:</span> <span class="n">datetime</span><span class="p">,</span> <span class="n">lat</span><span class="p">:</span> <span class="n">Numeric</span><span class="p">,</span> <span class="n">lon</span><span class="p">:</span> <span class="n">Numeric</span><span class="p">,</span> <span class="n">heading</span><span class="p">:</span> <span class="n">Numeric</span><span class="p">,</span> <span class="n">max_alt</span><span class="p">:</span> <span class="n">Numeric</span> <span class="o">=</span> <span class="mi">1000</span><span class="p">,</span> <span class="n">n_pts</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">50</span><span class="p">,</span> <span class="n">n_bins</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">100</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">n_alt</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">uniformize_glow</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">n_threads</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">full_circ</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">show_progress</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Create a GLOWRaycast object.</span>
-
-<span class="sd">    Args:</span>
-<span class="sd">        time (datetime): Datetime of GLOW calculation.</span>
-<span class="sd">        lat (Numeric): Latitude of starting location.</span>
-<span class="sd">        lon (Numeric): Longitude of starting location.</span>
-<span class="sd">        heading (Numeric): Heading (look direction).</span>
-<span class="sd">        max_alt (Numeric, optional): Maximum altitude where intersection is considered (km). Defaults to 1000, i.e. exobase.</span>
-<span class="sd">        n_pts (int, optional): Number of GEO coordinate angular grid points (i.e. number of GLOW runs), must be even and &gt; 20. Defaults to 50.</span>
-<span class="sd">        n_bins (int, optional): Number of energy bins. Defaults to 100.</span>
-<span class="sd">        n_alt (int, optional): Number of altitude bins, must be &gt; 100. Used only when `uniformize_glow` is set to `True` (default). Defaults to `None`, i.e. uses same number of bins as a single GLOW run.</span>
-<span class="sd">        uniformize_glow (bool, optional): Interpolate GLOW output to an uniform altitude grid. `n_alt` is ignored if this option is set to `False`. Defaults to `True`.</span>
-<span class="sd">        n_threads (int, optional): Number of threads for parallel GLOW runs. Set to `None` to use all system threads. Defaults to `None`.</span>
-<span class="sd">        full_circ (bool, optional): For testing only, do not use. Defaults to False.</span>
-<span class="sd">        show_progress (bool, optional): Use TQDM to show progress of GLOW model calculations. Defaults to True.</span>
-<span class="sd">        kwargs (dict, optional): Passed to `ncarglow.no_precipitation`.</span>
-
-<span class="sd">    Raises:</span>
-<span class="sd">        ValueError: Number of position bins can not be odd.</span>
-<span class="sd">        ValueError: Number of position bins can not be &lt; 20.</span>
-<span class="sd">        ValueError: Number of altitude bins can not be &lt; 100.</span>
-
-<span class="sd">    Warns:</span>
-<span class="sd">        ResourceWarning: Number of threads requested is more than available system threads.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">if</span> <span class="n">n_pts</span> <span class="o">%</span> <span class="mi">2</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Number of position bins can not be odd.&#39;</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">n_pts</span> <span class="o">&lt;</span> <span class="mi">20</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Number of position bins can not be &lt; 20.&#39;</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">n_threads</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">n_threads</span> <span class="o">=</span> <span class="n">N_CPUS</span>
-    <span class="k">if</span> <span class="n">n_threads</span> <span class="o">&gt;</span> <span class="n">N_CPUS</span><span class="p">:</span>
-        <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s1">&#39;Number of requested threads (</span><span class="si">%d</span><span class="s1"> &gt; </span><span class="si">%d</span><span class="s1">)&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">n_threads</span><span class="p">,</span> <span class="n">N_CPUS</span><span class="p">),</span> <span class="ne">ResourceWarning</span><span class="p">)</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">_uniform_glow</span> <span class="o">=</span> <span class="n">uniformize_glow</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">_pt</span> <span class="o">=</span> <span class="n">Point</span><span class="p">(</span><span class="n">lat</span><span class="p">,</span> <span class="n">lon</span><span class="p">)</span>  <span class="c1"># instrument loc</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">_time</span> <span class="o">=</span> <span class="n">time</span>  <span class="c1"># time of calc</span>
-    <span class="k">if</span> <span class="n">n_alt</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">n_alt</span> <span class="o">&lt;</span> <span class="mi">100</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Number of altitude bins can not be &lt; 100&#39;</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">n_alt</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">n_alt</span> <span class="o">=</span> <span class="mi">100</span>  <span class="c1"># default</span>
-    <span class="n">max_d</span> <span class="o">=</span> <span class="mi">6400</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="k">if</span> <span class="n">full_circ</span> <span class="k">else</span> <span class="n">EARTH_RADIUS</span> <span class="o">*</span> \
-        <span class="n">np</span><span class="o">.</span><span class="n">arccos</span><span class="p">(</span><span class="n">EARTH_RADIUS</span> <span class="o">/</span> <span class="p">(</span><span class="n">EARTH_RADIUS</span> <span class="o">+</span> <span class="n">max_alt</span><span class="p">)</span>
-                  <span class="p">)</span>  <span class="c1"># find maximum distance where LOS intersects exobase # 6400 * np.pi</span>
-    <span class="c1"># points on the earth where we need to sample</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">_show_prog</span> <span class="o">=</span> <span class="n">show_progress</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">_kwargs</span> <span class="o">=</span> <span class="n">kwargs</span>
-    <span class="n">distpts</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">max_d</span><span class="p">,</span> <span class="n">n_pts</span><span class="p">,</span> <span class="n">endpoint</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">_locs</span> <span class="o">=</span> <span class="p">[]</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">_nbins</span> <span class="o">=</span> <span class="n">n_bins</span>  <span class="c1"># number of energy bins (for later)</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">_nthr</span> <span class="o">=</span> <span class="n">n_threads</span>  <span class="c1"># number of threads (for later)</span>
-    <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">distpts</span><span class="p">:</span>  <span class="c1"># for each distance point</span>
-        <span class="n">dest</span> <span class="o">=</span> <span class="n">GreatCircleDistance</span><span class="p">(</span>
-            <span class="n">kilometers</span><span class="o">=</span><span class="n">d</span><span class="p">)</span><span class="o">.</span><span class="n">destination</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_pt</span><span class="p">,</span> <span class="n">heading</span><span class="p">)</span>  <span class="c1"># calculate lat, lon of location at that distance along the great circle</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_locs</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">dest</span><span class="o">.</span><span class="n">latitude</span><span class="p">,</span> <span class="n">dest</span><span class="o">.</span><span class="n">longitude</span><span class="p">))</span>  <span class="c1"># store it</span>
-    <span class="k">if</span> <span class="n">full_circ</span><span class="p">:</span>  <span class="c1"># for fun, _get_angle() does not wrap around for &gt; 180 deg</span>
-        <span class="n">npt</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_locs</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
-        <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">distpts</span><span class="p">:</span>
-            <span class="n">dest</span> <span class="o">=</span> <span class="n">GreatCircleDistance</span><span class="p">(</span>
-                <span class="n">kilometers</span><span class="o">=</span><span class="n">d</span><span class="p">)</span><span class="o">.</span><span class="n">destination</span><span class="p">(</span><span class="n">npt</span><span class="p">,</span> <span class="n">heading</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_locs</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">dest</span><span class="o">.</span><span class="n">latitude</span><span class="p">,</span> <span class="n">dest</span><span class="o">.</span><span class="n">longitude</span><span class="p">))</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">_angs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_angle</span><span class="p">()</span>  <span class="c1"># get the corresponding angles</span>
-    <span class="k">if</span> <span class="n">full_circ</span><span class="p">:</span>  <span class="c1"># fill the rest if full circle</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_angs</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_angs</span><span class="p">)</span> <span class="o">//</span> <span class="mi">2</span><span class="p">:]</span> <span class="o">=</span> <span class="mi">2</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">-</span> \
-            <span class="bp">self</span><span class="o">.</span><span class="n">_angs</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_angs</span><span class="p">)</span> <span class="o">//</span> <span class="mi">2</span><span class="p">:]</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">_bds</span> <span class="o">=</span> <span class="kc">None</span>
+        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-38"> 38</a></span>
+<span class="normal"><a href="#__codelineno-0-39"> 39</a></span>
+<span class="normal"><a href="#__codelineno-0-40"> 40</a></span>
+<span class="normal"><a href="#__codelineno-0-41"> 41</a></span>
+<span class="normal"><a href="#__codelineno-0-42"> 42</a></span>
+<span class="normal"><a href="#__codelineno-0-43"> 43</a></span>
+<span class="normal"><a href="#__codelineno-0-44"> 44</a></span>
+<span class="normal"><a href="#__codelineno-0-45"> 45</a></span>
+<span class="normal"><a href="#__codelineno-0-46"> 46</a></span>
+<span class="normal"><a href="#__codelineno-0-47"> 47</a></span>
+<span class="normal"><a href="#__codelineno-0-48"> 48</a></span>
+<span class="normal"><a href="#__codelineno-0-49"> 49</a></span>
+<span class="normal"><a href="#__codelineno-0-50"> 50</a></span>
+<span class="normal"><a href="#__codelineno-0-51"> 51</a></span>
+<span class="normal"><a href="#__codelineno-0-52"> 52</a></span>
+<span class="normal"><a href="#__codelineno-0-53"> 53</a></span>
+<span class="normal"><a href="#__codelineno-0-54"> 54</a></span>
+<span class="normal"><a href="#__codelineno-0-55"> 55</a></span>
+<span class="normal"><a href="#__codelineno-0-56"> 56</a></span>
+<span class="normal"><a href="#__codelineno-0-57"> 57</a></span>
+<span class="normal"><a href="#__codelineno-0-58"> 58</a></span>
+<span class="normal"><a href="#__codelineno-0-59"> 59</a></span>
+<span class="normal"><a href="#__codelineno-0-60"> 60</a></span>
+<span class="normal"><a href="#__codelineno-0-61"> 61</a></span>
+<span class="normal"><a href="#__codelineno-0-62"> 62</a></span>
+<span class="normal"><a href="#__codelineno-0-63"> 63</a></span>
+<span class="normal"><a href="#__codelineno-0-64"> 64</a></span>
+<span class="normal"><a href="#__codelineno-0-65"> 65</a></span>
+<span class="normal"><a href="#__codelineno-0-66"> 66</a></span>
+<span class="normal"><a href="#__codelineno-0-67"> 67</a></span>
+<span class="normal"><a href="#__codelineno-0-68"> 68</a></span>
+<span class="normal"><a href="#__codelineno-0-69"> 69</a></span>
+<span class="normal"><a href="#__codelineno-0-70"> 70</a></span>
+<span class="normal"><a href="#__codelineno-0-71"> 71</a></span>
+<span class="normal"><a href="#__codelineno-0-72"> 72</a></span>
+<span class="normal"><a href="#__codelineno-0-73"> 73</a></span>
+<span class="normal"><a href="#__codelineno-0-74"> 74</a></span>
+<span class="normal"><a href="#__codelineno-0-75"> 75</a></span>
+<span class="normal"><a href="#__codelineno-0-76"> 76</a></span>
+<span class="normal"><a href="#__codelineno-0-77"> 77</a></span>
+<span class="normal"><a href="#__codelineno-0-78"> 78</a></span>
+<span class="normal"><a href="#__codelineno-0-79"> 79</a></span>
+<span class="normal"><a href="#__codelineno-0-80"> 80</a></span>
+<span class="normal"><a href="#__codelineno-0-81"> 81</a></span>
+<span class="normal"><a href="#__codelineno-0-82"> 82</a></span>
+<span class="normal"><a href="#__codelineno-0-83"> 83</a></span>
+<span class="normal"><a href="#__codelineno-0-84"> 84</a></span>
+<span class="normal"><a href="#__codelineno-0-85"> 85</a></span>
+<span class="normal"><a href="#__codelineno-0-86"> 86</a></span>
+<span class="normal"><a href="#__codelineno-0-87"> 87</a></span>
+<span class="normal"><a href="#__codelineno-0-88"> 88</a></span>
+<span class="normal"><a href="#__codelineno-0-89"> 89</a></span>
+<span class="normal"><a href="#__codelineno-0-90"> 90</a></span>
+<span class="normal"><a href="#__codelineno-0-91"> 91</a></span>
+<span class="normal"><a href="#__codelineno-0-92"> 92</a></span>
+<span class="normal"><a href="#__codelineno-0-93"> 93</a></span>
+<span class="normal"><a href="#__codelineno-0-94"> 94</a></span>
+<span class="normal"><a href="#__codelineno-0-95"> 95</a></span>
+<span class="normal"><a href="#__codelineno-0-96"> 96</a></span>
+<span class="normal"><a href="#__codelineno-0-97"> 97</a></span>
+<span class="normal"><a href="#__codelineno-0-98"> 98</a></span>
+<span class="normal"><a href="#__codelineno-0-99"> 99</a></span>
+<span class="normal"><a href="#__codelineno-0-100">100</a></span>
+<span class="normal"><a href="#__codelineno-0-101">101</a></span>
+<span class="normal"><a href="#__codelineno-0-102">102</a></span>
+<span class="normal"><a href="#__codelineno-0-103">103</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-38" name="__codelineno-0-38"></a><span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">time</span><span class="p">:</span> <span class="n">datetime</span><span class="p">,</span> <span class="n">lat</span><span class="p">:</span> <span class="n">Numeric</span><span class="p">,</span> <span class="n">lon</span><span class="p">:</span> <span class="n">Numeric</span><span class="p">,</span> <span class="n">heading</span><span class="p">:</span> <span class="n">Numeric</span><span class="p">,</span> <span class="n">max_alt</span><span class="p">:</span> <span class="n">Numeric</span> <span class="o">=</span> <span class="mi">1000</span><span class="p">,</span> <span class="n">n_pts</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">50</span><span class="p">,</span> <span class="n">n_bins</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">100</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">n_alt</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">uniformize_glow</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">n_threads</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">full_circ</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">show_progress</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<a id="__codelineno-0-39" name="__codelineno-0-39"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Create a GLOWRaycast object.</span>
+<a id="__codelineno-0-40" name="__codelineno-0-40"></a>
+<a id="__codelineno-0-41" name="__codelineno-0-41"></a><span class="sd">    Args:</span>
+<a id="__codelineno-0-42" name="__codelineno-0-42"></a><span class="sd">        time (datetime): Datetime of GLOW calculation.</span>
+<a id="__codelineno-0-43" name="__codelineno-0-43"></a><span class="sd">        lat (Numeric): Latitude of starting location.</span>
+<a id="__codelineno-0-44" name="__codelineno-0-44"></a><span class="sd">        lon (Numeric): Longitude of starting location.</span>
+<a id="__codelineno-0-45" name="__codelineno-0-45"></a><span class="sd">        heading (Numeric): Heading (look direction).</span>
+<a id="__codelineno-0-46" name="__codelineno-0-46"></a><span class="sd">        max_alt (Numeric, optional): Maximum altitude where intersection is considered (km). Defaults to 1000, i.e. exobase.</span>
+<a id="__codelineno-0-47" name="__codelineno-0-47"></a><span class="sd">        n_pts (int, optional): Number of GEO coordinate angular grid points (i.e. number of GLOW runs), must be even and &gt; 20. Defaults to 50.</span>
+<a id="__codelineno-0-48" name="__codelineno-0-48"></a><span class="sd">        n_bins (int, optional): Number of energy bins. Defaults to 100.</span>
+<a id="__codelineno-0-49" name="__codelineno-0-49"></a><span class="sd">        n_alt (int, optional): Number of altitude bins, must be &gt; 100. Used only when `uniformize_glow` is set to `True` (default). Defaults to `None`, i.e. uses same number of bins as a single GLOW run.</span>
+<a id="__codelineno-0-50" name="__codelineno-0-50"></a><span class="sd">        uniformize_glow (bool, optional): Interpolate GLOW output to an uniform altitude grid. `n_alt` is ignored if this option is set to `False`. Defaults to `True`.</span>
+<a id="__codelineno-0-51" name="__codelineno-0-51"></a><span class="sd">        n_threads (int, optional): Number of threads for parallel GLOW runs. Set to `None` to use all system threads. Defaults to `None`.</span>
+<a id="__codelineno-0-52" name="__codelineno-0-52"></a><span class="sd">        full_circ (bool, optional): For testing only, do not use. Defaults to False.</span>
+<a id="__codelineno-0-53" name="__codelineno-0-53"></a><span class="sd">        show_progress (bool, optional): Use TQDM to show progress of GLOW model calculations. Defaults to True.</span>
+<a id="__codelineno-0-54" name="__codelineno-0-54"></a><span class="sd">        kwargs (dict, optional): Passed to `glowpython.generic`.</span>
+<a id="__codelineno-0-55" name="__codelineno-0-55"></a>
+<a id="__codelineno-0-56" name="__codelineno-0-56"></a><span class="sd">    Raises:</span>
+<a id="__codelineno-0-57" name="__codelineno-0-57"></a><span class="sd">        ValueError: Number of position bins can not be odd.</span>
+<a id="__codelineno-0-58" name="__codelineno-0-58"></a><span class="sd">        ValueError: Number of position bins can not be &lt; 20.</span>
+<a id="__codelineno-0-59" name="__codelineno-0-59"></a><span class="sd">        ValueError: Number of altitude bins can not be &lt; 100.</span>
+<a id="__codelineno-0-60" name="__codelineno-0-60"></a>
+<a id="__codelineno-0-61" name="__codelineno-0-61"></a><span class="sd">    Warns:</span>
+<a id="__codelineno-0-62" name="__codelineno-0-62"></a><span class="sd">        ResourceWarning: Number of threads requested is more than available system threads.</span>
+<a id="__codelineno-0-63" name="__codelineno-0-63"></a><span class="sd">    &quot;&quot;&quot;</span>
+<a id="__codelineno-0-64" name="__codelineno-0-64"></a>    <span class="k">if</span> <span class="n">n_pts</span> <span class="o">%</span> <span class="mi">2</span><span class="p">:</span>
+<a id="__codelineno-0-65" name="__codelineno-0-65"></a>        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Number of position bins can not be odd.&#39;</span><span class="p">)</span>
+<a id="__codelineno-0-66" name="__codelineno-0-66"></a>    <span class="k">if</span> <span class="n">n_pts</span> <span class="o">&lt;</span> <span class="mi">20</span><span class="p">:</span>
+<a id="__codelineno-0-67" name="__codelineno-0-67"></a>        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Number of position bins can not be &lt; 20.&#39;</span><span class="p">)</span>
+<a id="__codelineno-0-68" name="__codelineno-0-68"></a>    <span class="k">if</span> <span class="n">n_threads</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+<a id="__codelineno-0-69" name="__codelineno-0-69"></a>        <span class="n">n_threads</span> <span class="o">=</span> <span class="n">N_CPUS</span>
+<a id="__codelineno-0-70" name="__codelineno-0-70"></a>    <span class="k">if</span> <span class="n">n_threads</span> <span class="o">&gt;</span> <span class="n">N_CPUS</span><span class="p">:</span>
+<a id="__codelineno-0-71" name="__codelineno-0-71"></a>        <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s1">&#39;Number of requested threads (</span><span class="si">%d</span><span class="s1"> &gt; </span><span class="si">%d</span><span class="s1">)&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">n_threads</span><span class="p">,</span> <span class="n">N_CPUS</span><span class="p">),</span> <span class="ne">ResourceWarning</span><span class="p">)</span>
+<a id="__codelineno-0-72" name="__codelineno-0-72"></a>    <span class="bp">self</span><span class="o">.</span><span class="n">_uniform_glow</span> <span class="o">=</span> <span class="n">uniformize_glow</span>
+<a id="__codelineno-0-73" name="__codelineno-0-73"></a>    <span class="bp">self</span><span class="o">.</span><span class="n">_pt</span> <span class="o">=</span> <span class="n">Point</span><span class="p">(</span><span class="n">lat</span><span class="p">,</span> <span class="n">lon</span><span class="p">)</span>  <span class="c1"># instrument loc</span>
+<a id="__codelineno-0-74" name="__codelineno-0-74"></a>    <span class="bp">self</span><span class="o">.</span><span class="n">_time</span> <span class="o">=</span> <span class="n">time</span>  <span class="c1"># time of calc</span>
+<a id="__codelineno-0-75" name="__codelineno-0-75"></a>    <span class="k">if</span> <span class="n">n_alt</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">n_alt</span> <span class="o">&lt;</span> <span class="mi">100</span><span class="p">:</span>
+<a id="__codelineno-0-76" name="__codelineno-0-76"></a>        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Number of altitude bins can not be &lt; 100&#39;</span><span class="p">)</span>
+<a id="__codelineno-0-77" name="__codelineno-0-77"></a>    <span class="k">if</span> <span class="n">n_alt</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+<a id="__codelineno-0-78" name="__codelineno-0-78"></a>        <span class="n">n_alt</span> <span class="o">=</span> <span class="mi">100</span>  <span class="c1"># default</span>
+<a id="__codelineno-0-79" name="__codelineno-0-79"></a>    <span class="n">max_d</span> <span class="o">=</span> <span class="mi">6400</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="k">if</span> <span class="n">full_circ</span> <span class="k">else</span> <span class="n">EARTH_RADIUS</span> <span class="o">*</span> \
+<a id="__codelineno-0-80" name="__codelineno-0-80"></a>        <span class="n">np</span><span class="o">.</span><span class="n">arccos</span><span class="p">(</span><span class="n">EARTH_RADIUS</span> <span class="o">/</span> <span class="p">(</span><span class="n">EARTH_RADIUS</span> <span class="o">+</span> <span class="n">max_alt</span><span class="p">)</span>
+<a id="__codelineno-0-81" name="__codelineno-0-81"></a>                  <span class="p">)</span>  <span class="c1"># find maximum distance where LOS intersects exobase # 6400 * np.pi</span>
+<a id="__codelineno-0-82" name="__codelineno-0-82"></a>    <span class="c1"># points on the earth where we need to sample</span>
+<a id="__codelineno-0-83" name="__codelineno-0-83"></a>    <span class="bp">self</span><span class="o">.</span><span class="n">_show_prog</span> <span class="o">=</span> <span class="n">show_progress</span>
+<a id="__codelineno-0-84" name="__codelineno-0-84"></a>    <span class="bp">self</span><span class="o">.</span><span class="n">_kwargs</span> <span class="o">=</span> <span class="n">kwargs</span>
+<a id="__codelineno-0-85" name="__codelineno-0-85"></a>    <span class="n">distpts</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">max_d</span><span class="p">,</span> <span class="n">n_pts</span><span class="p">,</span> <span class="n">endpoint</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<a id="__codelineno-0-86" name="__codelineno-0-86"></a>    <span class="bp">self</span><span class="o">.</span><span class="n">_locs</span> <span class="o">=</span> <span class="p">[]</span>
+<a id="__codelineno-0-87" name="__codelineno-0-87"></a>    <span class="bp">self</span><span class="o">.</span><span class="n">_nbins</span> <span class="o">=</span> <span class="n">n_bins</span>  <span class="c1"># number of energy bins (for later)</span>
+<a id="__codelineno-0-88" name="__codelineno-0-88"></a>    <span class="bp">self</span><span class="o">.</span><span class="n">_nthr</span> <span class="o">=</span> <span class="n">n_threads</span>  <span class="c1"># number of threads (for later)</span>
+<a id="__codelineno-0-89" name="__codelineno-0-89"></a>    <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">distpts</span><span class="p">:</span>  <span class="c1"># for each distance point</span>
+<a id="__codelineno-0-90" name="__codelineno-0-90"></a>        <span class="n">dest</span> <span class="o">=</span> <span class="n">GreatCircleDistance</span><span class="p">(</span>
+<a id="__codelineno-0-91" name="__codelineno-0-91"></a>            <span class="n">kilometers</span><span class="o">=</span><span class="n">d</span><span class="p">)</span><span class="o">.</span><span class="n">destination</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_pt</span><span class="p">,</span> <span class="n">heading</span><span class="p">)</span>  <span class="c1"># calculate lat, lon of location at that distance along the great circle</span>
+<a id="__codelineno-0-92" name="__codelineno-0-92"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">_locs</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">dest</span><span class="o">.</span><span class="n">latitude</span><span class="p">,</span> <span class="n">dest</span><span class="o">.</span><span class="n">longitude</span><span class="p">))</span>  <span class="c1"># store it</span>
+<a id="__codelineno-0-93" name="__codelineno-0-93"></a>    <span class="k">if</span> <span class="n">full_circ</span><span class="p">:</span>  <span class="c1"># for fun, _get_angle() does not wrap around for &gt; 180 deg</span>
+<a id="__codelineno-0-94" name="__codelineno-0-94"></a>        <span class="n">npt</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_locs</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+<a id="__codelineno-0-95" name="__codelineno-0-95"></a>        <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">distpts</span><span class="p">:</span>
+<a id="__codelineno-0-96" name="__codelineno-0-96"></a>            <span class="n">dest</span> <span class="o">=</span> <span class="n">GreatCircleDistance</span><span class="p">(</span>
+<a id="__codelineno-0-97" name="__codelineno-0-97"></a>                <span class="n">kilometers</span><span class="o">=</span><span class="n">d</span><span class="p">)</span><span class="o">.</span><span class="n">destination</span><span class="p">(</span><span class="n">npt</span><span class="p">,</span> <span class="n">heading</span><span class="p">)</span>
+<a id="__codelineno-0-98" name="__codelineno-0-98"></a>            <span class="bp">self</span><span class="o">.</span><span class="n">_locs</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">dest</span><span class="o">.</span><span class="n">latitude</span><span class="p">,</span> <span class="n">dest</span><span class="o">.</span><span class="n">longitude</span><span class="p">))</span>
+<a id="__codelineno-0-99" name="__codelineno-0-99"></a>    <span class="bp">self</span><span class="o">.</span><span class="n">_angs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_angle</span><span class="p">()</span>  <span class="c1"># get the corresponding angles</span>
+<a id="__codelineno-0-100" name="__codelineno-0-100"></a>    <span class="k">if</span> <span class="n">full_circ</span><span class="p">:</span>  <span class="c1"># fill the rest if full circle</span>
+<a id="__codelineno-0-101" name="__codelineno-0-101"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">_angs</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_angs</span><span class="p">)</span> <span class="o">//</span> <span class="mi">2</span><span class="p">:]</span> <span class="o">=</span> <span class="mi">2</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">-</span> \
+<a id="__codelineno-0-102" name="__codelineno-0-102"></a>            <span class="bp">self</span><span class="o">.</span><span class="n">_angs</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_angs</span><span class="p">)</span> <span class="o">//</span> <span class="mi">2</span><span class="p">:]</span>
+<a id="__codelineno-0-103" name="__codelineno-0-103"></a>    <span class="bp">self</span><span class="o">.</span><span class="n">_bds</span> <span class="o">=</span> <span class="kc">None</span>
 </code></pre></div></td></tr></table></div>
       </details>
   </div>
@@ -1081,291 +1340,8 @@ The result is presented in a geocentric coordinate system.</p>
 
 
 
-<h2 id="glow2d._glow2d.glow2d_geo.no_precipitation_geo" class="doc doc-heading">
-<code class="highlight language-python"><span class="n">no_precipitation_geo</span><span class="p">(</span><span class="n">time</span><span class="p">,</span> <span class="n">lat</span><span class="p">,</span> <span class="n">lon</span><span class="p">,</span> <span class="n">heading</span><span class="p">,</span> <span class="n">max_alt</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> <span class="n">n_pts</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span> <span class="n">n_bins</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">n_alt</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">uniformize_glow</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">n_threads</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">resamp</span><span class="o">=</span><span class="mf">1.5</span><span class="p">,</span> <span class="n">show_progress</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></code>
-  
-  <span class="doc doc-labels">
-      <small class="doc doc-label doc-label-classmethod"><code>classmethod</code></small>
-  </span>
-
-</h2>
-
-
-  <div class="doc doc-contents ">
-  
-      <p>Run GLOW model looking along heading from the current location and return the model output in
-(T, R) geocentric coordinates where T is angle in radians from the current location along the great circle
-following current heading, and R is altitude in kilometers, which may be non-uniform depending on the <code>uniformize_glow</code> flag.</p>
-
-  <p><strong>Parameters:</strong></p>
-  <table>
-    <thead>
-      <tr>
-        <th>Name</th>
-        <th>Type</th>
-        <th>Description</th>
-        <th>Default</th>
-      </tr>
-    </thead>
-    <tbody>
-        <tr>
-          <td><code>time</code></td>
-          <td>
-                <code><span title="datetime.datetime">datetime</span></code>
-          </td>
-          <td><p>Datetime of GLOW calculation.</p></td>
-          <td>
-              <em>required</em>
-          </td>
-        </tr>
-        <tr>
-          <td><code>lat</code></td>
-          <td>
-                <code><span title="typing.SupportsFloat">Numeric</span></code>
-          </td>
-          <td><p>Latitude of starting location.</p></td>
-          <td>
-              <em>required</em>
-          </td>
-        </tr>
-        <tr>
-          <td><code>lon</code></td>
-          <td>
-                <code><span title="typing.SupportsFloat">Numeric</span></code>
-          </td>
-          <td><p>Longitude of starting location.</p></td>
-          <td>
-              <em>required</em>
-          </td>
-        </tr>
-        <tr>
-          <td><code>heading</code></td>
-          <td>
-                <code><span title="typing.SupportsFloat">Numeric</span></code>
-          </td>
-          <td><p>Heading (look direction).</p></td>
-          <td>
-              <em>required</em>
-          </td>
-        </tr>
-        <tr>
-          <td><code>max_alt</code></td>
-          <td>
-                <code><span title="typing.SupportsFloat">Numeric</span></code>
-          </td>
-          <td><p>Maximum altitude where intersection is considered (km). Defaults to 1000, i.e. exobase.</p></td>
-          <td>
-                <code>1000</code>
-          </td>
-        </tr>
-        <tr>
-          <td><code>n_pts</code></td>
-          <td>
-                <code>int</code>
-          </td>
-          <td><p>Number of GEO coordinate angular grid points (i.e. number of GLOW runs), must be even and &gt; 20. Defaults to 50.</p></td>
-          <td>
-                <code>50</code>
-          </td>
-        </tr>
-        <tr>
-          <td><code>n_bins</code></td>
-          <td>
-                <code>int</code>
-          </td>
-          <td><p>Number of energy bins. Defaults to 100.</p></td>
-          <td>
-                <code>100</code>
-          </td>
-        </tr>
-        <tr>
-          <td><code>n_alt</code></td>
-          <td>
-                <code>int</code>
-          </td>
-          <td><p>Number of altitude bins, must be &gt; 100. Defaults to <code>None</code>, i.e. uses same number of bins as a single GLOW run.</p></td>
-          <td>
-                <code>None</code>
-          </td>
-        </tr>
-        <tr>
-          <td><code>uniformize_glow</code></td>
-          <td>
-                <code>bool</code>
-          </td>
-          <td><p>Interpolate GLOW output to an uniform altitude grid. <code>n_alt</code> is ignored if this option is set to <code>False</code>. Defaults to <code>True</code>.</p></td>
-          <td>
-                <code>True</code>
-          </td>
-        </tr>
-        <tr>
-          <td><code>n_threads</code></td>
-          <td>
-                <code>int</code>
-          </td>
-          <td><p>Number of threads for parallel GLOW runs. Set to <code>None</code> to use all system threads. Defaults to <code>None</code>.</p></td>
-          <td>
-                <code>None</code>
-          </td>
-        </tr>
-        <tr>
-          <td><code>show_progress</code></td>
-          <td>
-                <code>bool</code>
-          </td>
-          <td><p>Use TQDM to show progress of GLOW model calculations. Defaults to <code>True</code>.</p></td>
-          <td>
-                <code>True</code>
-          </td>
-        </tr>
-        <tr>
-          <td><code>kwargs</code></td>
-          <td>
-                <code>dict</code>
-          </td>
-          <td><p>Passed to <code>ncarglow.no_precipitation</code>.</p></td>
-          <td>
-                <code>{}</code>
-          </td>
-        </tr>
-    </tbody>
-  </table>
-
-  <p><strong>Returns:</strong></p>
-  <table>
-    <thead>
-      <tr>
-<th>Name</th>        <th>Type</th>
-        <th>Description</th>
-      </tr>
-    </thead>
-    <tbody>
-        <tr>
-<td><code>bds</code></td>          <td>
-                <code>xarray.<span title="xarray.Dataset">Dataset</span></code>
-          </td>
-          <td><p>Ionospheric parameters and brightnesses (with production and loss) in GEO coordinates.</p></td>
-        </tr>
-    </tbody>
-  </table>
-
-  <p><strong>Raises:</strong></p>
-  <table>
-    <thead>
-      <tr>
-        <th>Type</th>
-        <th>Description</th>
-      </tr>
-    </thead>
-    <tbody>
-        <tr>
-          <td>
-                <code>ValueError</code>
-          </td>
-          <td><p>Number of position bins can not be odd.</p></td>
-        </tr>
-        <tr>
-          <td>
-                <code>ValueError</code>
-          </td>
-          <td><p>Number of position bins can not be &lt; 20.</p></td>
-        </tr>
-        <tr>
-          <td>
-                <code>ValueError</code>
-          </td>
-          <td><p>Resampling can not be &lt; 0.5.</p></td>
-        </tr>
-    </tbody>
-  </table>
-
-<details class="warns">
-  <summary>Warns</summary>
-  <p>ResourceWarning: Number of threads requested is more than available system threads.</p>
-</details>
-      <details class="quote">
-        <summary>Source code in <code>glow2d/_glow2d.py</code></summary>
-        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">193</span>
-<span class="normal">194</span>
-<span class="normal">195</span>
-<span class="normal">196</span>
-<span class="normal">197</span>
-<span class="normal">198</span>
-<span class="normal">199</span>
-<span class="normal">200</span>
-<span class="normal">201</span>
-<span class="normal">202</span>
-<span class="normal">203</span>
-<span class="normal">204</span>
-<span class="normal">205</span>
-<span class="normal">206</span>
-<span class="normal">207</span>
-<span class="normal">208</span>
-<span class="normal">209</span>
-<span class="normal">210</span>
-<span class="normal">211</span>
-<span class="normal">212</span>
-<span class="normal">213</span>
-<span class="normal">214</span>
-<span class="normal">215</span>
-<span class="normal">216</span>
-<span class="normal">217</span>
-<span class="normal">218</span>
-<span class="normal">219</span>
-<span class="normal">220</span>
-<span class="normal">221</span>
-<span class="normal">222</span>
-<span class="normal">223</span>
-<span class="normal">224</span>
-<span class="normal">225</span>
-<span class="normal">226</span>
-<span class="normal">227</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@classmethod</span>
-<span class="k">def</span> <span class="nf">no_precipitation_geo</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">time</span><span class="p">:</span> <span class="n">datetime</span><span class="p">,</span> <span class="n">lat</span><span class="p">:</span> <span class="n">Numeric</span><span class="p">,</span> <span class="n">lon</span><span class="p">:</span> <span class="n">Numeric</span><span class="p">,</span> <span class="n">heading</span><span class="p">:</span> <span class="n">Numeric</span><span class="p">,</span> <span class="n">max_alt</span><span class="p">:</span> <span class="n">Numeric</span> <span class="o">=</span> <span class="mi">1000</span><span class="p">,</span> <span class="n">n_pts</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">50</span><span class="p">,</span> <span class="n">n_bins</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">100</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">n_alt</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">uniformize_glow</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">n_threads</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">resamp</span><span class="p">:</span> <span class="n">Numeric</span> <span class="o">=</span> <span class="mf">1.5</span><span class="p">,</span> <span class="n">show_progress</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Run GLOW model looking along heading from the current location and return the model output in</span>
-<span class="sd">    (T, R) geocentric coordinates where T is angle in radians from the current location along the great circle</span>
-<span class="sd">    following current heading, and R is altitude in kilometers, which may be non-uniform depending on the `uniformize_glow` flag.</span>
-
-<span class="sd">    Args:</span>
-<span class="sd">        time (datetime): Datetime of GLOW calculation.</span>
-<span class="sd">        lat (Numeric): Latitude of starting location.</span>
-<span class="sd">        lon (Numeric): Longitude of starting location.</span>
-<span class="sd">        heading (Numeric): Heading (look direction).</span>
-<span class="sd">        max_alt (Numeric, optional): Maximum altitude where intersection is considered (km). Defaults to 1000, i.e. exobase.</span>
-<span class="sd">        n_pts (int, optional): Number of GEO coordinate angular grid points (i.e. number of GLOW runs), must be even and &gt; 20. Defaults to 50.</span>
-<span class="sd">        n_bins (int, optional): Number of energy bins. Defaults to 100.</span>
-<span class="sd">        n_alt (int, optional): Number of altitude bins, must be &gt; 100. Defaults to `None`, i.e. uses same number of bins as a single GLOW run.</span>
-<span class="sd">        uniformize_glow (bool, optional): Interpolate GLOW output to an uniform altitude grid. `n_alt` is ignored if this option is set to `False`. Defaults to `True`.</span>
-<span class="sd">        n_threads (int, optional): Number of threads for parallel GLOW runs. Set to `None` to use all system threads. Defaults to `None`.</span>
-<span class="sd">        show_progress (bool, optional): Use TQDM to show progress of GLOW model calculations. Defaults to `True`.</span>
-<span class="sd">        kwargs (dict, optional): Passed to `ncarglow.no_precipitation`.</span>
-
-<span class="sd">    Returns:</span>
-<span class="sd">        bds (xarray.Dataset): Ionospheric parameters and brightnesses (with production and loss) in GEO coordinates.</span>
-
-<span class="sd">    Raises:</span>
-<span class="sd">        ValueError: Number of position bins can not be odd.</span>
-<span class="sd">        ValueError: Number of position bins can not be &lt; 20.</span>
-<span class="sd">        ValueError: Resampling can not be &lt; 0.5.</span>
-
-<span class="sd">    Warns:</span>
-<span class="sd">        ResourceWarning: Number of threads requested is more than available system threads.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">grobj</span> <span class="o">=</span> <span class="bp">cls</span><span class="p">(</span><span class="n">time</span><span class="p">,</span> <span class="n">lat</span><span class="p">,</span> <span class="n">lon</span><span class="p">,</span> <span class="n">heading</span><span class="p">,</span> <span class="n">max_alt</span><span class="p">,</span>
-                <span class="n">n_pts</span><span class="p">,</span> <span class="n">n_bins</span><span class="p">,</span> <span class="n">n_alt</span><span class="o">=</span><span class="n">n_alt</span><span class="p">,</span> <span class="n">uniformize_glow</span><span class="o">=</span><span class="n">uniformize_glow</span><span class="p">,</span> <span class="n">n_threads</span><span class="o">=</span><span class="n">n_threads</span><span class="p">,</span> <span class="n">resamp</span><span class="o">=</span><span class="n">resamp</span><span class="p">,</span> <span class="n">show_progress</span><span class="o">=</span><span class="n">show_progress</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-    <span class="n">bds</span> <span class="o">=</span> <span class="n">grobj</span><span class="o">.</span><span class="n">run_no_precipitation</span><span class="p">()</span>
-    <span class="k">return</span> <span class="n">bds</span>
-</code></pre></div></td></tr></table></div>
-      </details>
-  </div>
-
-</div>
-
-<div class="doc doc-object doc-function">
-
-
-
-<h2 id="glow2d._glow2d.glow2d_geo.run_no_precipitation" class="doc doc-heading">
-<code class="highlight language-python"><span class="n">run_no_precipitation</span><span class="p">()</span></code>
+<h2 id="glow2d._glow2d.glow2d_geo.run_model" class="doc doc-heading">
+<code class="highlight language-python"><span class="n">run_model</span><span class="p">()</span></code>
 
 </h2>
 
@@ -1385,52 +1361,52 @@ following current heading, and R is altitude in kilometers, which may be non-uni
     <tbody>
         <tr>
           <td>
-                <code><span title="xarray">xr</span>.<span title="xarray.Dataset">Dataset</span></code>
+                <code>xarray.<span title="xarray.Dataset">Dataset</span></code>
           </td>
-          <td><p>xr.Dataset: GLOW model output in GEO coordinates.</p></td>
+          <td><p>xarray.Dataset: GLOW model output in GEO coordinates.</p></td>
         </tr>
     </tbody>
   </table>
 
       <details class="quote">
         <summary>Source code in <code>glow2d/_glow2d.py</code></summary>
-        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">173</span>
-<span class="normal">174</span>
-<span class="normal">175</span>
-<span class="normal">176</span>
-<span class="normal">177</span>
-<span class="normal">178</span>
-<span class="normal">179</span>
-<span class="normal">180</span>
-<span class="normal">181</span>
-<span class="normal">182</span>
-<span class="normal">183</span>
-<span class="normal">184</span>
-<span class="normal">185</span>
-<span class="normal">186</span>
-<span class="normal">187</span>
-<span class="normal">188</span>
-<span class="normal">189</span>
-<span class="normal">190</span>
-<span class="normal">191</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">run_no_precipitation</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Run the GLOW model calculation to get the model output in GEO coordinates.</span>
-
-<span class="sd">    Returns:</span>
-<span class="sd">        xr.Dataset: GLOW model output in GEO coordinates.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_bds</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_bds</span>
-    <span class="c1"># calculate the GLOW model for each lat-lon point determined in init()</span>
-    <span class="n">bds</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_calc_glow_noprecip</span><span class="p">()</span>
-    <span class="n">unit_desc_dict</span> <span class="o">=</span> <span class="p">{</span>
-        <span class="s1">&#39;angle&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;radians&#39;</span><span class="p">,</span> <span class="s1">&#39;Angle of location w.r.t. radius vector at origin (starting location)&#39;</span><span class="p">),</span>
-        <span class="s1">&#39;lat&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;degree&#39;</span><span class="p">,</span> <span class="s1">&#39;Latitude of locations&#39;</span><span class="p">),</span>
-        <span class="s1">&#39;lon&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;degree&#39;</span><span class="p">,</span> <span class="s1">&#39;Longitude of location&#39;</span><span class="p">)</span>
-    <span class="p">}</span>
-    <span class="n">_</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">bds</span><span class="p">[</span><span class="n">x</span><span class="p">]</span><span class="o">.</span><span class="n">attrs</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
-        <span class="p">{</span><span class="s1">&#39;units&#39;</span><span class="p">:</span> <span class="n">unit_desc_dict</span><span class="p">[</span><span class="n">x</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span> <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="n">unit_desc_dict</span><span class="p">[</span><span class="n">x</span><span class="p">][</span><span class="mi">1</span><span class="p">]}),</span> <span class="n">unit_desc_dict</span><span class="o">.</span><span class="n">keys</span><span class="p">()))</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">_bds</span> <span class="o">=</span> <span class="n">bds</span>
-    <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_bds</span>  <span class="c1"># return the calculated</span>
+        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-174">174</a></span>
+<span class="normal"><a href="#__codelineno-0-175">175</a></span>
+<span class="normal"><a href="#__codelineno-0-176">176</a></span>
+<span class="normal"><a href="#__codelineno-0-177">177</a></span>
+<span class="normal"><a href="#__codelineno-0-178">178</a></span>
+<span class="normal"><a href="#__codelineno-0-179">179</a></span>
+<span class="normal"><a href="#__codelineno-0-180">180</a></span>
+<span class="normal"><a href="#__codelineno-0-181">181</a></span>
+<span class="normal"><a href="#__codelineno-0-182">182</a></span>
+<span class="normal"><a href="#__codelineno-0-183">183</a></span>
+<span class="normal"><a href="#__codelineno-0-184">184</a></span>
+<span class="normal"><a href="#__codelineno-0-185">185</a></span>
+<span class="normal"><a href="#__codelineno-0-186">186</a></span>
+<span class="normal"><a href="#__codelineno-0-187">187</a></span>
+<span class="normal"><a href="#__codelineno-0-188">188</a></span>
+<span class="normal"><a href="#__codelineno-0-189">189</a></span>
+<span class="normal"><a href="#__codelineno-0-190">190</a></span>
+<span class="normal"><a href="#__codelineno-0-191">191</a></span>
+<span class="normal"><a href="#__codelineno-0-192">192</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-174" name="__codelineno-0-174"></a><span class="k">def</span> <span class="nf">run_model</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">xarray</span><span class="o">.</span><span class="n">Dataset</span><span class="p">:</span>
+<a id="__codelineno-0-175" name="__codelineno-0-175"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Run the GLOW model calculation to get the model output in GEO coordinates.</span>
+<a id="__codelineno-0-176" name="__codelineno-0-176"></a>
+<a id="__codelineno-0-177" name="__codelineno-0-177"></a><span class="sd">    Returns:</span>
+<a id="__codelineno-0-178" name="__codelineno-0-178"></a><span class="sd">        xarray.Dataset: GLOW model output in GEO coordinates.</span>
+<a id="__codelineno-0-179" name="__codelineno-0-179"></a><span class="sd">    &quot;&quot;&quot;</span>
+<a id="__codelineno-0-180" name="__codelineno-0-180"></a>    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_bds</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+<a id="__codelineno-0-181" name="__codelineno-0-181"></a>        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_bds</span>
+<a id="__codelineno-0-182" name="__codelineno-0-182"></a>    <span class="c1"># calculate the GLOW model for each lat-lon point determined in init()</span>
+<a id="__codelineno-0-183" name="__codelineno-0-183"></a>    <span class="n">bds</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_calc_glow_noprecip</span><span class="p">()</span>
+<a id="__codelineno-0-184" name="__codelineno-0-184"></a>    <span class="n">unit_desc_dict</span> <span class="o">=</span> <span class="p">{</span>
+<a id="__codelineno-0-185" name="__codelineno-0-185"></a>        <span class="s1">&#39;angle&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;radians&#39;</span><span class="p">,</span> <span class="s1">&#39;Angle of location w.r.t. radius vector at origin (starting location)&#39;</span><span class="p">),</span>
+<a id="__codelineno-0-186" name="__codelineno-0-186"></a>        <span class="s1">&#39;lat&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;degree&#39;</span><span class="p">,</span> <span class="s1">&#39;Latitude of locations&#39;</span><span class="p">),</span>
+<a id="__codelineno-0-187" name="__codelineno-0-187"></a>        <span class="s1">&#39;lon&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;degree&#39;</span><span class="p">,</span> <span class="s1">&#39;Longitude of location&#39;</span><span class="p">)</span>
+<a id="__codelineno-0-188" name="__codelineno-0-188"></a>    <span class="p">}</span>
+<a id="__codelineno-0-189" name="__codelineno-0-189"></a>    <span class="n">_</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">bds</span><span class="p">[</span><span class="n">x</span><span class="p">]</span><span class="o">.</span><span class="n">attrs</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
+<a id="__codelineno-0-190" name="__codelineno-0-190"></a>        <span class="p">{</span><span class="s1">&#39;units&#39;</span><span class="p">:</span> <span class="n">unit_desc_dict</span><span class="p">[</span><span class="n">x</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span> <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="n">unit_desc_dict</span><span class="p">[</span><span class="n">x</span><span class="p">][</span><span class="mi">1</span><span class="p">]}),</span> <span class="n">unit_desc_dict</span><span class="o">.</span><span class="n">keys</span><span class="p">()))</span>
+<a id="__codelineno-0-191" name="__codelineno-0-191"></a>    <span class="bp">self</span><span class="o">.</span><span class="n">_bds</span> <span class="o">=</span> <span class="n">bds</span>
+<a id="__codelineno-0-192" name="__codelineno-0-192"></a>    <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_bds</span>  <span class="c1"># return the calculated</span>
 </code></pre></div></td></tr></table></div>
       </details>
   </div>
