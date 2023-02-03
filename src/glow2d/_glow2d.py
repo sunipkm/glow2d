@@ -3,6 +3,7 @@ from __future__ import annotations
 from functools import partial
 from typing import SupportsFloat as Numeric, Iterable
 import warnings
+import xarray
 import xarray as xr
 import numpy as np
 import ncarglow as glow
@@ -109,7 +110,7 @@ class glow2d_geo:
         return np.asarray(angs)
 
     @staticmethod
-    def _uniformize_glow(iono: xr.Dataset) -> xr.Dataset:
+    def _uniformize_glow(iono: xarray.Dataset) -> xarray.Dataset:
         alt_km = iono.alt_km.values
         alt = np.linspace(alt_km.min(), alt_km.max(), len(alt_km))  # change to custom
         unit_keys = ["Tn", "O", "N2", "O2", "NO", "NeIn", "NeOut", "ionrate",
@@ -119,7 +120,7 @@ class glow2d_geo:
         for key in unit_keys:
             out = np.interp(alt, alt_km, iono[key].values)
             data_vars[key] = (('alt_km'), out)
-        bds = xr.Dataset(data_vars=data_vars, coords={'alt_km': alt})
+        bds = xarray.Dataset(data_vars=data_vars, coords={'alt_km': alt})
         ver = np.zeros(iono['ver'].shape, dtype=float)
         for idx in range(len(iono.wavelength)):
             ver[:, idx] += np.interp(alt, alt_km, iono['ver'].values[:, idx])
@@ -136,10 +137,10 @@ class glow2d_geo:
             for idx in range(len(iono.state)):
                 out[:, idx] += np.interp(alt, alt_km, inp[:, idx])
             data_vars[key] = (('alt_km', 'state'), out)
-        prodloss = xr.Dataset(data_vars=data_vars,
+        prodloss = xarray.Dataset(data_vars=data_vars,
                               coords={'alt_km': alt, 'state': iono.state.values})
         precip = iono['precip']
-        bds: xr.Dataset = xr.merge((bds, ver, prodloss, precip))
+        bds: xarray.Dataset = xr.merge((bds, ver, prodloss, precip))
         _ = list(map(lambda x: bds[x].attrs.update(iono[x].attrs), tuple(bds.data_vars.keys())))
         bds.attrs.update(iono.attrs)
         return bds
@@ -152,7 +153,7 @@ class glow2d_geo:
             iono = self._uniformize_glow(iono)
         return iono
 
-    def _calc_glow_noprecip(self) -> xr.Dataset:  # run glow model calculation
+    def _calc_glow_noprecip(self) -> xarray.Dataset:  # run glow model calculation
         if self._show_prog:
             self._dss = MAP_FCN(self._calc_glow_single_noprecip, range(
                 len(self._locs)), max_workers=self._nthr)
@@ -163,18 +164,18 @@ class glow2d_geo:
 
         # for dest in tqdm(self._locs):
         #     self._dss.append(glow.no_precipitation(time, dest[0], dest[1], self._nbins))
-        bds: xr.Dataset = xr.concat(
+        bds: xarray.Dataset = xr.concat(
             self._dss, pd.Index(self._angs, name='angle'))
         latlon = np.asarray(self._locs)
         bds = bds.assign_coords(lat=('angle', latlon[:, 0]))
         bds = bds.assign_coords(lon=('angle', latlon[:, 1]))
         return bds
 
-    def run_no_precipitation(self) -> xr.Dataset:
+    def run_no_precipitation(self) -> xarray.Dataset:
         """Run the GLOW model calculation to get the model output in GEO coordinates.
 
         Returns:
-            xr.Dataset: GLOW model output in GEO coordinates.
+            xarray.Dataset: GLOW model output in GEO coordinates.
         """
         if self._bds is not None:
             return self._bds
@@ -191,7 +192,7 @@ class glow2d_geo:
         return self._bds  # return the calculated
 
     @classmethod
-    def no_precipitation_geo(cls, time: datetime, lat: Numeric, lon: Numeric, heading: Numeric, max_alt: Numeric = 1000, n_pts: int = 50, n_bins: int = 100, *, n_alt: int = None, uniformize_glow: bool = True, n_threads: int = None, resamp: Numeric = 1.5, show_progress: bool = True, **kwargs) -> xr.Dataset:
+    def no_precipitation_geo(cls, time: datetime, lat: Numeric, lon: Numeric, heading: Numeric, max_alt: Numeric = 1000, n_pts: int = 50, n_bins: int = 100, *, n_alt: int = None, uniformize_glow: bool = True, n_threads: int = None, resamp: Numeric = 1.5, show_progress: bool = True, **kwargs) -> xarray.Dataset:
         """Run GLOW model looking along heading from the current location and return the model output in
         (T, R) geocentric coordinates where T is angle in radians from the current location along the great circle
         following current heading, and R is altitude in kilometers, which may be non-uniform depending on the `uniformize_glow` flag.
@@ -231,11 +232,11 @@ class glow2d_polar:
     """Use GLOW model output evaluated on a 2D grid using `glow2d_geo` and convert it to a local ZA, R coordinate system at the origin location.
     """
 
-    def __init__(self, bds: xr.Dataset, altitude: Numeric = 0, *, with_prodloss: bool = False, resamp: Numeric = 1.5):
+    def __init__(self, bds: xarray.Dataset, altitude: Numeric = 0, *, with_prodloss: bool = False, resamp: Numeric = 1.5):
         """Create a GLOWRaycast object.
 
         Args:
-            bds (xr.Dataset): GLOW model evaluated on a 2D grid using `GLOW2D`.
+            bds (xarray.Dataset): GLOW model evaluated on a 2D grid using `GLOW2D`.
             altitude (Numeric, optional): Altitude of local polar coordinate system origin in km above ASL. Must be < 100 km. Defaults to 0.
             with_prodloss (bool, optional): Calculate production and loss parameters in local coordinates. Defaults to False.
             resamp (Numeric, optional): Number of R and ZA points in local coordinate output. ``len(R) = len(alt_km) * resamp`` and ``len(ZA) = n_pts * resamp``. Must be > 0.5. Defaults to 1.5.
@@ -254,7 +255,7 @@ class glow2d_polar:
         self._r0 = altitude + EARTH_RADIUS
 
     @classmethod
-    def no_precipitation(cls, time: datetime, lat: Numeric, lon: Numeric, heading: Numeric, altitude: Numeric = 0, max_alt: Numeric = 1000, n_pts: int = 50, n_bins: int = 100, *, n_alt: int = None, with_prodloss: bool = False, n_threads: int = None, full_output: bool = False, resamp: Numeric = 1.5, show_progress: bool = True, **kwargs) -> xr.Dataset | tuple(xr.Dataset, xr.Dataset):
+    def no_precipitation(cls, time: datetime, lat: Numeric, lon: Numeric, heading: Numeric, altitude: Numeric = 0, max_alt: Numeric = 1000, n_pts: int = 50, n_bins: int = 100, *, n_alt: int = None, with_prodloss: bool = False, n_threads: int = None, full_output: bool = False, resamp: Numeric = 1.5, show_progress: bool = True, **kwargs) -> xarray.Dataset | tuple(xarray.Dataset, xarray.Dataset):
         """Run GLOW model looking along heading from the current location and return the model output in
         (ZA, R) local coordinates where ZA is zenith angle in radians and R is distance in kilometers.
 
@@ -305,7 +306,7 @@ class glow2d_polar:
             return (iono, bds)
 
     @classmethod
-    def no_precipitation_geo(cls, time: datetime, lat: Numeric, lon: Numeric, heading: Numeric, max_alt: Numeric = 1000, n_pts: int = 50, n_bins: int = 100, *, n_alt: int = None, n_threads: int = None, show_progress: bool = True, **kwargs) -> xr.Dataset:
+    def no_precipitation_geo(cls, time: datetime, lat: Numeric, lon: Numeric, heading: Numeric, max_alt: Numeric = 1000, n_pts: int = 50, n_bins: int = 100, *, n_alt: int = None, n_threads: int = None, show_progress: bool = True, **kwargs) -> xarray.Dataset:
         """Run GLOW model looking along heading from the current location and return the model output in
         (T, R) geocentric coordinates where T is angle in radians from the current location along the great circle
         following current heading, and R is altitude in kilometers. R is in an uniform grid with `n_alt` points.
@@ -339,11 +340,11 @@ class glow2d_polar:
         bds = grobj.run_no_precipitation()
         return bds
 
-    def transform_coord(self) -> xr.Dataset:
+    def transform_coord(self) -> xarray.Dataset:
         """Run the coordinate transform to convert GLOW output from GEO to local coordinate system.
 
         Returns:
-            xr.Dataset: GLOW output in (ZA, r) coordinates. This is a reference and should not be modified.
+            xarray.Dataset: GLOW output in (ZA, r) coordinates. This is a reference and should not be modified.
         """
         if self._iono is not None:
             return self._iono
@@ -437,7 +438,7 @@ class glow2d_polar:
         # print('Single_key conversion: %.3f us'%((end - start)*1e-3))
         # start = perf_counter_ns()
         # dataset of (angle, alt_km) vars
-        iono = xr.Dataset(data_vars=data_vars, coords={
+        iono = xarray.Dataset(data_vars=data_vars, coords={
                           'za': nt, 'r': nr})
         # end = perf_counter_ns()
         # print('Single_key dataset: %.3f us'%((end - start)*1e-3))
@@ -490,12 +491,12 @@ class glow2d_polar:
             # end = perf_counter_ns()
             # print('Prod_Loss Eval: %.3f us'%((end - start)*1e-3))
             # start = perf_counter_ns()
-            prodloss = xr.Dataset(
+            prodloss = xarray.Dataset(
                 data_vars=d,
                 coords={'za': nt, 'r': nr, 'state': coord_state}
             )  # calculate (angle, alt_km, state) -> (la, r, state) dataset
         else:
-            prodloss = xr.Dataset()
+            prodloss = xarray.Dataset()
         # end = perf_counter_ns()
         # print('Prod_Loss DS: %.3f us'%((end - start)*1e-3))
         ## EGrid conversion (angle, energy) -> (r, energy) ##
@@ -513,7 +514,7 @@ class glow2d_polar:
             out = np.interp(nr, _rr, inp)
             d.append(out)
         d = np.asarray(d).T
-        precip = xr.Dataset({'precip': (('r', 'energy'), d)}, coords={
+        precip = xarray.Dataset({'precip': (('r', 'energy'), d)}, coords={
                             'r': nr, 'energy': coord_energy})
         # end = perf_counter_ns()
         # print('Precip interp and ds: %.3f us'%((end - start)*1e-3))
@@ -536,21 +537,23 @@ class glow2d_polar:
         self._iono = iono
         return iono
     
-    def get_emission(self, feature: str = '5577', za_min: Numeric | Iterable = np.deg2rad(20), za_max: Numeric | Iterable = np.deg2rad(25), num_zapts: int = 10, *, iono: xr.Dataset = None, rmin: Numeric=None, rmax: Numeric=None, num_rpts: int = 100) -> float | np.ndarray:
+    @staticmethod
+    def get_emission(iono: xarray.Dataset, feature: str = '5577', za_min: Numeric | Iterable = np.deg2rad(20), za_max: Numeric | Iterable = np.deg2rad(25), num_zapts: int = 10, *, rmin: Numeric=None, rmax: Numeric=None, num_rpts: int = 100) -> float | np.ndarray:
         """Calculate number of photons per azimuth angle (radians) per unit area per second coming from a region of (`rmin`, `rmax`, `za_min`, `za_max`).
 
         Args:
+            iono (xarray.Dataset, optional): GLOW model output in local polar coordinates calculated using `glow2d.glow2d_polar.transform_coord`.
             feature (str, optional):GLOW emission feature. Defaults to '5577'.
             za_min (Numeric | Iterable, optional): Minimum zenith angle. Defaults to np.deg2rad(20).
             za_max (Numeric | Iterable, optional): Maximum zenith angle. Defaults to np.deg2rad(25).
             num_zapts (int, optional): Number of points to interpolate to. Defaults to 10.
-            iono (xr.Dataset, optional): GLOW model output in local polar coordinates. If None, the result from this instance is used. Defaults to None.
             rmin (Numeric, optional): Minimum distance. Defaults to None.
             rmax (Numeric, optional): Maximum distance. Defaults to None.
             num_rpts (int, optional): Number of distance points. The default is used only if minimum or maximum distance is not None. Defaults to 100.
 
         Raises:
-            ValueError: 'ZA min and max arrays must be of the same dimension.'
+            ValueError: iono is not an xarray.Dataset.
+            ValueError: ZA min and max arrays must be of the same dimension.
             ValueError: ZA min not between 0 deg and 90 deg.
             ValueError: ZA max is not between 0 deg and 90 deg.
             ValueError: ZA min > ZA max.
@@ -559,21 +562,20 @@ class glow2d_polar:
         Returns:
             float | np.ndarray: Number of photons/rad/cm^2/s
         """
+        if iono is None or not isinstance(iono, xarray.Dataset):
+            raise ValueError('iono is not an xarray.Dataset.')
         if isinstance(za_min, Iterable) or isinstance(za_max, Iterable):
             if len(za_min) != len(za_max):
                 raise ValueError('ZA min and max arrays must be of the same dimension.')
-            callable = partial(self.get_emission, feature=feature, num_zapts=num_zapts, iono=iono, rmin=rmin, rmax=rmax, num_rpts=num_rpts)
+            callable = partial(glow2d_polar.get_emission, iono=iono, feature=feature, num_zapts=num_zapts, rmin=rmin, rmax=rmax, num_rpts=num_rpts)
             out = list(map(lambda idx: callable(za_min=za_min[idx], za_max=za_max[idx]), range(len(za_min))))
             return np.asarray(out, dtype=float)
-        
         if not (0 <= za_min <= np.deg2rad(90)):
             raise ValueError('ZA must be between 0 deg and 90 deg')
         if not (0 <= za_max <= np.deg2rad(90)):
             raise ValueError('ZA must be between 0 deg and 90 deg')
         if za_min > za_max:
             raise ValueError('ZA min > ZA max')
-        if iono is None:
-            iono = self.transform_coord()
         if feature not in iono.wavelength.values:
             raise ValueError('Feature %s is invalid. Valid features: %s'%(feature, str(iono.wavelength.values)))
         za: np.ndarray = iono.za.values
@@ -668,7 +670,7 @@ class glow2d_polar:
 
         $$
             r = \\sqrt{\\left\\{ (R\\cos{\\theta} - R_0)^2 + R^2\\sin{\\theta}^2 \\right\\}}, \\\\
-            \phi = \\arctan{\\frac{R\\sin{\\theta}}{R\\cos{\\theta} - R_0}}
+            \\phi = \\arctan{\\frac{R\\sin{\\theta}}{R\\cos{\\theta} - R_0}}
         $$
 
         Args:
@@ -707,8 +709,12 @@ class glow2d_polar:
 
     @staticmethod
     def get_jacobian_glob2loc_loc(r: np.ndarray, t: np.ndarray, r0: Numeric = EARTH_RADIUS) -> np.ndarray:
-        """Jacobian J for global to local coordinate transform, evaluated at points in local coordinate.
+        """Jacobian \\(|J_{R\\rightarrow r}|\\) for global to local coordinate transform, evaluated at points in local coordinate.
 
+        $$
+            |J_{R\\rightarrow r}| = \\frac{R}{r^3}\\left(R^2 + R_0^2 - 2 R R_0 \\cos{\\theta}\\right)
+        $$
+        
         Args:
             r (np.ndarray): 2-dimensional array of r.
             t (np.ndarray): 2-dimensional array of phi.
@@ -728,8 +734,12 @@ class glow2d_polar:
 
     @staticmethod
     def get_jacobian_loc2glob_loc(r: np.ndarray, t: np.ndarray, r0: Numeric = EARTH_RADIUS) -> np.ndarray:
-        """Jacobian J for local to global coordinate transform, evaluated at points in local coordinate.
+        """Jacobian \\(|J_{r\\rightarrow R}|\\) for local to global coordinate transform, evaluated at points in local coordinate.
 
+        $$
+            |J_{r\\rightarrow R}| = \\frac{r}{R^3}\\left(r^2 + R_0^2 + 2 r R_0 \\cos{\\phi}\\right)
+        $$
+        
         Args:
             r (np.ndarray): 2-dimensional array of r.
             t (np.ndarray): 2-dimensional array of phi.
@@ -749,7 +759,11 @@ class glow2d_polar:
 
     @staticmethod
     def get_jacobian_glob2loc_glob(gr: np.ndarray, gt: np.ndarray, r0: Numeric = EARTH_RADIUS) -> np.ndarray:
-        """Jacobian J for global to local coordinate transform, evaluated at points in global coordinate.
+        """Jacobian determinant \\(|J_{R\\rightarrow r}|\\) for global to local coordinate transform, evaluated at points in global coordinate.
+
+        $$
+            |J_{R\\rightarrow r}| = \\frac{R}{r^3}\\left(R^2 + R_0^2 - 2 R R_0 \\cos{\\theta}\\right)
+        $$
 
         Args:
             gr (np.ndarray): 2-dimensional array of R.
@@ -770,8 +784,12 @@ class glow2d_polar:
 
     @staticmethod
     def get_jacobian_loc2glob_glob(gr: np.ndarray, gt: np.ndarray, r0: Numeric = EARTH_RADIUS) -> np.ndarray:
-        """Jacobian J for global to local coordinate transform, evaluated at points in local coordinate.
+        """Jacobian \\(|J_{r\\rightarrow R}|\\) for global to local coordinate transform, evaluated at points in local coordinate.
 
+        $$
+            |J_{r\\rightarrow R}| = \\frac{r}{R^3}\\left(r^2 + R_0^2 + 2 r R_0 \\cos{\\phi}\\right)
+        $$
+        
         Args:
             gr (np.ndarray): 2-dimensional array of R.
             gt (np.ndarray): 2-dimensional array of Theta.
@@ -809,14 +827,14 @@ if __name__ == '__main__':
     print('Time to convert:', (end - st)*1e-6, 'ms')
     print()
     feature = '5577'
-    print(f'Number of photons between 70 - 75 deg ZA ({feature} A):', grobj.get_emission(feature=feature, za_min=np.deg2rad(70), za_max=np.deg2rad(75)))
+    print(f'Number of photons between 70 - 75 deg ZA ({feature} A):', grobj.get_emission(iono, feature=feature, za_min=np.deg2rad(70), za_max=np.deg2rad(75)))
 
     za_min = np.arange(0, 90, 2.5, dtype=float)
     za_max = za_min + 2.5
     za = za_min + 1.25
     za_min = np.deg2rad(za_min)
     za_max = np.deg2rad(za_max)
-    pc = grobj.get_emission(za_min=za_min, za_max=za_max)
+    pc = grobj.get_emission(iono, za_min=za_min, za_max=za_max)
     plt.title('Altitude Angle vs. Photon Count Rate (5577 A)')
     plt.plot(pc, 90 - za)
     plt.xscale('log')

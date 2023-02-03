@@ -4,7 +4,12 @@ theme:
   name: "material"
 
 plugins:
-  - mkdocstrings
+  - search
+  - autorefs
+  - mkdocstrings:
+     handlers:
+      python:
+        paths: [src]
 
 nav:
   - Overview: index.md
