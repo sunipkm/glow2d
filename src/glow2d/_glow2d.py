@@ -231,11 +231,12 @@ class glow2d_polar:
     """Use GLOW model output evaluated on a 2D grid using `glow2d_geo` and convert it to a local ZA, R coordinate system at the origin location.
     """
 
-    def __init__(self, bds: xr.Dataset, *, with_prodloss: bool = False, resamp: Numeric = 1.5):
+    def __init__(self, bds: xr.Dataset, altitude: Numeric = 0, *, with_prodloss: bool = False, resamp: Numeric = 1.5):
         """Create a GLOWRaycast object.
 
         Args:
             bds (xr.Dataset): GLOW model evaluated on a 2D grid using `GLOW2D`.
+            altitude (Numeric, optional): Altitude of local polar coordinate system origin in km above ASL. Must be < 100 km. Defaults to 0.
             with_prodloss (bool, optional): Calculate production and loss parameters in local coordinates. Defaults to False.
             resamp (Numeric, optional): Number of R and ZA points in local coordinate output. ``len(R) = len(alt_km) * resamp`` and ``len(ZA) = n_pts * resamp``. Must be > 0.5. Defaults to 1.5.
 
@@ -244,13 +245,16 @@ class glow2d_polar:
         """
         if resamp < 0.5:
             raise ValueError('Resampling can not be < 0.5.')
+        if not (0 <= altitude <= 100):
+            raise ValueError('Altitude can not be > 100 km.')
         self._resamp = resamp
         self._wprodloss = with_prodloss
         self._bds = bds.copy()
         self._iono = None
+        self._r0 = altitude + EARTH_RADIUS
 
     @classmethod
-    def no_precipitation(cls, time: datetime, lat: Numeric, lon: Numeric, heading: Numeric, max_alt: Numeric = 1000, n_pts: int = 50, n_bins: int = 100, *, n_alt: int = None, with_prodloss: bool = False, n_threads: int = None, full_output: bool = False, resamp: Numeric = 1.5, show_progress: bool = True, **kwargs) -> xr.Dataset | tuple(xr.Dataset, xr.Dataset):
+    def no_precipitation(cls, time: datetime, lat: Numeric, lon: Numeric, heading: Numeric, altitude: Numeric = 0, max_alt: Numeric = 1000, n_pts: int = 50, n_bins: int = 100, *, n_alt: int = None, with_prodloss: bool = False, n_threads: int = None, full_output: bool = False, resamp: Numeric = 1.5, show_progress: bool = True, **kwargs) -> xr.Dataset | tuple(xr.Dataset, xr.Dataset):
         """Run GLOW model looking along heading from the current location and return the model output in
         (ZA, R) local coordinates where ZA is zenith angle in radians and R is distance in kilometers.
 
@@ -259,6 +263,7 @@ class glow2d_polar:
             lat (Numeric): Latitude of starting location.
             lon (Numeric): Longitude of starting location.
             heading (Numeric): Heading (look direction).
+            altitude (Numeric, optional): Altitude of local polar coordinate system origin in km above ASL. Must be < 100 km. Defaults to 0.
             max_alt (Numeric, optional): Maximum altitude where intersection is considered (km). Defaults to 1000, i.e. exobase.
             n_pts (int, optional): Number of GEO coordinate angular grid points (i.e. number of GLOW runs), must be even and > 20. Defaults to 50.
             n_bins (int, optional): Number of energy bins. Defaults to 100.
@@ -284,6 +289,7 @@ class glow2d_polar:
             ValueError: Number of position bins can not be < 20.
             ValueError: n_alt can not be < 100.
             ValueError: Resampling can not be < 0.5.
+            ValueError: altitude must be in the range [0, 100].
 
         Warns:
             ResourceWarning: Number of threads requested is more than available system threads.
@@ -291,7 +297,7 @@ class glow2d_polar:
         grobj = glow2d_geo(time, lat, lon, heading, max_alt, n_pts, n_bins, n_alt=n_alt, uniformize_glow=True,
                            n_threads=n_threads, show_progress=show_progress, **kwargs)
         bds = grobj.run_no_precipitation()
-        grobj = cls(bds, with_prodloss=with_prodloss, resamp=resamp)
+        grobj = cls(bds, altitude, with_prodloss=with_prodloss, resamp=resamp)
         iono = grobj.transform_coord()
         if not full_output:
             return iono
@@ -342,9 +348,9 @@ class glow2d_polar:
         if self._iono is not None:
             return self._iono
         tt, rr = self.get_local_coords(
-            self._bds.angle.values, self._bds.alt_km.values + EARTH_RADIUS)  # get local coords from geocentric coords
+            self._bds.angle.values, self._bds.alt_km.values + EARTH_RADIUS, r0 = self._r0)  # get local coords from geocentric coords
 
-        self._rmin, self._rmax = rr.min(), rr.max()  # nearest and farthest local pts
+        self._rmin, self._rmax = self._bds.alt_km.values.min(), rr.max()  # nearest and farthest local pts
         # highest and lowest za
         self._tmin, self._tmax = tt.min(), np.pi / 2  # 0, tt.max()
         self._nr_num = round(len(self._bds.alt_km.values) * self._resamp)  # resample
@@ -369,16 +375,16 @@ class glow2d_polar:
         self._nt = nt = np.linspace(
             tmin, tmax, self._nt_num, endpoint=True)  # local look angle
         # get meshgrid of the R, T coord system from regular r, za grid
-        self._ntt, self._nrr = self.get_global_coords(nt, nr)
+        self._ntt, self._nrr = self.get_global_coords(nt, nr, r0 = self._r0)
         # calculate jacobian
-        jacobian = self.get_jacobian_glob2loc_glob(self._nrr, self._ntt)
+        jacobian = self.get_jacobian_glob2loc_glob(self._nrr, self._ntt, r0 = self._r0)
         # convert to pixel coordinates
         self._ntt = self._ntt.flatten()  # flatten T, works as _global_from_local LUT
         self._nrr = self._nrr.flatten()  # flatten R, works as _global_from_local LUT
         self._ntt = (self._ntt - self._theta.min()) / \
             (self._theta.max() - self._theta.min()) * \
             len(self._theta)  # calculate equivalent index (pixel coord) from original T grid
-        self._nrr = (self._nrr - self._altkm.min() - EARTH_RADIUS) / \
+        self._nrr = (self._nrr - self._altkm.min() - self._r0) / \
             (self._altkm.max() - self._altkm.min()) * \
             len(self._altkm)  # calculate equivalent index (pixel coord) from original R (alt_km) grid
         # start transformation
@@ -498,7 +504,7 @@ class glow2d_polar:
         # we discard the angle information because it is meaningless, EGrid is spatial
         # start = perf_counter_ns()
         _rr, _ = self.get_local_coords(
-            bds.angle.values, np.ones(bds.angle.values.shape)*EARTH_RADIUS)
+            bds.angle.values, np.ones(bds.angle.values.shape)*self._r0, r0=self._r0)
         _rr = rr[:, 0]  # spatial EGrid
         d = []
         for en in coord_energy:  # for each energy
@@ -514,6 +520,7 @@ class glow2d_polar:
 
         # start = perf_counter_ns()
         iono = xr.merge((iono, ver, prodloss, precip))  # merge all datasets
+        bds_attr['altitude'] = {'values': self._r0 - EARTH_RADIUS, 'units': 'km', 'description': 'Altitude of local polar coordinate origin ASL'}
         iono.attrs.update(bds_attr)  # copy original attrs
 
         _ = list(map(lambda x: iono[x].attrs.update(bds[x].attrs), tuple(iono.data_vars.keys())))  # update attrs from bds
@@ -810,9 +817,10 @@ if __name__ == '__main__':
     za_min = np.deg2rad(za_min)
     za_max = np.deg2rad(za_max)
     pc = grobj.get_emission(za_min=za_min, za_max=za_max)
+    plt.title('Altitude Angle vs. Photon Count Rate (5577 A)')
     plt.plot(pc, 90 - za)
     plt.xscale('log')
-    plt.ylabel('Azimuth Angle (deg)')
+    plt.ylabel('Altitude Angle (deg)')
     plt.xlabel(r'Photon Count Rate (cm$^{-2}$ rad$^{-1}$ s$^{-1}$)')
     plt.ylim(0, 90)
     plt.xlim(pc.min(), pc.max())
