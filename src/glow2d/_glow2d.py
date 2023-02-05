@@ -480,7 +480,7 @@ class glow2d_polar:
         ver = interp2d(r, za, ver)(rr, zaxis)  # interpolate to integration axes
 
         ver = ver*np.sin(zaxis[:, None])  # integration is VER * sin(phi) * d(phi) * d(r)
-        return simps(simps(ver.T, zaxis), rr)  # do the double integral
+        return simps(simps(ver.T, zaxis), rr * 1e5)  # do the double integral
 
     # get global coord index from local coord index, implemented as LUT
     def _global_from_local(self, pt: tuple(int, int)) -> tuple(float, float):
