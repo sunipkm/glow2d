@@ -1,6 +1,8 @@
 # %% Imports
 from __future__ import annotations
+from ast import Tuple
 import sys
+from typing import Iterable
 import pylab as pl
 import xarray as xr
 import numpy as np
@@ -9,7 +11,7 @@ from geopy.distance import EARTH_RADIUS
 from datetime import datetime
 import pytz
 from time import perf_counter_ns
-from glow2d import glow2d_geo, glow2d_polar
+from glow2d import glow2d_geo, glow2d_polar, polar_model
 # %%
 from matplotlib.patches import Rectangle
 from mpl_toolkits.axes_grid1 import make_axes_locatable
@@ -42,6 +44,20 @@ def get_all_minmax(ionos: dict[str, xr.Dataset], feature: str = 'Tn', subfeature
     minmax = []
     for _, iono in ionos.items():
         minmax.append(get_minmax(iono, feature, subfeature, minPositive))
+    minmax = np.asarray(minmax).T
+    return minmax[0].min(), minmax[1].max()
+
+def get_all_minmax_list(inp: Iterable, minPositive: bool = True)->tuple(float, float):
+    def get_minmax_list(item: Iterable, minPositive: bool = True):
+        item = np.asarray(item)
+        if minPositive:
+            minval = item[np.where(item > 0)].min()
+        else:
+            minval = item.min()
+        return (minval, item.max())
+    minmax = []
+    for item in inp:
+        minmax.append(get_minmax_list(item, minPositive))
     minmax = np.asarray(minmax).T
     return minmax[0].min(), minmax[1].max()
 
@@ -371,4 +387,79 @@ fig.suptitle('Distribution of points in local polar coordinates')
 
 plt.savefig('pt_distrib_local.pdf')
 plt.show()
+# %% Brightness comparison
+def plot_brightness(num_pts: int)->None:
+    wls = ('5577', '6300')
+    za_min = np.arange(0, 90, 2.5, dtype=float)
+    za_max = za_min + 2.5
+    za = za_min + 1.25
+    za_min = np.deg2rad(za_min)
+    za_max = np.deg2rad(za_max)
+    tdict = {
+        'dawn': datetime(2022, 3, 22, 6, 0).astimezone(pytz.utc),
+        'noon': datetime(2022, 3, 22, 12, 0).astimezone(pytz.utc),
+        'dusk': datetime(2022, 3, 22, 18, 0).astimezone(pytz.utc),
+        'midnight': datetime(2022, 3, 22, 23, 59).astimezone(pytz.utc)
+    }
+    day: str = ''
+    time_of_day: dict(str, str) = {}
+    ionos: dict(str, xr.Dataset) = {}
+    photonrate: dict(str, dict(str, np.ndarray)) = {}
+    photonrate_a: list[np.ndarray] = []
+    for key, time in tdict.items():
+        iono = polar_model(time, 42.64981361744372, -71.31681056737486, 40, 0, n_pts=num_pts)
+        dtime = parse(iono.time).astimezone(get_localzone())
+        day = dtime.strftime('%Y-%m-%d')
+        time_of_day[key] = dtime.strftime('%H:%M hrs')
+        ionos[key] = iono
+    for key in tdict.keys():
+        photonrate[key] = {}
+        for wl in wls:
+            em = glow2d_polar.get_emission(ionos[key], feature=wl, za_min=za_min, za_max=za_max)
+            photonrate[key][wl] = em
+            photonrate_a.append(em.copy())
+    vmin, vmax = get_all_minmax_list(photonrate_a) # xmin, xmax
+    # vmin = 10**(np.round(np.log10(vmin)) - 1)
+    vmax = 10**(np.round(np.log10(vmax)) + 1)
+    print(day, time_of_day)
+    fig, ax = plt.subplots(dpi=300, figsize=(6.4, 4.8))
+    colors = {'dawn': 'k', 'noon': 'r', 'dusk': 'b', 'midnight': 'g'}
+    lstyles = {'5577': '-.', '6300': '-'}
+    ax.set_title(r'GLOW 2D Photon Emission Rates on %s ($n = %s$)'%(day, num_pts))
+    ax.set_xscale('log')
+    for key in tdict.keys(): # wish python 3.9 had switch-case
+        for wl in wls:
+            ax.plot(photonrate[key][wl], za[::-1], ls=lstyles[wl], color=colors[key], lw=0.75)
+    ax.plot(1e3/np.cos(np.deg2rad(90 - za)), za, ls = '--', color='orange', lw=0.75)
+    ax.set_xlim(vmin, vmax)
+    ax.set_ylim(za.min(), za.max())
+    ax.set_ylabel('Elevation Angle (deg)')
+    ax.set_xlabel(r'Photon Emission Rate ($cm^{-2} rad^{-1} s^{-1}$)')
+    ax.text(1e8, 80, 'Dawn', fontdict={'size': 10}, horizontalalignment='right', verticalalignment='center')
+    ax.text(1e8, 75, 'Noon', fontdict={'size': 10}, horizontalalignment='right', verticalalignment='center')
+    ax.text(1e8, 70, 'Dusk', fontdict={'size': 10}, horizontalalignment='right', verticalalignment='center')
+    ax.text(1e8, 65, 'Midnight', fontdict={'size': 10}, horizontalalignment='right', verticalalignment='center')
+    ax.plot([1.1e8, 296647939.484], [80, 80], ls = '-', color = colors['dawn'], lw = 0.75)
+    ax.plot([296647939.484, 8e8], [80, 80], ls = '-.', color = colors['dawn'], lw = 0.75)
+    ax.plot([1.1e8, 296647939.484], [75, 75], ls = '-', color = colors['noon'], lw = 0.75)
+    ax.plot([296647939.484, 8e8], [75, 75], ls = '-.', color = colors['noon'], lw = 0.75)
+    ax.plot([1.1e8, 296647939.484], [70, 70], ls = '-', color = colors['dusk'], lw = 0.75)
+    ax.plot([296647939.484, 8e8], [70, 70], ls = '-.', color = colors['dusk'], lw = 0.75)
+    ax.plot([1.1e8, 296647939.484], [65, 65], ls = '-', color = colors['midnight'], lw = 0.75)
+    ax.plot([296647939.484, 8e8], [65, 65], ls = '-.', color = colors['midnight'], lw = 0.75)
+
+    ax.text(1e8, 40, r'$\csc{\theta}$ \\ (midnight)', horizontalalignment='right', verticalalignment='center')
+    ax.plot([1.1e8, 296647939.484], [40]*2, ls='--', color='orange', lw=0.75)
+
+    ax.text(1e8, 50, r'5577 \AA', fontdict={'size': 10}, horizontalalignment='right', verticalalignment='center')
+    ax.plot([1.1e8, 296647939.484], [50]*2, ls = '-.', color = colors['dawn'], lw = 0.75)
+    ax.text(1e8, 55, r'6300 \AA', fontdict={'size': 10}, horizontalalignment='right', verticalalignment='center')
+    ax.plot([1.1e8, 296647939.484], [55]*2, ls = '-', color = colors['dawn'], lw = 0.75)
+    plt.savefig(f'test_prate_{num_pts}.pdf')
+    plt.show()
+
+plot_brightness(20)
+plot_brightness(50)
+plot_brightness(100)
+plot_brightness(200)
 # %%

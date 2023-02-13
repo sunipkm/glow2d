@@ -60,7 +60,7 @@ The following non-trivial dependencies are present:
 - [xarray](https://pypi.org/project/xarray/)
 
 This code uses [glowpython](https://pypi.org/project/glowpython/) package to run the GLOW model.
-[geomagdata](https://pypi.org/project/geomagdata/) is used to get the $F_{10.7}$ and $A_p$ indices from the [new data source](https://www.gfz-potsdam.de/en/kp-index/).
+[geomagdata](https://pypi.org/project/geomagdata/) is used to get the \(F_{10.7}\) and \(A_p\) indices from the [new data source](https://www.gfz-potsdam.de/en/kp-index/).
 
 ## Usage
 For example:
