@@ -118,16 +118,16 @@ def plot_geo(bds: xr.Dataset, wl: str, file_suffix: str, *, vmin: float = None, 
     im = ax.contourf(t, r, np.log10(tn.T), cmap='gist_ncar_r', levels=levels)
     cbar = fig.colorbar(im, cax=cax, shrink=0.6, orientation='horizontal', ticks=ticks)
     if ticks is not None: cbar.ax.set_xticklabels([r'$10^{%d}$'%(tval) for tval in ticks])
-    cbar.ax.tick_params(labelsize=8)
+    cbar.ax.tick_params(labelsize=10)
     # cbar.formatter.set_useMathText(True)
-    cbar.set_label(r'Volume Emission Rate of %s \AA ($%s$)'%(wl, bds.ver.attrs['units']), fontsize=8)
+    cbar.set_label(r'Volume Emission Rate of %s \AA ($%s$)'%(wl, bds.ver.attrs['units']), fontsize=12)
     earth = pl.Circle((0, 0), 1, transform=ax.transData._b, color='k', alpha=0.4)
     ax.add_artist(earth)
     ax.set_thetamax(ang.max()*180/np.pi)
     
     ax.scatter(0, 1, s=40, marker=r'$\odot$', facecolors='none', edgecolors='blue', clip_on=False)
     ax.scatter(np.deg2rad(90), 0.272, s=40, marker=r'$\odot$', facecolors='none', edgecolors='blue', clip_on=False)
-    ax.text(np.deg2rad(75), 0.27, 'Observer', fontdict={'size': 10})
+    ax.text(np.deg2rad(75), 0.27, 'Observer', fontdict={'size': 12})
     
     ax.set_ylim([0, (600 / scale) + 1])
     locs = ax.get_yticks()
@@ -150,7 +150,7 @@ def plot_geo(bds: xr.Dataset, wl: str, file_suffix: str, *, vmin: float = None, 
 
     # label_position=ax.get_rlabel_position()
     ax.text(np.radians(-12), ax.get_rmax()/2, 'Distance from Earth center (km)',
-            rotation=0, ha='center', va='center')
+            rotation=0, ha='center', va='center', fontdict={'size': 12})
     ax.set_position([0.1, -0.45, 0.8, 2])
     fig.suptitle('GLOW Model Output (2D, geocentric) %s %s'%(day, time_of_day))
     # ax.set_rscale('ofst_r_scale')
@@ -163,7 +163,7 @@ def plot_geo_local(bds: xr.Dataset, wl:str, file_suffix: str, *, vmin: float = N
     dtime = parse(bds.time).astimezone(get_localzone())
     day = dtime.strftime('%Y-%m-%d')
     time_of_day = dtime.strftime('%H:%M hrs')
-    fig, ax = plt.subplots(dpi=300, subplot_kw=dict(projection='polar'), figsize=(6.4, 4.8))
+    fig, ax = plt.subplots(dpi=300, subplot_kw=dict(projection='polar'), figsize=(3.2, 3.2))
     tn = (bds.ver.loc[dict(wavelength=wl)].values).copy()
     r, t = np.meshgrid((bds.alt_km.values + EARTH_RADIUS), bds.angle.values)
     tt, rr = glow2d_polar.get_local_coords(t, r)
@@ -180,9 +180,9 @@ def plot_geo_local(bds: xr.Dataset, wl:str, file_suffix: str, *, vmin: float = N
     cbar = fig.colorbar(im, shrink=0.6, ticks=ticks)
     if ticks is not None: cbar.ax.set_yticklabels([r'$10^{%d}$'%(tval) for tval in ticks])
     cbar.ax.tick_params(labelsize=8)
-    cbar.set_label(r'Volume Emission Rate of %s \AA ($%s$)'%(wl, bds.ver.attrs['units']), fontsize=10)
+    cbar.set_label(r'\begin{center}Volume Emission Rate of \\ %s \AA ($%s$)\end{center}'%(wl, iono.ver.attrs['units']), fontsize=10)
     ax.set_thetamax(90)
-    ax.text(np.radians(-12), ax.get_rmax()/2, 'Distance from observation location (km)',
+    ax.text(np.radians(-20), ax.get_rmax()/2, 'Distance from observation location (km)',
             rotation=0, ha='center', va='center')
     ax.text(np.radians(90), ax.get_rmax()*1.02, '(Zenith)',
             rotation=0, ha='center', va='center', fontdict={'size': 8})
@@ -206,7 +206,7 @@ def plot_local(iono: xr.Dataset, wl: str, file_suffix: str, *, vmin: float = Non
     dtime = parse(iono.time).astimezone(get_localzone())
     day = dtime.strftime('%Y-%m-%d')
     time_of_day = dtime.strftime('%H:%M hrs')
-    fig, ax = plt.subplots(dpi=300, subplot_kw=dict(projection='polar'), figsize=(6.4, 4.8))
+    fig, ax = plt.subplots(dpi=300, subplot_kw=dict(projection='polar'), figsize=(3.2, 3.2))
     tn = (iono.ver.loc[dict(wavelength=wl)].values).copy()
     rr, tt = np.meshgrid((iono.r.values), iono.za.values)
     tt = np.pi / 2 - tt
@@ -222,9 +222,9 @@ def plot_local(iono: xr.Dataset, wl: str, file_suffix: str, *, vmin: float = Non
     cbar = fig.colorbar(im, shrink=0.6, ticks=ticks)
     if ticks is not None: cbar.ax.set_yticklabels([r'$10^{%d}$'%(tval) for tval in ticks])
     cbar.ax.tick_params(labelsize=8)
-    cbar.set_label(r'Volume Emission Rate of %s \AA ($%s$)'%(wl, iono.ver.attrs['units']), fontsize=10)
+    cbar.set_label(r'\begin{center}Volume Emission Rate of \\ %s \AA ($%s$)\end{center}'%(wl, iono.ver.attrs['units']), fontsize=10)
     ax.set_thetamax(90)
-    ax.text(np.radians(-12), ax.get_rmax()/2, 'Distance from observation location (km)',
+    ax.text(np.radians(-20), ax.get_rmax()/2, 'Distance from observation location (km)',
             rotation=0, ha='center', va='center')
     ax.text(np.radians(90), ax.get_rmax()*1.02, '(Zenith)',
             rotation=0, ha='center', va='center', fontdict={'size': 8})
@@ -296,7 +296,7 @@ plt.show()
 # %%
 ofst = 1000
 scale = 1000
-fig = plt.figure(figsize=(4.8, 3), dpi=300, constrained_layout=True)
+fig = plt.figure(figsize=(3.2, 2.4), dpi=300, constrained_layout=True)
 gspec = GridSpec(1, 1, figure=fig)
 ax = fig.add_subplot(gspec[0, 0], projection='polar')
 alt = np.linspace(60, 550, 5)
@@ -339,9 +339,10 @@ locs, labels = get_loc_labels(locs, ofst, scale)
 ax.set_yticks(locs)
 ax.set_yticklabels(labels)
 ax.set_axisbelow(True)
+ax.tick_params(labelsize=10)
 
 # label_position=ax.get_rlabel_position()
-ax.text(np.radians(-12), ax.get_rmax()/2, 'Distance from Earth center (km)',
+ax.text(np.radians(-20), ax.get_rmax()/2, 'Distance from Earth center (km)',
         rotation=0, ha='center', va='center')
 ax.set_position([0.1, -0.45, 0.8, 2])
 fig.suptitle('Distribution of points in geocentric coordinates')
@@ -353,14 +354,14 @@ plt.savefig('pt_distrib_geo.pdf')
 plt.show()
 # %%
 from matplotlib import ticker
-fig, ax = plt.subplots(dpi=300, subplot_kw=dict(projection='polar'), figsize=(6.4, 4.5))
+fig, ax = plt.subplots(dpi=300, subplot_kw=dict(projection='polar'), figsize=(3.2, 3.6))
 
 r, t = np.meshgrid(alt + EARTH_RADIUS, ang)
 t, r = glow2d_polar.get_local_coords(t, r)
 ax.set_ylim(60, r.max())
 ax.text(np.radians(90), r.max()*1.02, '(Zenith)',
             rotation=0, ha='center', va='center', fontdict={'size': 8})
-ax.text(np.radians(-12), ax.get_rmax()/2, 'Distance from observation location (km)',
+ax.text(np.radians(-16), ax.get_rmax()/2, 'Distance from observation location (km)',
         rotation=0, ha='center', va='center')
 ax.fill_between(np.deg2rad([12, 69]), 0, 10000, alpha=0.13, color='b')
 ax.plot(np.deg2rad([12, 12]), [0, 10000], lw=0.5, color='k', ls='--', alpha=0.5)
@@ -383,6 +384,7 @@ ax.set_thetamax(90)
 # ax.set_rscale('symlog')
 ax.set_rorigin(-60)
 ax.set_axisbelow(True)
+ax.tick_params(labelsize=10)
 fig.suptitle('Distribution of points in local polar coordinates')
 
 plt.savefig('pt_distrib_local.pdf')
