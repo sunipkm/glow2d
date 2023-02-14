@@ -1,6 +1,6 @@
-# GLOW2D 
+# [GLOW2D](https://github.com/sunipkm/glow2d)
 
-This package builds off of the GLobal airglOW model. The GLOW model is evaluated on an altitude grid at a location. For non-zenith observation geometries, the model requires evaluation at multiple points along the line of sight. The `glow2d` library wraps the `ncarglow.no_precipitation()` function to generate the output on a 2D grid in a geocentric (GEO) coordinate system and in a local (ZA, R) coordinate system.
+This package builds off of the GLobal airglOW model. The GLOW model is evaluated on an altitude grid at a location. For non-zenith observation geometries, the model requires evaluation at multiple points along the line of sight. The `glow2d` library wraps the `ncarglow.generic()` function to generate the output on a 2D grid in a geocentric (GEO) coordinate system and in a local (ZA, R) coordinate system.
 
 ## Principle
 GLOW model is evaluated at one geolocation (latitude, longitude) at a given time. Assuming spherical geometry, for a given bearing, the GLOW model can be evaluated at different geolocations at a given time in a geocentric coordinate system \((R, \theta, \phi)\). The local polar coordinate system, defined at the starting location as \((r, \zeta, \phi)\), is related to the geocentric coordinate system through the equations:

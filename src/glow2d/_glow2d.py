@@ -256,7 +256,7 @@ class glow2d_polar:
         # get meshgrid of the R, T coord system from regular r, za grid
         self._ntt, self._nrr = self.get_global_coords(nt, nr, r0=self._r0)
         # calculate jacobian
-        jacobian = self.get_jacobian_glob2loc_glob(self._nrr, self._ntt, r0=self._r0)
+        jacobian = 1 # 4*np.pi*self._nrr*self._nrr / (nr * nr) # self.get_jacobian_glob2loc_glob(self._nrr, self._ntt, r0=self._r0)
         # convert to pixel coordinates
         self._ntt = self._ntt.flatten()  # flatten T, works as _global_from_local LUT
         self._nrr = self._nrr.flatten()  # flatten R, works as _global_from_local LUT
