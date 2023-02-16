@@ -423,11 +423,11 @@ def plot_brightness(num_pts: int)->None:
     vmin, vmax = get_all_minmax_list(photonrate_a) # xmin, xmax
     # vmin = 10**(np.round(np.log10(vmin)) - 1)
     vmax = 10**(np.round(np.log10(vmax)) + 1)
-    print(day, time_of_day)
+
     fig, ax = plt.subplots(dpi=300, figsize=(6.4, 4.8))
     colors = {'dawn': 'k', 'noon': 'r', 'dusk': 'b', 'midnight': 'g'}
     lstyles = {'5577': '-.', '6300': '-'}
-    ax.set_title(r'GLOW 2D Photon Emission Rates on %s ($n = %s$)'%(day, num_pts))
+    ax.set_title(r'GLOW Photon Emission Rates on %s ($n = %s$)'%(day, num_pts))
     ax.set_xscale('log')
     for key in tdict.keys(): # wish python 3.9 had switch-case
         for wl in wls:
@@ -457,7 +457,50 @@ def plot_brightness(num_pts: int)->None:
     ax.plot([1.1e9, 2966479394.84], [50]*2, ls = '-.', color = colors['dawn'], lw = 0.75)
     ax.text(1e9, 55, r'6300 \AA{}', fontdict={'size': 10}, horizontalalignment='right', verticalalignment='center')
     ax.plot([1.1e9, 2966479394.84], [55]*2, ls = '-', color = colors['dawn'], lw = 0.75)
-    plt.savefig(f'test_prate_{num_pts}.pdf')
+    fig.savefig(f'test_prate_{num_pts}.pdf')
+    # fig.show()
+
+    fig, ax = plt.subplots(dpi=300, figsize=(6.4, 4.8))
+    colors = {'dawn': 'k', 'noon': 'r', 'dusk': 'b', 'midnight': 'g'}
+    lstyles = {'5577': '-.', '6300': '-'}
+    ax.set_title(r'GLOW Photon Emission Rate Ratio for 5577 \AA{} and 6300 \AA{} on %s'%(day))
+    ax.set_xscale('log')
+    for key in tdict.keys(): # wish python 3.9 had switch-case
+        mval = np.median(photonrate[key]['5577'] / photonrate[key]['6300'])
+        if key == 'noon':
+            ax.text(10**(np.log10(mval) - 0.015), 15, f'{mval:.2f}', fontdict={'size': 10}, horizontalalignment='right', verticalalignment='center', rotation=0, color=colors[key])
+        else:
+            ax.text(mval*10**0.09, 15, f'{mval:.2f}', fontdict={'size': 10}, horizontalalignment='right', verticalalignment='center', rotation=0, color=colors[key])
+        ax.axvline(mval, ls=':', color=colors[key], lw=0.65, label='Median Values' if key == 'dawn' else None)
+        ax.plot(photonrate[key]['5577'] / photonrate[key]['6300'], za[::-1], ls=lstyles['6300'], color=colors[key], lw=0.75, label=f'{key.capitalize()}')
+    ax.legend(frameon=False)
+    # ax.plot(1e4/np.cos(np.deg2rad(90 - za)), za, ls = '--', color='orange', lw=0.75)
+    # ax.set_xlim(None, 20)
+    ax.set_ylim(za.min(), za.max())
+    ax.set_ylabel('Elevation Angle (deg)')
+    ax.set_xlabel(r'Integrated Photon Emission Rate Ratio (dimensionless)')
+    # ax.text(1e9, 80, 'Dawn', fontdict={'size': 10}, horizontalalignment='right', verticalalignment='center')
+    # ax.text(1e9, 75, 'Noon', fontdict={'size': 10}, horizontalalignment='right', verticalalignment='center')
+    # ax.text(1e9, 70, 'Dusk', fontdict={'size': 10}, horizontalalignment='right', verticalalignment='center')
+    # ax.text(1e9, 65, 'Midnight', fontdict={'size': 10}, horizontalalignment='right', verticalalignment='center')
+    # ax.plot([1.1e9, 2966479394.84], [80, 80], ls = '-', color = colors['dawn'], lw = 0.75)
+    # ax.plot([2966479394.84, 8e9], [80, 80], ls = '-.', color = colors['dawn'], lw = 0.75)
+    # ax.plot([1.1e9, 2966479394.84], [75, 75], ls = '-', color = colors['noon'], lw = 0.75)
+    # ax.plot([2966479394.84, 8e9], [75, 75], ls = '-.', color = colors['noon'], lw = 0.75)
+    # ax.plot([1.1e9, 2966479394.84], [70, 70], ls = '-', color = colors['dusk'], lw = 0.75)
+    # ax.plot([2966479394.84, 8e9], [70, 70], ls = '-.', color = colors['dusk'], lw = 0.75)
+    # ax.plot([1.1e9, 2966479394.84], [65, 65], ls = '-', color = colors['midnight'], lw = 0.75)
+    # ax.plot([2966479394.84, 8e9], [65, 65], ls = '-.', color = colors['midnight'], lw = 0.75)
+
+    # ax.text(1e9, 40, r'$\csc{\theta}$ \\ (midnight)', horizontalalignment='right', verticalalignment='center')
+    # ax.plot([1.1e9, 2966479394.84], [40]*2, ls='--', color='orange', lw=0.75)
+
+    # ax.text(1e9, 50, r'5577 \AA{}', fontdict={'size': 10}, horizontalalignment='right', verticalalignment='center')
+    # ax.plot([1.1e9, 2966479394.84], [50]*2, ls = '-.', color = colors['dawn'], lw = 0.75)
+    # ax.text(1e9, 55, r'6300 \AA{}', fontdict={'size': 10}, horizontalalignment='right', verticalalignment='center')
+    # ax.plot([1.1e9, 2966479394.84], [55]*2, ls = '-', color = colors['dawn'], lw = 0.75)
+    fig.savefig(f'test_pratio_{num_pts}.pdf')
+    # fig.show()
     plt.show()
 
 plot_brightness(20)
