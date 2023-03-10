@@ -92,7 +92,7 @@ def plot_geo(bds: xr.Dataset, wl: str, file_suffix: str, *, vmin: float = None, 
     ofst = 1000
     scale = 1000
     fig = plt.figure(figsize=(4.8, 3.8), dpi=300, constrained_layout=True)
-    gspec = GridSpec(2, 1, hspace=0.02, height_ratios=[1, 100], figure=fig)
+    gspec = GridSpec(2, 1, hspace=0.02, height_ratios=[1, 25], figure=fig)
     ax = fig.add_subplot(gspec[1, 0], projection='polar')
     cax = fig.add_subplot(gspec[0, 0])
     dtime = parse(bds.time).astimezone(get_localzone())
@@ -116,7 +116,7 @@ def plot_geo(bds: xr.Dataset, wl: str, file_suffix: str, *, vmin: float = None, 
         ticks = np.linspace(np.log10(vmin), np.log10(vmax), 10, endpoint=True)
         ticks = np.unique(np.round(ticks, decimals=decimals))
     im = ax.contourf(t, r, np.log10(tn.T), cmap='gist_ncar_r', levels=levels)
-    cbar = fig.colorbar(im, cax=cax, shrink=0.6, orientation='horizontal', ticks=ticks)
+    cbar = fig.colorbar(im, cax=cax, orientation='horizontal', ticks=ticks)
     if ticks is not None: cbar.ax.set_xticklabels([r'$10^{%d}$'%(tval) for tval in ticks])
     cbar.ax.tick_params(labelsize=10)
     # cbar.formatter.set_useMathText(True)
@@ -136,7 +136,7 @@ def plot_geo(bds: xr.Dataset, wl: str, file_suffix: str, *, vmin: float = None, 
     def get_loc_labels(locs, ofst, scale):
         locs = np.asarray(locs)
         locs = locs[np.where(locs > 1.0)]
-        labels = ['O', r'R$_0$']
+        labels = ['O', r'R$_{\mbox{\scriptsize E}}$']
         for loc in locs:
             labels.append('%.0f' % (loc*scale - ofst))
         locs = np.concatenate((np.asarray([0, 1]), locs.copy()))
@@ -252,6 +252,7 @@ for file_suffix in bdss:
         plot_geo(bds, wl, file_suffix, vmin=bds_minmax[0], vmax=bds_minmax[1])
         plot_geo_local(bds, wl, file_suffix, vmin=bds_minmax[0], vmax=bds_minmax[1])
         plot_local(iono, wl, file_suffix, vmin=1e-3, vmax=iono_minmax[1])
+
 # %%
 from matplotlib import ticker
 fig, ax = plt.subplots(dpi=300, subplot_kw=dict(projection='polar'), figsize=(6.4, 4.8))
@@ -327,7 +328,7 @@ locs = ax.get_yticks()
 def get_loc_labels(locs, ofst, scale):
     locs = np.asarray(locs)
     locs = locs[np.where(locs > 1.0)]
-    labels = ['O', r'R$_0$']
+    labels = ['O', r'R$_{\mbox{\scriptsize E}}$']
     for loc in locs:
         labels.append('%.0f' % (loc*scale - ofst))
     locs = np.concatenate((np.asarray([0, 1]), locs.copy()))
