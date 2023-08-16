@@ -3,6 +3,7 @@ from __future__ import annotations
 from functools import partial
 from typing import SupportsFloat as Numeric, Iterable
 import warnings
+from tqdm import tqdm
 import xarray
 import xarray as xr
 import numpy as np
@@ -21,9 +22,10 @@ from time import perf_counter_ns
 import platform
 from multiprocessing import Pool, cpu_count
 
-MAP_FCN = process_map
-if platform.system() == 'Darwin':
-    MAP_FCN = thread_map
+# MAP_FCN = lambda *args, max_workers: list(map(*args))
+# MAP_FCN = process_map
+# if platform.system() == 'Darwin':
+#     MAP_FCN = thread_map
 
 N_CPUS = cpu_count()
 
@@ -114,7 +116,7 @@ class glow2d_geo:
         alt_km = iono.alt_km.values
         alt = np.linspace(alt_km.min(), alt_km.max(), len(alt_km))  # change to custom
         unit_keys = ["Tn", "O", "N2", "O2", "NO", "NeIn", "NeOut", "ionrate",
-                     "O+", "O2+", "NO+", "N2D", "pedersen", "hall", "Te", "Ti"]
+                     "O+", "O2+", "NO+", "N2D", "pederson", "hall", "Te", "Ti"]
         state_keys = ['production', 'loss', 'excitedDensity']
         data_vars = {}
         for key in unit_keys:
@@ -155,12 +157,14 @@ class glow2d_geo:
 
     def _calc_glow_noprecip(self) -> xarray.Dataset:  # run glow model calculation
         if self._show_prog:
-            self._dss = MAP_FCN(self._calc_glow_single_noprecip, range(
-                len(self._locs)), max_workers=self._nthr)
+            # self._dss = MAP_FCN(self._calc_glow_single_noprecip, range(
+                # len(self._locs)), max_workers=self._nthr)
+            self._dss = list(map(self._calc_glow_single_noprecip, tqdm(range(len(self._locs)))))
         else:
-            ppool = Pool(self._nthr)
-            self._dss = ppool.map(self._calc_glow_single_noprecip, range(
-                len(self._locs)))
+            # ppool = Pool(self._nthr)
+            # self._dss = ppool.map(self._calc_glow_single_noprecip, range(
+            #     len(self._locs)))
+            self._dss = list(map(self._calc_glow_single_noprecip, range(len(self._locs))))
 
         # for dest in tqdm(self._locs):
         #     self._dss.append(glow.no_precipitation(time, dest[0], dest[1], self._nbins))
@@ -274,7 +278,7 @@ class glow2d_polar:
         coord_energy = bds.energy.values  # egrid
         bds_attr = bds.attrs  # attrs
         single_keys = ['Tn',
-                       'pedersen',
+                       'pederson',
                        'hall',
                        'Te',
                        'Ti']  # (angle, alt_km) vars
@@ -778,10 +782,10 @@ def polar_model(time: datetime, lat: Numeric, lon: Numeric, heading: Numeric, al
 if __name__ == '__main__':
     import matplotlib.pyplot as plt
 
-    time = datetime(2022, 2, 15, 6, 0).astimezone(pytz.utc)
+    time = datetime(2022, 3, 22, 18, 0).astimezone(pytz.utc)
     print(time)
     lat, lon = 42.64981361744372, -71.31681056737486
-    grobj = glow2d_geo(time, 42.64981361744372, -71.31681056737486, 40, n_threads=6, n_pts=100, show_progress=True)
+    grobj = glow2d_geo(time, 42.64981361744372, -71.31681056737486, 40, n_threads=6, n_pts=20, show_progress=True)
     st = perf_counter_ns()
     bds = grobj.run_model()
     end = perf_counter_ns()
@@ -808,7 +812,10 @@ if __name__ == '__main__':
     plt.ylabel('Altitude Angle (deg)')
     plt.xlabel(r'Photon Count Rate (cm$^{-2}$ rad$^{-1}$ s$^{-1}$)')
     plt.ylim(0, 90)
-    plt.xlim(pc.min(), pc.max())
+    # plt.xlim(pc.min(), pc.max())
+    plt.xlim(1e6, pc.max())
+    plt.show()
+    bds.ver.loc[{'wavelength': '5577'}].plot()
     plt.show()
 
 

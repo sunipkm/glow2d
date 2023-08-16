@@ -2,7 +2,7 @@
 from __future__ import annotations
 from ast import Tuple
 import sys
-from typing import Iterable
+from typing import Iterable, SupportsFloat as Numeric
 import pylab as pl
 import xarray as xr
 import numpy as np
@@ -115,7 +115,7 @@ def plot_geo(bds: xr.Dataset, wl: str, file_suffix: str, *, vmin: float = None, 
         levels = np.linspace(np.log10(vmin), np.log10(vmax), num_levels, endpoint=True).tolist()
         ticks = np.linspace(np.log10(vmin), np.log10(vmax), 10, endpoint=True)
         ticks = np.unique(np.round(ticks, decimals=decimals))
-    im = ax.contourf(t, r, np.log10(tn.T), cmap='gist_ncar_r', levels=levels)
+    im = ax.contourf(t, r, np.log10(tn.T), cmap='gist_ncar_r', levels=levels, rasterized=True)
     cbar = fig.colorbar(im, cax=cax, shrink=0.6, orientation='horizontal', ticks=ticks)
     if ticks is not None: cbar.ax.set_xticklabels([r'$10^{%d}$'%(tval) for tval in ticks])
     cbar.ax.tick_params(labelsize=10)
@@ -176,7 +176,7 @@ def plot_geo_local(bds: xr.Dataset, wl:str, file_suffix: str, *, vmin: float = N
         levels = np.linspace(np.log10(vmin), np.log10(vmax), num_levels, endpoint=True).tolist()
         ticks = np.linspace(np.log10(vmin), np.log10(vmax), 10, endpoint=True)
         ticks = np.unique(np.round(ticks, decimals=decimals))
-    im = ax.contourf(tt, rr, np.log10(tn), 100, cmap='gist_ncar_r', levels=levels)
+    im = ax.contourf(tt, rr, np.log10(tn), 100, cmap='gist_ncar_r', levels=levels, rasterized=True)
     cbar = fig.colorbar(im, shrink=0.6, ticks=ticks)
     if ticks is not None: cbar.ax.set_yticklabels([r'$10^{%d}$'%(tval) for tval in ticks])
     cbar.ax.tick_params(labelsize=8)
@@ -218,7 +218,7 @@ def plot_local(iono: xr.Dataset, wl: str, file_suffix: str, *, vmin: float = Non
         levels = np.linspace(np.log10(vmin), np.log10(vmax), num_levels, endpoint=True).tolist()
         ticks = np.linspace(np.log10(vmin), np.log10(vmax), 10, endpoint=True)
         ticks = np.unique(np.round(ticks, decimals=decimals))
-    im = ax.contourf(tt, rr, np.log10(tn), cmap='gist_ncar_r', levels=levels)
+    im = ax.contourf(tt, rr, np.log10(tn), cmap='gist_ncar_r', levels=levels, rasterized=True)
     cbar = fig.colorbar(im, shrink=0.6, ticks=ticks)
     if ticks is not None: cbar.ax.set_yticklabels([r'$10^{%d}$'%(tval) for tval in ticks])
     cbar.ax.tick_params(labelsize=8)
@@ -249,9 +249,9 @@ for file_suffix in bdss:
     for wl in ('5577', '6300'):
         bds_minmax = get_all_minmax(bdss, 'ver', {'wavelength': wl}, True)
         iono_minmax = get_all_minmax(ionos, 'ver', {'wavelength': wl}, True)
-        plot_geo(bds, wl, file_suffix, vmin=bds_minmax[0], vmax=bds_minmax[1])
-        plot_geo_local(bds, wl, file_suffix, vmin=bds_minmax[0], vmax=bds_minmax[1])
-        plot_local(iono, wl, file_suffix, vmin=1e-3, vmax=iono_minmax[1])
+        plot_geo(bds, wl, file_suffix, vmin=1e-4, vmax=bds_minmax[1])
+        plot_geo_local(bds, wl, file_suffix, vmin=1e-4, vmax=bds_minmax[1])
+        plot_local(iono, wl, file_suffix, vmin=1e-4, vmax=iono_minmax[1])
 # %%
 from matplotlib import ticker
 fig, ax = plt.subplots(dpi=300, subplot_kw=dict(projection='polar'), figsize=(6.4, 4.8))
@@ -269,7 +269,7 @@ vmin, vmax = gd2.min(), gd2.max()
 if vmin is not None and vmax is not None:
     levels = np.linspace(np.log10(vmin), np.log10(vmax), levels, endpoint=True).tolist()
     ticks = np.arange(np.round(np.log10(vmin) + 0.1, decimals=1), np.round(np.log10(vmax), decimals=1), 0.5)
-im = ax.contourf(t, r, np.log10(gd2), levels=levels, cmap='gist_ncar_r')
+im = ax.contourf(t, r, np.log10(gd2), levels=levels, cmap='gist_ncar_r', rasterized=True)
 cbar = fig.colorbar(im, shrink=0.6, ticks=ticks)
 cbar.set_label('Area Scale', fontsize=10)
 cbar.ax.tick_params(labelsize=8)
