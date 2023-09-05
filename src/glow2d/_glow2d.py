@@ -115,7 +115,7 @@ class glow2d_geo:
     def _uniformize_glow(iono: xarray.Dataset) -> xarray.Dataset:
         alt_km = iono.alt_km.values
         alt = np.linspace(alt_km.min(), alt_km.max(), len(alt_km))  # change to custom
-        unit_keys = ["Tn", "O", "N2", "O2", "NO", "NeIn", "NeOut", "ionrate",
+        unit_keys = ["Tn", "O", "N2", "O2", "NO", 'NS', 'ND', "NeIn", "NeOut", "ionrate",
                      "O+", "O2+", "NO+", "N2D", "pederson", "hall", "Te", "Ti"]
         state_keys = ['production', 'loss', 'excitedDensity']
         data_vars = {}
@@ -287,6 +287,8 @@ class glow2d_polar:
             'N2',
             'O2',
             'NO',
+            'NS',
+            'ND',
             'NeIn',
             'NeOut',
             'ionrate',
