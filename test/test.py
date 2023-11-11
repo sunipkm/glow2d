@@ -12,7 +12,6 @@ from datetime import datetime
 import pytz
 from time import perf_counter_ns
 from glow2d import glow2d_geo, glow2d_polar, polar_model
-# %%
 from matplotlib.patches import Rectangle
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 from matplotlib import rc, rcParams
@@ -72,6 +71,8 @@ tdict = {
 bdss = {}
 ionos = {}
 
+sts = perf_counter_ns()
+
 for file_suffix, time in tdict.items():
     lat, lon = 42.64981361744372, -71.31681056737486
     grobj = glow2d_geo(time, 42.64981361744372, -71.31681056737486, 40, n_pts = 100)
@@ -87,6 +88,38 @@ for file_suffix, time in tdict.items():
     bdss[file_suffix] = bds
     ionos[file_suffix] = iono
 
+ste = perf_counter_ns()
+
+print(f'Total time to generate (serial): {(ste - sts)*1e-6: 8.6f} ms')
+# %%
+bdss = {}
+ionos = {}
+
+def run_model(file_suffix: str, time: datetime) -> Tuple[str, xr.Dataset, xr.Dataset]:
+    lat, lon = 42.64981361744372, -71.31681056737486
+    grobj = glow2d_geo(time, lat, lon, 40, n_pts = 100, show_progress=False)
+    bds = grobj.run_model()
+    grobj = glow2d_polar(bds, resamp=2)
+    iono = grobj.transform_coord()
+    return (file_suffix, bds, iono)
+
+fsfx = []
+ftimes = []
+for file_suffix, time in tdict.items():
+    fsfx.append(file_suffix)
+    ftimes.append(time)
+
+import multiprocessing as mp
+
+sts = perf_counter_ns()
+with mp.Pool(processes=4) as pool:
+    results = pool.starmap(run_model, zip(fsfx, ftimes))
+    for result in results:
+        bdss[result[0]] = result[1]
+        ionos[result[0]] = result[2]
+ste = perf_counter_ns()
+
+print(f'Total time to generate (parallel): {(ste - sts)*1e-6: 8.6f} ms')
 # %% 5577
 def plot_geo(bds: xr.Dataset, wl: str, file_suffix: str, *, vmin: float = None, vmax: float = None, decimals: int = 0, num_levels: int = 1000) -> None:
     ofst = 1000
@@ -130,6 +163,14 @@ def plot_geo(bds: xr.Dataset, wl: str, file_suffix: str, *, vmin: float = None, 
     ax.text(np.deg2rad(75), 0.27, 'Observer', fontdict={'size': 12})
     
     ax.set_ylim([0, (600 / scale) + 1])
+
+    arrline = np.deg2rad(np.linspace(14, 27, 100, endpoint=True))
+    ax.plot(arrline, [(750 / scale) + 1]*len(arrline), lw=0.5, color='k', ls='--', clip_on=False)
+    ax.arrow(arrline[-1], (750 / scale) + 1, arrline[-1] - arrline[-2], 0, clip_on=False, head_width=0.008)
+    ax.text(np.deg2rad(20), (800 / scale) + 1, 'NE', fontdict={'size': 12})
+
+    # ax.arrow(np.deg2rad(14), (750 / scale) + 1, np.deg2rad(9), 0, clip_on=False, head_width=1)
+
     locs = ax.get_yticks()
 
 
@@ -152,11 +193,11 @@ def plot_geo(bds: xr.Dataset, wl: str, file_suffix: str, *, vmin: float = None, 
     ax.text(np.radians(-12), ax.get_rmax()/2, 'Distance from Earth center (km)',
             rotation=0, ha='center', va='center', fontdict={'size': 12})
     ax.set_position([0.1, -0.45, 0.8, 2])
-    fig.suptitle('GLOW Model Output (2D, geocentric) %s %s'%(day, time_of_day))
+    fig.suptitle('GLOW Model (Geocentric, %s) %s %s'%(file_suffix.capitalize(), day, time_of_day))
     # ax.set_rscale('ofst_r_scale')
     # ax.set_rscale('symlog')
     # ax.set_rorigin(-1)
-    plt.savefig('test_geo_%s_%s.pdf'%(wl, file_suffix))
+    plt.savefig('test_geo_%s_%s.png'%(wl, file_suffix))
     plt.show()
 # %%
 def plot_geo_local(bds: xr.Dataset, wl:str, file_suffix: str, *, vmin: float = None, vmax: float = None, decimals: int = 0, num_levels: int = 1000)->None:
@@ -182,11 +223,11 @@ def plot_geo_local(bds: xr.Dataset, wl:str, file_suffix: str, *, vmin: float = N
     cbar.ax.tick_params(labelsize=8)
     cbar.set_label(r'\begin{center}%s \AA{} VER ($%s$)\end{center}'%(wl, iono.ver.attrs['units']), fontsize=10)
     ax.set_thetamax(90)
-    ax.text(np.radians(-20), ax.get_rmax()/2, 'Distance from observation location (km)',
+    ax.text(np.radians(-20), ax.get_rmax()/2, 'Distance from observation location (km), towards NE',
             rotation=0, ha='center', va='center')
     ax.text(np.radians(90), ax.get_rmax()*1.02, '(Zenith)',
             rotation=0, ha='center', va='center', fontdict={'size': 8})
-    fig.suptitle('GLOW Model Output (2D, local polar)\n%s %s'%(day, time_of_day))
+    fig.suptitle('GLOW Model Output (Local Polar, %s)\n%s %s'%(file_suffix.capitalize(), day, time_of_day))
     ax.fill_between(np.deg2rad([12, 69]), 0, 10000, alpha=0.3, color='b')
     ax.plot(np.deg2rad([12, 12]), [0, 10000], lw=0.5, color='k', ls='--')
     ax.plot(np.deg2rad([69, 69]), [0, 10000], lw=0.5, color='k', ls='--')
@@ -196,9 +237,10 @@ def plot_geo_local(bds: xr.Dataset, wl:str, file_suffix: str, *, vmin: float = N
     # ax.add_artist(earth)
     # ax.set_thetamax(ang.max()*180/np.pi)
     ax.set_ylim(rr.min(), rr.max())
+    # ax.plot([]) # has to be two-point arrow
     # ax.set_rscale('symlog')
     ax.set_rorigin(-rr.min())
-    plt.savefig('test_loc_%s_%s.pdf'%(wl, file_suffix))
+    plt.savefig('test_loc_%s_%s.png'%(wl, file_suffix))
     plt.show()
 # %%
 from scipy.signal import savgol_filter
@@ -224,11 +266,11 @@ def plot_local(iono: xr.Dataset, wl: str, file_suffix: str, *, vmin: float = Non
     cbar.ax.tick_params(labelsize=8)
     cbar.set_label(r'\begin{center}%s \AA{} VER ($%s$)\end{center}'%(wl, iono.ver.attrs['units']), fontsize=10)
     ax.set_thetamax(90)
-    ax.text(np.radians(-20), ax.get_rmax()/2, 'Distance from observation location (km)',
+    ax.text(np.radians(-20), ax.get_rmax()/2, 'Distance from observation location (km), towards NE',
             rotation=0, ha='center', va='center')
     ax.text(np.radians(90), ax.get_rmax()*1.02, '(Zenith)',
             rotation=0, ha='center', va='center', fontdict={'size': 8})
-    fig.suptitle('GLOW Model Output (2D, local polar)\n%s %s'%(day, time_of_day))
+    fig.suptitle('GLOW Model Output (Local Polar, %s)\n%s %s'%(file_suffix.capitalize(), day, time_of_day))
     ax.fill_between(np.deg2rad([12, 69]), 0, 10000, alpha=0.3, color='b')
     ax.plot(np.deg2rad([12, 12]), [0, 10000], lw=0.5, color='k', ls='--')
     ax.plot(np.deg2rad([69, 69]), [0, 10000], lw=0.5, color='k', ls='--')
@@ -240,7 +282,7 @@ def plot_local(iono: xr.Dataset, wl: str, file_suffix: str, *, vmin: float = Non
     ax.set_ylim(rr.min(), rr.max())
     # ax.set_rscale('symlog')
     ax.set_rorigin(-rr.min())
-    plt.savefig('test_loc_%s_uniform_%s.pdf'%(wl, file_suffix))
+    plt.savefig('test_loc_%s_uniform_%s.png'%(wl, file_suffix))
     plt.show()
 # %%
 for file_suffix in bdss:
@@ -291,7 +333,7 @@ ax.text(np.radians(90), r.max()*1.02, '(Zenith)',
 ax.set_ylim(r.min(), r.max())
 # ax.set_rscale('symlog')
 ax.set_rorigin(-60)
-plt.savefig('test_loc_geo_distrib.pdf')
+plt.savefig('test_loc_geo_distrib.png')
 plt.show()
 # %%
 ofst = 1000
@@ -350,7 +392,7 @@ fig.suptitle('Distribution of points in geocentric coordinates')
 # ax.set_rscale('ofst_r_scale')
 # ax.set_rscale('symlog')
 # ax.set_rorigin(-1)
-plt.savefig('pt_distrib_geo.pdf')
+plt.savefig('pt_distrib_geo.png')
 plt.show()
 # %%
 from matplotlib import ticker
@@ -387,7 +429,7 @@ ax.set_axisbelow(True)
 ax.tick_params(labelsize=10)
 fig.suptitle('Distribution of points in local polar coordinates')
 
-plt.savefig('pt_distrib_local.pdf')
+plt.savefig('pt_distrib_local.png')
 plt.show()
 # %% Brightness comparison
 def plot_brightness(num_pts: int)->None:
@@ -457,7 +499,7 @@ def plot_brightness(num_pts: int)->None:
     ax.plot([1.1e9, 2966479394.84], [50]*2, ls = '-.', color = colors['dawn'], lw = 0.75)
     ax.text(1e9, 55, r'6300 \AA{}', fontdict={'size': 10}, horizontalalignment='right', verticalalignment='center')
     ax.plot([1.1e9, 2966479394.84], [55]*2, ls = '-', color = colors['dawn'], lw = 0.75)
-    fig.savefig(f'test_prate_{num_pts}.pdf')
+    fig.savefig(f'test_prate_{num_pts}.png')
     # fig.show()
 
     fig, ax = plt.subplots(dpi=300, figsize=(6.4, 4.8))
@@ -499,7 +541,7 @@ def plot_brightness(num_pts: int)->None:
     # ax.plot([1.1e9, 2966479394.84], [50]*2, ls = '-.', color = colors['dawn'], lw = 0.75)
     # ax.text(1e9, 55, r'6300 \AA{}', fontdict={'size': 10}, horizontalalignment='right', verticalalignment='center')
     # ax.plot([1.1e9, 2966479394.84], [55]*2, ls = '-', color = colors['dawn'], lw = 0.75)
-    fig.savefig(f'test_pratio_{num_pts}.pdf')
+    fig.savefig(f'test_pratio_{num_pts}.png')
     # fig.show()
     plt.show()
 

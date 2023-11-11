@@ -27,3 +27,6 @@ site/
 *.exe
 *.out
 *.app
+
+# Images
+test/*.png
