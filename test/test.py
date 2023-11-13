@@ -141,6 +141,11 @@ def plot_geo(bds: xr.Dataset, wl: str, file_suffix: str, *, vmin: float = None, 
     ang = bds.angle.values
     r, t = (alt + ofst) / scale, ang  # np.meshgrid((alt + ofst), ang)
     print(r.shape, t.shape)
+    tmin, rmin = glow2d_polar.get_global_coords(np.deg2rad(12), EARTH_RADIUS + 1000)
+    tmax, rmax = glow2d_polar.get_global_coords(np.deg2rad(69), EARTH_RADIUS + 1000)
+    tmin = float(tmin)
+    tmax = float(tmax)
+    print(np.rad2deg(tmin), np.rad2deg(tmax))
     # , extent=[0, 0, 7400 / EARTH_RADIUS, ang.max()])
     ticks = None
     levels = num_levels
@@ -161,6 +166,11 @@ def plot_geo(bds: xr.Dataset, wl: str, file_suffix: str, *, vmin: float = None, 
     ax.scatter(0, 1, s=40, marker=r'$\odot$', facecolors='none', edgecolors='blue', clip_on=False)
     ax.scatter(np.deg2rad(90), 0.272, s=40, marker=r'$\odot$', facecolors='none', edgecolors='blue', clip_on=False)
     ax.text(np.deg2rad(75), 0.27, 'Observer', fontdict={'size': 12})
+    
+    # the view cone
+    ax.plot([0, tmin], [1, 1 + 1000/scale], ls='--', lw=0.5, color='k', clip_on=True)
+    ax.plot([0, tmax], [1, 1 + 1000/scale], ls='--', lw=0.5, color='k', clip_on=True)
+    ax.text(np.deg2rad(11), 1 + 300/scale, r'HiT\&MIS View Cone', fontsize=8, color='k', rotation=45, ha='center', va='center')
     
     ax.set_ylim([0, (600 / scale) + 1])
 
@@ -349,6 +359,9 @@ earth = pl.Circle((0, 0), 1, transform=ax.transData._b, color='k', alpha=0.4)
 ax.add_artist(earth)
 ax.set_thetamax(np.rad2deg(np.arccos(EARTH_RADIUS/(EARTH_RADIUS + 1000))))
 
+thor, _ = glow2d_polar.get_global_coords(np.deg2rad(58), EARTH_RADIUS + 1000)
+thor = float(thor)
+
 cmap = matplotlib.cm.get_cmap('rainbow')
 
 ttext = ('A', 'B', 'C', 'D', 'E')
@@ -382,6 +395,8 @@ ax.set_yticks(locs)
 ax.set_yticklabels(labels)
 ax.set_axisbelow(True)
 ax.tick_params(labelsize=10)
+
+ax.plot([0, thor], [1, 1 + 1000/scale], ls='--', lw=0.5, color='k', clip_on=True, alpha=0.75)
 
 # label_position=ax.get_rlabel_position()
 ax.text(np.radians(-20), ax.get_rmax()/2, 'Distance from Earth center (km)',
