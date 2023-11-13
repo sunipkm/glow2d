@@ -207,7 +207,7 @@ def plot_geo(bds: xr.Dataset, wl: str, file_suffix: str, *, vmin: float = None, 
     # ax.set_rscale('ofst_r_scale')
     # ax.set_rscale('symlog')
     # ax.set_rorigin(-1)
-    plt.savefig('test_geo_%s_%s.png'%(wl, file_suffix))
+    plt.savefig(f'test_geo_{wl}_{file_suffix}.png', dpi=600)
     plt.show()
 # %%
 def plot_geo_local(bds: xr.Dataset, wl:str, file_suffix: str, *, vmin: float = None, vmax: float = None, decimals: int = 0, num_levels: int = 1000)->None:
@@ -250,7 +250,7 @@ def plot_geo_local(bds: xr.Dataset, wl:str, file_suffix: str, *, vmin: float = N
     # ax.plot([]) # has to be two-point arrow
     # ax.set_rscale('symlog')
     ax.set_rorigin(-rr.min())
-    plt.savefig('test_loc_%s_%s.png'%(wl, file_suffix))
+    plt.savefig(f'test_loc_{wl}_{file_suffix}.png', dpi=600)
     plt.show()
 # %%
 from scipy.signal import savgol_filter
@@ -292,7 +292,7 @@ def plot_local(iono: xr.Dataset, wl: str, file_suffix: str, *, vmin: float = Non
     ax.set_ylim(rr.min(), rr.max())
     # ax.set_rscale('symlog')
     ax.set_rorigin(-rr.min())
-    plt.savefig('test_loc_%s_uniform_%s.png'%(wl, file_suffix))
+    plt.savefig(f'test_loc_{wl}_uniform_{file_suffix}.png', dpi=600)
     plt.show()
 # %%
 for file_suffix in bdss:
@@ -343,7 +343,7 @@ ax.text(np.radians(90), r.max()*1.02, '(Zenith)',
 ax.set_ylim(r.min(), r.max())
 # ax.set_rscale('symlog')
 ax.set_rorigin(-60)
-plt.savefig('test_loc_geo_distrib.png')
+plt.savefig('test_loc_geo_distrib.png', dpi=600)
 plt.show()
 # %%
 ofst = 1000
@@ -407,7 +407,7 @@ fig.suptitle('Distribution of points in geocentric coordinates')
 # ax.set_rscale('ofst_r_scale')
 # ax.set_rscale('symlog')
 # ax.set_rorigin(-1)
-plt.savefig('pt_distrib_geo.png')
+plt.savefig('pt_distrib_geo.png', dpi=600)
 plt.show()
 # %%
 from matplotlib import ticker
@@ -444,7 +444,7 @@ ax.set_axisbelow(True)
 ax.tick_params(labelsize=10)
 fig.suptitle('Distribution of points in local polar coordinates')
 
-plt.savefig('pt_distrib_local.png')
+plt.savefig('pt_distrib_local.png', dpi=600)
 plt.show()
 # %% Brightness comparison
 def plot_brightness(num_pts: int)->None:
@@ -514,7 +514,7 @@ def plot_brightness(num_pts: int)->None:
     ax.plot([1.1e9, 2966479394.84], [50]*2, ls = '-.', color = colors['dawn'], lw = 0.75)
     ax.text(1e9, 55, r'6300 \AA{}', fontdict={'size': 10}, horizontalalignment='right', verticalalignment='center')
     ax.plot([1.1e9, 2966479394.84], [55]*2, ls = '-', color = colors['dawn'], lw = 0.75)
-    fig.savefig(f'test_prate_{num_pts}.png')
+    fig.savefig(f'test_prate_{num_pts}.png', dpi=600)
     # fig.show()
 
     fig, ax = plt.subplots(dpi=300, figsize=(6.4, 4.8))
@@ -556,7 +556,7 @@ def plot_brightness(num_pts: int)->None:
     # ax.plot([1.1e9, 2966479394.84], [50]*2, ls = '-.', color = colors['dawn'], lw = 0.75)
     # ax.text(1e9, 55, r'6300 \AA{}', fontdict={'size': 10}, horizontalalignment='right', verticalalignment='center')
     # ax.plot([1.1e9, 2966479394.84], [55]*2, ls = '-', color = colors['dawn'], lw = 0.75)
-    fig.savefig(f'test_pratio_{num_pts}.png')
+    fig.savefig(f'test_pratio_{num_pts}.png', dpi=600)
     # fig.show()
     plt.show()
 
