@@ -143,6 +143,8 @@ def plot_geo(bds: xr.Dataset, wl: str, file_suffix: str, *, vmin: float = None, 
     print(r.shape, t.shape)
     tmin, rmin = glow2d_polar.get_global_coords(np.deg2rad(12), EARTH_RADIUS + 1000)
     tmax, rmax = glow2d_polar.get_global_coords(np.deg2rad(69), EARTH_RADIUS + 1000)
+    thor, _ = glow2d_polar.get_global_coords(np.deg2rad(90), EARTH_RADIUS + 1000)
+    thor = float(thor)
     tmin = float(tmin)
     tmax = float(tmax)
     print(np.rad2deg(tmin), np.rad2deg(tmax))
@@ -171,7 +173,11 @@ def plot_geo(bds: xr.Dataset, wl: str, file_suffix: str, *, vmin: float = None, 
     ax.plot([0, tmin], [1, 1 + 1000/scale], ls='--', lw=0.5, color='k', clip_on=True)
     ax.plot([0, tmax], [1, 1 + 1000/scale], ls='--', lw=0.5, color='k', clip_on=True)
     ax.text(np.deg2rad(11), 1 + 300/scale, r'HiT\&MIS View Cone', fontsize=8, color='k', rotation=45, ha='center', va='center')
-    
+
+    # the horizon
+    ax.plot([0, thor], [1, 1 + 1000/scale], ls='-.', lw=0.5, color='k', clip_on=True)
+    ax.text(np.deg2rad(14), 1.05, r'Horizon', fontsize=8, color='k', rotation=78, ha='center', va='center')
+    print(np.rad2deg(thor))
     ax.set_ylim([0, (600 / scale) + 1])
 
     arrline = np.deg2rad(np.linspace(14, 27, 100, endpoint=True))
@@ -233,7 +239,7 @@ def plot_geo_local(bds: xr.Dataset, wl:str, file_suffix: str, *, vmin: float = N
     cbar.ax.tick_params(labelsize=8)
     cbar.set_label(r'\begin{center}%s \AA{} VER ($%s$)\end{center}'%(wl, iono.ver.attrs['units']), fontsize=10)
     ax.set_thetamax(90)
-    ax.text(np.radians(-20), ax.get_rmax()/2, 'Distance from observation location (km), towards NE',
+    ax.text(np.radians(-20), ax.get_rmax()/2, 'Distance from observation location (km)\n',
             rotation=0, ha='center', va='center')
     ax.text(np.radians(90), ax.get_rmax()*1.02, '(Zenith)',
             rotation=0, ha='center', va='center', fontdict={'size': 8})
@@ -276,7 +282,7 @@ def plot_local(iono: xr.Dataset, wl: str, file_suffix: str, *, vmin: float = Non
     cbar.ax.tick_params(labelsize=8)
     cbar.set_label(r'\begin{center}%s \AA{} VER ($%s$)\end{center}'%(wl, iono.ver.attrs['units']), fontsize=10)
     ax.set_thetamax(90)
-    ax.text(np.radians(-20), ax.get_rmax()/2, 'Distance from observation location (km), towards NE',
+    ax.text(np.radians(-20), ax.get_rmax()/2, 'Distance from observation location (km)\nTowards NE',
             rotation=0, ha='center', va='center')
     ax.text(np.radians(90), ax.get_rmax()*1.02, '(Zenith)',
             rotation=0, ha='center', va='center', fontdict={'size': 8})
@@ -465,6 +471,7 @@ def plot_brightness(num_pts: int)->None:
     ionos: dict(str, xr.Dataset) = {}
     photonrate: dict(str, dict(str, np.ndarray)) = {}
     photonrate_a: list[np.ndarray] = []
+    factor = np.deg2rad(0.1) # 0.1 deg equivalent for azimuth
     for key, time in tdict.items():
         iono = polar_model(time, 42.64981361744372, -71.31681056737486, 40, 0, n_pts=num_pts)
         dtime = parse(iono.time).astimezone(get_localzone())
@@ -475,8 +482,8 @@ def plot_brightness(num_pts: int)->None:
         photonrate[key] = {}
         for wl in wls:
             em = glow2d_polar.get_emission(ionos[key], feature=wl, za_min=za_min, za_max=za_max)
-            photonrate[key][wl] = em
-            photonrate_a.append(em.copy())
+            photonrate[key][wl] = em*factor
+            photonrate_a.append(em.copy()*factor)
     vmin, vmax = get_all_minmax_list(photonrate_a) # xmin, xmax
     # vmin = 10**(np.round(np.log10(vmin)) - 1)
     vmax = 10**(np.round(np.log10(vmax)) + 1)
@@ -484,7 +491,7 @@ def plot_brightness(num_pts: int)->None:
     fig, ax = plt.subplots(dpi=300, figsize=(6.4, 4.8))
     colors = {'dawn': 'k', 'noon': 'r', 'dusk': 'b', 'midnight': 'g'}
     lstyles = {'5577': '-.', '6300': '-'}
-    ax.set_title(r'GLOW Photon Emission Rates on %s ($n = %s$)'%(day, num_pts))
+    ax.set_title(r'GLOW Intensity on %s'%(day))
     ax.set_xscale('log')
     for key in tdict.keys(): # wish python 3.9 had switch-case
         for wl in wls:
@@ -493,34 +500,34 @@ def plot_brightness(num_pts: int)->None:
     ax.set_xlim(vmin, vmax)
     ax.set_ylim(za.min(), za.max())
     ax.set_ylabel('Elevation Angle (deg)')
-    ax.set_xlabel(r'Photon Emission Rate ($cm^{-2} rad^{-1} s^{-1}$)')
-    ax.text(1e9, 80, 'Dawn', fontdict={'size': 10}, horizontalalignment='right', verticalalignment='center')
-    ax.text(1e9, 75, 'Noon', fontdict={'size': 10}, horizontalalignment='right', verticalalignment='center')
-    ax.text(1e9, 70, 'Dusk', fontdict={'size': 10}, horizontalalignment='right', verticalalignment='center')
-    ax.text(1e9, 65, 'Midnight', fontdict={'size': 10}, horizontalalignment='right', verticalalignment='center')
-    ax.plot([1.1e9, 2966479394.84], [80, 80], ls = '-', color = colors['dawn'], lw = 0.75)
-    ax.plot([2966479394.84, 8e9], [80, 80], ls = '-.', color = colors['dawn'], lw = 0.75)
-    ax.plot([1.1e9, 2966479394.84], [75, 75], ls = '-', color = colors['noon'], lw = 0.75)
-    ax.plot([2966479394.84, 8e9], [75, 75], ls = '-.', color = colors['noon'], lw = 0.75)
-    ax.plot([1.1e9, 2966479394.84], [70, 70], ls = '-', color = colors['dusk'], lw = 0.75)
-    ax.plot([2966479394.84, 8e9], [70, 70], ls = '-.', color = colors['dusk'], lw = 0.75)
-    ax.plot([1.1e9, 2966479394.84], [65, 65], ls = '-', color = colors['midnight'], lw = 0.75)
-    ax.plot([2966479394.84, 8e9], [65, 65], ls = '-.', color = colors['midnight'], lw = 0.75)
+    ax.set_xlabel(r'Intensity ($cm^{-2} s^{-1}$)')
+    ax.text(1e9*factor, 80, 'Dawn', fontdict={'size': 10}, horizontalalignment='right', verticalalignment='center')
+    ax.text(1e9*factor, 75, 'Noon', fontdict={'size': 10}, horizontalalignment='right', verticalalignment='center')
+    ax.text(1e9*factor, 70, 'Dusk', fontdict={'size': 10}, horizontalalignment='right', verticalalignment='center')
+    ax.text(1e9*factor, 65, 'Midnight', fontdict={'size': 10}, horizontalalignment='right', verticalalignment='center')
+    ax.plot([1.1e9*factor, 2966479394.84*factor], [80, 80], ls = '-', color = colors['dawn'], lw = 0.75)
+    ax.plot([2966479394.84*factor, 8e9*factor], [80, 80], ls = '-.', color = colors['dawn'], lw = 0.75)
+    ax.plot([1.1e9*factor, 2966479394.84*factor], [75, 75], ls = '-', color = colors['noon'], lw = 0.75)
+    ax.plot([2966479394.84*factor, 8e9*factor], [75, 75], ls = '-.', color = colors['noon'], lw = 0.75)
+    ax.plot([1.1e9*factor, 2966479394.84*factor], [70, 70], ls = '-', color = colors['dusk'], lw = 0.75)
+    ax.plot([2966479394.84*factor, 8e9*factor], [70, 70], ls = '-.', color = colors['dusk'], lw = 0.75)
+    ax.plot([1.1e9*factor, 2966479394.84*factor], [65, 65], ls = '-', color = colors['midnight'], lw = 0.75)
+    ax.plot([2966479394.84*factor, 8e9*factor], [65, 65], ls = '-.', color = colors['midnight'], lw = 0.75)
 
     # ax.text(1e9, 40, r'$\csc{\theta}$ \\ (midnight)', horizontalalignment='right', verticalalignment='center')
     # ax.plot([1.1e9, 2966479394.84], [40]*2, ls='--', color='orange', lw=0.75)
 
-    ax.text(1e9, 50, r'5577 \AA{}', fontdict={'size': 10}, horizontalalignment='right', verticalalignment='center')
-    ax.plot([1.1e9, 2966479394.84], [50]*2, ls = '-.', color = colors['dawn'], lw = 0.75)
-    ax.text(1e9, 55, r'6300 \AA{}', fontdict={'size': 10}, horizontalalignment='right', verticalalignment='center')
-    ax.plot([1.1e9, 2966479394.84], [55]*2, ls = '-', color = colors['dawn'], lw = 0.75)
-    fig.savefig(f'test_prate_{num_pts}.png', dpi=600)
-    # fig.show()
+    ax.text(1e9*factor, 50, r'5577 \AA{}', fontdict={'size': 10}, horizontalalignment='right', verticalalignment='center')
+    ax.plot([1.1e9*factor, 2966479394.84*factor], [50]*2, ls = '-.', color = colors['dawn'], lw = 0.75)
+    ax.text(1e9*factor, 55, r'6300 \AA{}', fontdict={'size': 10}, horizontalalignment='right', verticalalignment='center')
+    ax.plot([1.1e9*factor, 2966479394.84*factor], [55]*2, ls = '-', color = colors['dawn'], lw = 0.75)
+    # fig.savefig(f'test_prate_{num_pts}.png', dpi=600)
+    fig.show()
 
     fig, ax = plt.subplots(dpi=300, figsize=(6.4, 4.8))
     colors = {'dawn': 'k', 'noon': 'r', 'dusk': 'b', 'midnight': 'g'}
     lstyles = {'5577': '-.', '6300': '-'}
-    ax.set_title(r'GLOW Photon Emission Rate Ratio for 5577 \AA{} and 6300 \AA{} on %s'%(day))
+    ax.set_title(r'GLOW Intensity Ratio for 5577 \AA{} and 6300 \AA{} on %s'%(day))
     ax.set_xscale('log')
     for key in tdict.keys(): # wish python 3.9 had switch-case
         mval = np.median(photonrate[key]['5577'] / photonrate[key]['6300'])
@@ -535,7 +542,7 @@ def plot_brightness(num_pts: int)->None:
     # ax.set_xlim(None, 20)
     ax.set_ylim(za.min(), za.max())
     ax.set_ylabel('Elevation Angle (deg)')
-    ax.set_xlabel(r'Integrated Photon Emission Rate Ratio (dimensionless)')
+    ax.set_xlabel(r'Intensity Ratio (dimensionless)')
     # ax.text(1e9, 80, 'Dawn', fontdict={'size': 10}, horizontalalignment='right', verticalalignment='center')
     # ax.text(1e9, 75, 'Noon', fontdict={'size': 10}, horizontalalignment='right', verticalalignment='center')
     # ax.text(1e9, 70, 'Dusk', fontdict={'size': 10}, horizontalalignment='right', verticalalignment='center')
@@ -557,8 +564,7 @@ def plot_brightness(num_pts: int)->None:
     # ax.text(1e9, 55, r'6300 \AA{}', fontdict={'size': 10}, horizontalalignment='right', verticalalignment='center')
     # ax.plot([1.1e9, 2966479394.84], [55]*2, ls = '-', color = colors['dawn'], lw = 0.75)
     fig.savefig(f'test_pratio_{num_pts}.png', dpi=600)
-    # fig.show()
-    plt.show()
+    fig.show()
 
 plot_brightness(20)
 plot_brightness(50)
