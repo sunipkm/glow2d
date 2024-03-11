@@ -1,7 +1,7 @@
 # %% Imports
 from __future__ import annotations
 from functools import partial
-from typing import SupportsFloat as Numeric, Iterable
+from typing import SupportsFloat as Numeric, Iterable, Tuple
 import warnings
 from tqdm import tqdm
 import xarray
@@ -19,15 +19,15 @@ from scipy.ndimage import geometric_transform
 from scipy.interpolate import interp2d
 from scipy.integrate import simps
 from time import perf_counter_ns
-import platform
-from multiprocessing import Pool, cpu_count
+# import platform
+# from multiprocessing import Pool, cpu_count
 
 # MAP_FCN = lambda *args, max_workers: list(map(*args))
 # MAP_FCN = process_map
 # if platform.system() == 'Darwin':
 #     MAP_FCN = thread_map
 
-N_CPUS = cpu_count()
+# N_CPUS = cpu_count()
 
 # %%
 
@@ -37,7 +37,7 @@ class glow2d_geo:
     The result is presented in a geocentric coordinate system.
     """
 
-    def __init__(self, time: datetime, lat: Numeric, lon: Numeric, heading: Numeric, max_alt: Numeric = 1000, n_pts: int = 50, n_bins: int = 100, *, n_alt: int = None, uniformize_glow: bool = True, n_threads: int = None, full_circ: bool = False, show_progress: bool = True, **kwargs):
+    def __init__(self, time: datetime, lat: Numeric, lon: Numeric, heading: Numeric, max_alt: Numeric = 1000, n_pts: int = 50, n_bins: int = 100, *, n_alt: int = None, uniformize_glow: bool = True, full_circ: bool = False, show_progress: bool = True, tqdm_kwargs: dict = None, **kwargs):
         """Create a GLOWRaycast object.
 
         Args:
@@ -50,9 +50,9 @@ class glow2d_geo:
             n_bins (int, optional): Number of energy bins. Defaults to 100.
             n_alt (int, optional): Number of altitude bins, must be > 100. Used only when `uniformize_glow` is set to `True` (default). Defaults to `None`, i.e. uses same number of bins as a single GLOW run.
             uniformize_glow (bool, optional): Interpolate GLOW output to an uniform altitude grid. `n_alt` is ignored if this option is set to `False`. Defaults to `True`.
-            n_threads (int, optional): Number of threads for parallel GLOW runs. Set to `None` to use all system threads. Defaults to `None`.
             full_circ (bool, optional): For testing only, do not use. Defaults to False.
             show_progress (bool, optional): Use TQDM to show progress of GLOW model calculations. Defaults to True.
+            tqdm_kwargs (dict, optional): Keyword arguments for TQDM. Defaults to None.
             kwargs (dict, optional): Passed to `glowpython.generic`.
 
         Raises:
@@ -67,10 +67,6 @@ class glow2d_geo:
             raise ValueError('Number of position bins can not be odd.')
         if n_pts < 20:
             raise ValueError('Number of position bins can not be < 20.')
-        if n_threads is None:
-            n_threads = N_CPUS
-        if n_threads > N_CPUS:
-            warnings.warn('Number of requested threads (%d > %d)' % (n_threads, N_CPUS), ResourceWarning)
         self._uniform_glow = uniformize_glow
         self._pt = Point(lat, lon)  # instrument loc
         self._time = time  # time of calc
@@ -84,10 +80,10 @@ class glow2d_geo:
         # points on the earth where we need to sample
         self._show_prog = show_progress
         self._kwargs = kwargs
+        self._tqdm_kwargs = {} if tqdm_kwargs is None else tqdm_kwargs
         distpts = np.linspace(0, max_d, n_pts, endpoint=True)
         self._locs = []
         self._nbins = n_bins  # number of energy bins (for later)
-        self._nthr = n_threads  # number of threads (for later)
         for d in distpts:  # for each distance point
             dest = GreatCircleDistance(
                 kilometers=d).destination(self._pt, heading)  # calculate lat, lon of location at that distance along the great circle
@@ -158,13 +154,9 @@ class glow2d_geo:
 
     def _calc_glow_noprecip(self) -> xarray.Dataset:  # run glow model calculation
         if self._show_prog:
-            # self._dss = MAP_FCN(self._calc_glow_single_noprecip, range(
-                # len(self._locs)), max_workers=self._nthr)
-            self._dss = list(map(self._calc_glow_single_noprecip, tqdm(range(len(self._locs)))))
+            pbar = tqdm(range(len(self._locs)), **self._tqdm_kwargs)
+            self._dss = list(map(self._calc_glow_single_noprecip, pbar))
         else:
-            # ppool = Pool(self._nthr)
-            # self._dss = ppool.map(self._calc_glow_single_noprecip, range(
-            #     len(self._locs)))
             self._dss = list(map(self._calc_glow_single_noprecip, range(len(self._locs))))
 
         # for dest in tqdm(self._locs):
@@ -261,7 +253,7 @@ class glow2d_polar:
         # get meshgrid of the R, T coord system from regular r, za grid
         self._ntt, self._nrr = self.get_global_coords(nt, nr, r0=self._r0)
         # calculate jacobian
-        jacobian = 1 # 4*np.pi*self._nrr*self._nrr / (nr * nr) # self.get_jacobian_glob2loc_glob(self._nrr, self._ntt, r0=self._r0)
+        jacobian = 1  # 4*np.pi*self._nrr*self._nrr / (nr * nr) # self.get_jacobian_glob2loc_glob(self._nrr, self._ntt, r0=self._r0)
         # convert to pixel coordinates
         self._ntt = self._ntt.flatten()  # flatten T, works as _global_from_local LUT
         self._nrr = self._nrr.flatten()  # flatten R, works as _global_from_local LUT
@@ -493,7 +485,7 @@ class glow2d_polar:
         return simps(simps(ver.T, zaxis), rr * 1e5)  # do the double integral
 
     # get global coord index from local coord index, implemented as LUT
-    def _global_from_local(self, pt: tuple(int, int)) -> tuple(float, float):
+    def _global_from_local(self, pt: Tuple[int, int]) -> Tuple[Numeric, Numeric]:
         # if not self.firstrun % 10000:
         #     print('Input:', pt)
         tl, rl = pt  # pixel coord
@@ -511,7 +503,7 @@ class glow2d_polar:
         return (float(self._ntt[tl*self._nr_num + rl]), float(self._nrr[tl*self._nr_num + rl]))
 
     @staticmethod
-    def get_global_coords(t: np.ndarray | Numeric, r: np.ndarray | Numeric, r0: Numeric = EARTH_RADIUS, meshgrid: bool = True) -> tuple(np.ndarray, np.ndarray):
+    def get_global_coords(t: np.ndarray | Numeric, r: np.ndarray | Numeric, r0: Numeric = EARTH_RADIUS, meshgrid: bool = True) -> Tuple[np.ndarray, np.ndarray]:
         """Get GEO coordinates from local coordinates.
 
         $$
@@ -555,7 +547,7 @@ class glow2d_polar:
         return tt, rr
 
     @staticmethod
-    def get_local_coords(t: np.ndarray | Numeric, r: np.ndarray | Numeric, r0: Numeric = EARTH_RADIUS, meshgrid: bool = True) -> tuple(np.ndarray, np.ndarray):
+    def get_local_coords(t: np.ndarray | Numeric, r: np.ndarray | Numeric, r0: Numeric = EARTH_RADIUS, meshgrid: bool = True) -> Tuple[np.ndarray, np.ndarray]:
         """Get local coordinates from GEO coordinates.
 
         $$
@@ -698,7 +690,7 @@ class glow2d_polar:
         return jac
 
 
-def geo_model(time: datetime, lat: Numeric, lon: Numeric, heading: Numeric, max_alt: Numeric = 1000, n_pts: int = 50, n_bins: int = 100, *, n_alt: int = None, n_threads: int = None, show_progress: bool = True, **kwargs) -> xarray.Dataset:
+def geo_model(time: datetime, lat: Numeric, lon: Numeric, heading: Numeric, max_alt: Numeric = 1000, n_pts: int = 50, n_bins: int = 100, *, n_alt: int = None, show_progress: bool = True, tqdm_kwargs: dict = None, **kwargs) -> xarray.Dataset:
     """Run GLOW model looking along heading from the current location and return the model output in
     (T, R) geocentric coordinates where T is angle in radians from the current location along the great circle
     following current heading, and R is altitude in kilometers. R is in an uniform grid with `n_alt` points.
@@ -712,8 +704,8 @@ def geo_model(time: datetime, lat: Numeric, lon: Numeric, heading: Numeric, max_
         n_pts (int, optional): Number of GEO coordinate angular grid points (i.e. number of GLOW runs), must be even and > 20. Defaults to 50.
         n_bins (int, optional): Number of energy bins. Defaults to 100.
         n_alt (int, optional): Number of altitude bins, must be > 100. Defaults to `None`, i.e. uses same number of bins as a single GLOW run.
-        n_threads (int, optional): Number of threads for parallel GLOW runs. Set to `None` to use all system threads. Defaults to `None`.
         show_progress (bool, optional): Use TQDM to show progress of GLOW model calculations. Defaults to `True`.
+        tqdm_kwargs (dict, optional): Passed to `tqdm.tqdm`. Defaults to `None`.
         kwargs (dict, optional): Passed to `glowpython.generic`.
 
     Returns:
@@ -728,12 +720,13 @@ def geo_model(time: datetime, lat: Numeric, lon: Numeric, heading: Numeric, max_
         ResourceWarning: Number of threads requested is more than available system threads.
     """
     grobj = glow2d_geo(time, lat, lon, heading, max_alt,
-                       n_pts, n_bins, n_alt=n_alt, uniformize_glow=True, n_threads=n_threads, show_progress=show_progress, **kwargs)
+                       n_pts, n_bins, n_alt=n_alt, uniformize_glow=True, 
+                       show_progress=show_progress, tqdm_kwargs=tqdm_kwargs, **kwargs)
     bds = grobj.run_model()
     return bds
 
 
-def polar_model(time: datetime, lat: Numeric, lon: Numeric, heading: Numeric, altitude: Numeric = 0, max_alt: Numeric = 1000, n_pts: int = 50, n_bins: int = 100, *, n_alt: int = None, with_prodloss: bool = False, n_threads: int = None, full_output: bool = False, resamp: Numeric = 1.5, show_progress: bool = True, **kwargs) -> xarray.Dataset | tuple(xarray.Dataset, xarray.Dataset):
+def polar_model(time: datetime, lat: Numeric, lon: Numeric, heading: Numeric, altitude: Numeric = 0, max_alt: Numeric = 1000, n_pts: int = 50, n_bins: int = 100, *, n_alt: int = None, with_prodloss: bool = False, full_output: bool = False, resamp: Numeric = 1.5, show_progress: bool = True, tqdm_kwargs: dict = None, **kwargs) -> xarray.Dataset | Tuple[xarray.Dataset, xarray.Dataset]:
     """Run GLOW model looking along heading from the current location and return the model output in
     (ZA, R) local coordinates where ZA is zenith angle in radians and R is distance in kilometers.
 
@@ -748,10 +741,10 @@ def polar_model(time: datetime, lat: Numeric, lon: Numeric, heading: Numeric, al
         n_bins (int, optional): Number of energy bins. Defaults to 100.
         n_alt (int, optional): Number of altitude bins, must be > 100. Defaults to None, i.e. uses same number of bins as a single GLOW run.
         with_prodloss (bool, optional): Calculate production and loss parameters in local coordinates. Defaults to False.
-        n_threads (int, optional):  Number of threads for parallel GLOW runs. Set to None to use all system threads. Defaults to None.
         full_output (bool, optional): Returns only local coordinate GLOW output if False, and a tuple of local and GEO outputs if True. Defaults to False.
         resamp (Numeric, optional): Number of R and ZA points in local coordinate output. ``len(R) = len(alt_km) * resamp`` and ``len(ZA) = n_pts * resamp``. Must be > 0.5. Defaults to 1.5.
         show_progress (bool, optional): Use TQDM to show progress of GLOW model calculations. Defaults to True.
+        tqdm_kwargs (dict, optional): Passed to `tqdm.tqdm`. Defaults to None.
         kwargs (dict, optional): Passed to `glowpython.generic`.
 
     Returns:
@@ -773,8 +766,9 @@ def polar_model(time: datetime, lat: Numeric, lon: Numeric, heading: Numeric, al
     Warns:
         ResourceWarning: Number of threads requested is more than available system threads.
     """
-    grobj = glow2d_geo(time, lat, lon, heading, max_alt, n_pts, n_bins, n_alt=n_alt, uniformize_glow=True,
-                       n_threads=n_threads, show_progress=show_progress, **kwargs)
+    grobj = glow2d_geo(time, lat, lon, heading, max_alt, n_pts, n_bins, 
+                       n_alt=n_alt, uniformize_glow=True,
+                       show_progress=show_progress, tqdm_kwargs=tqdm_kwargs, **kwargs)
     bds = grobj.run_model()
     grobj = glow2d_polar(bds, altitude, with_prodloss=with_prodloss, resamp=resamp)
     iono = grobj.transform_coord()
@@ -791,7 +785,7 @@ if __name__ == '__main__':
     time = datetime(2022, 3, 22, 18, 0).astimezone(pytz.utc)
     print(time)
     lat, lon = 42.64981361744372, -71.31681056737486
-    grobj = glow2d_geo(time, 42.64981361744372, -71.31681056737486, 40, n_threads=6, n_pts=20, show_progress=True)
+    grobj = glow2d_geo(time, 42.64981361744372, -71.31681056737486, 40, n_pts=20, show_progress=True, tqdm_kwargs={'desc': 'GLOW GEO'})
     st = perf_counter_ns()
     bds = grobj.run_model()
     end = perf_counter_ns()
