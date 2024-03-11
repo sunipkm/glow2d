@@ -148,17 +148,17 @@ class glow2d_geo:
             out = iono[key].values  # in place
             out[np.where(np.isnan(out))] = 0  # replace NaNs with 0
             out = interp1d(alt_km, out, axis=1, fill_value=np.nan)(alt)
-            iono[key] = (('angle', 'alt_km'), out)
+            iono[key] = (('angle', 'alt_km'), out, iono[key].attrs)
         ver = iono['ver'].values
         ver[np.where(np.isnan(ver))] = 0
         ver = interp1d(alt_km, ver, axis=1, fill_value=np.nan)(alt)
-        iono['ver'] = (('angle', 'alt_km', 'wavelength'), ver)
+        iono['ver'] = (('angle', 'alt_km', 'wavelength'), ver, iono['ver'].attrs)
         for key in state_keys:
             out = iono[key].values
             out[np.where(np.isnan(out))] = 0  # replace NaNs with 0
             out = interp1d(alt_km, out, axis=1, fill_value=np.nan)(alt)
-            iono[key] = (('angle', 'alt_km', 'state'), out)
-        iono['alt_km'] = alt
+            iono[key] = (('angle', 'alt_km', 'state'), out, iono[key].attrs)
+        iono['alt_km'] = (('alt_km',), alt, iono['alt_km'].attrs)
         return iono
 
     # calculate glow model for one location
