@@ -220,6 +220,7 @@ class glow2d_geo:
         }
         _ = list(map(lambda x: bds[x].attrs.update(
             {'units': unit_desc_dict[x][0], 'description': unit_desc_dict[x][1]}), unit_desc_dict.keys()))
+        del bds.attrs['tecscale']  # remove tecscale from attrs
         self._bds = bds
         return self._bds  # return the calculated
 
@@ -452,7 +453,6 @@ class glow2d_polar:
         }
         _ = list(map(lambda x: iono[x].attrs.update(
             {'units': unit_desc_dict[x][0], 'description': unit_desc_dict[x][1]}), unit_desc_dict.keys()))
-        _ = iono.attrs.pop('tecscale') # remove tecscale from attrs
         # end = perf_counter_ns()
         # print('Merging: %.3f us'%((end - start)*1e-3))
         self._iono = iono
