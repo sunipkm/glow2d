@@ -14,12 +14,10 @@ from geopy import Point
 from geopy.distance import GreatCircleDistance, EARTH_RADIUS
 from haversine import haversine, Unit
 import pandas as pd
-from tqdm.contrib.concurrent import thread_map, process_map
 from scipy.ndimage import geometric_transform
 from scipy.interpolate import interp2d, interp1d
 from scipy.integrate import simps
 from time import perf_counter_ns
-import platform
 from multiprocessing.pool import Pool
 
 try:
@@ -113,7 +111,7 @@ class glow2d_geo:
                 tecval = []
                 for gl, gt in zip(glon, gdlat):
                     tval = tec.interp(coords={'timestamps': time.timestamp(), 'gdlat': gt, 'glon': gl}
-                                 ).tec.values.copy()  # interpolate to the time and locations
+                                      ).tec.values.copy()  # interpolate to the time and locations
                     tecval.append(tval)
                 tec = np.asarray(tecval)
                 if not tec_interp_nan:
@@ -139,10 +137,37 @@ class glow2d_geo:
     def _uniformize_glow(iono: xarray.Dataset) -> xarray.Dataset:
         alt_km = iono.alt_km.values
         alt = np.linspace(alt_km.min(), alt_km.max(), len(alt_km))  # change to custom
-        unit_keys = ["Tn", "O", "N2", "O2", "NO", 'NS', 'ND', "NeIn", "NeOut", "ionrate",
-                     "O+", "N2+", "O2+", "NO+", "N2D", "O1S", "O1D",
-                     "pederson", "hall", "Te", "Ti"]
-        state_keys = ['production', 'loss', 'excitedDensity']
+        unit_keys = [
+            'O',
+            'O2',
+            'N2',
+            'NO',
+            'NS',
+            'ND',
+            'NeIn',
+            'O+',
+            'O+(2P)',
+            'O+(2D)',
+            'O2+',
+            'N+',
+            'N2+',
+            'NO+',
+            'N2(A)',
+            'N(2P)',
+            'N(2D)',
+            'O(1S)',
+            'O(1D)',
+            'NeOut',
+            'Te',
+            'Ti',
+            'Tn',
+            'ionrate',
+            'pederson',
+            'hall',
+            'eHeat',
+            'Tez'
+        ]
+        state_keys = ['production', 'loss']
         for key in unit_keys:
             # out = np.interp(alt, alt_km, iono[key].values)
             out = iono[key].values  # in place
@@ -187,17 +212,18 @@ class glow2d_geo:
         dss = list(map(lambda x: x[1], dss))
         self._dss = dss
 
-        tecscale = list(map(lambda x: x.attrs['tecscale'], dss))  # get iriscale
+        tecscale = list(map(lambda x: float(x['tecscale'].values), dss))  # get iriscale
 
         # for dest in tqdm(self._locs):
         #     self._dss.append(glow.no_precipitation(time, dest[0], dest[1], self._nbins))
         bds: xarray.Dataset = xr.concat(
             self._dss, pd.Index(self._angs, name='angle'))
+        bds = bds.drop_dims('tecscale')
         latlon = np.asarray(self._locs)
         bds = bds.assign_coords(lat=('angle', latlon[:, 0]))
         bds = bds.assign_coords(lon=('angle', latlon[:, 1]))
-        bds['tecscale'] = xr.Variable(('angle',), tecscale, attrs={
-                                      'description': 'TEC scale factor; non-unity if the IRI TEC is scaled to a provided TEC value.', 'units': 'None', 'long_name': 'TEC scale factor'})
+        bds.coords['tecscale'] = xr.Variable(('angle',), tecscale, attrs={
+            'description': 'TEC scale factor; non-unity if the IRI TEC is scaled to a provided TEC value.', 'units': 'None', 'long_name': 'TEC scale factor'})
 
         if self._uniform_glow:
             bds = self._uniformize_glow(bds)
@@ -220,7 +246,6 @@ class glow2d_geo:
         }
         _ = list(map(lambda x: bds[x].attrs.update(
             {'units': unit_desc_dict[x][0], 'description': unit_desc_dict[x][1]}), unit_desc_dict.keys()))
-        del bds.attrs['tecscale']  # remove tecscale from attrs
         self._bds = bds
         return self._bds  # return the calculated
 
@@ -310,11 +335,13 @@ class glow2d_polar:
         coord_state = bds.state.values  # state axis
         coord_energy = bds.energy.values  # egrid
         bds_attr = bds.attrs  # attrs
-        single_keys = ['Tn',
-                       'pederson',
-                       'hall',
-                       'Te',
-                       'Ti']  # (angle, alt_km) vars
+        single_keys = [
+            'Tn',
+            'Te',
+            'Ti',
+            'pederson',
+            'hall',
+        ]  # (angle, alt_km) vars
         density_keys = [
             'O',
             'N2',
@@ -326,17 +353,24 @@ class glow2d_polar:
             'NeOut',
             'ionrate',
             'O+',
-            'N2+',
+            'O+(2P)',
+            'O+(2D)',
             'O2+',
+            'N+',
+            'N2+',
             'NO+',
-            'N2D',
-            'O1S',
-            'O1D',
+            'N2(A)',
+            'N(2P)',
+            'N(2D)',
+            'O(1S)',
+            'O(1D)',
+            'NeOut',
+            'eHeat',
+            'Tez'
         ]
         state_keys = [
             'production',
             'loss',
-            'excitedDensity'
         ]  # (angle, alt_km, state) vars
         # start = perf_counter_ns()
         # map all the single key types from (angle, alt_km) -> (la, r)
@@ -388,6 +422,7 @@ class glow2d_polar:
             dims=['za', 'r', 'wavelength'],
             name='ver'
         )  # create wl dataset
+        ver.wavelength.attrs = bds['wavelength'].attrs
         # end = perf_counter_ns()
         # print('VER dataset: %.3f us'%((end - start)*1e-3))
         # start = perf_counter_ns()
@@ -401,7 +436,7 @@ class glow2d_polar:
                     inp[np.where(np.isnan(inp))] = 0
                     out = geometric_transform(inp, mapping=self._global_from_local, output_shape=outp_shape)
                     out[np.where(out < 0)] = 0
-                    if key in ('production', 'excitedDensity'):
+                    if key in ('production',):
                         out /= jacobian
                     # out = warp(inp, inverse_map=(2, self._ntt, self._nrr), output_shape=outp_shape)
                     return out.T
@@ -436,14 +471,21 @@ class glow2d_polar:
         d = np.asarray(d).T
         precip = xarray.Dataset({'precip': (('r', 'energy'), d)}, coords={
             'r': nr, 'energy': coord_energy})
+        precip['energy'].attrs = bds['energy'].attrs
         # end = perf_counter_ns()
         # print('Precip interp and ds: %.3f us'%((end - start)*1e-3))
 
         # start = perf_counter_ns()
-        iono = xr.merge((iono, ver, prodloss, precip, bds['tecscale']))  # merge all datasets
-        bds_attr['altitude'] = {'values': self._r0 - EARTH_RADIUS, 'units': 'km',
-                                'description': 'Altitude of local polar coordinate origin ASL'}
-        iono.attrs.update(bds_attr)  # copy original attrs
+        iono = xr.merge((iono, ver, prodloss, precip))  # merge all datasets
+        iono.coords['sflux'] = bds.coords['sflux']
+        iono.coords['dwave'] = bds.coords['dwave']
+        iono.coords['tecscale'] = bds.coords['tecscale']
+        iono.coords['denperturb'] = bds.coords['denperturb']
+        iono.coords['altitude'] = (
+            ('altitude',), [self._r0 - EARTH_RADIUS],
+            {'units': 'km',
+             'description': 'Altitude of local polar coordinate origin ASL'}
+        )
 
         _ = list(map(lambda x: iono[x].attrs.update(bds[x].attrs), tuple(iono.data_vars.keys())))  # update attrs from bds
 
@@ -452,7 +494,11 @@ class glow2d_polar:
             'r': ('km', 'Radial distance in km')
         }
         _ = list(map(lambda x: iono[x].attrs.update(
-            {'units': unit_desc_dict[x][0], 'description': unit_desc_dict[x][1]}), unit_desc_dict.keys()))
+            {'units': unit_desc_dict[x][0],
+             'description': unit_desc_dict[x][1],
+             'long_name': unit_desc_dict[x][1]}), unit_desc_dict.keys()))
+        
+        iono.attrs.update(bds.attrs)
         # end = perf_counter_ns()
         # print('Merging: %.3f us'%((end - start)*1e-3))
         self._iono = iono
