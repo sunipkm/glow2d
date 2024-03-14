@@ -191,12 +191,11 @@ class glow2d_geo:
         vars = vars[0]
         lat, lon = vars[0]
         tec = vars[1]
-        idx = vars[2]
         iono = glow.generic(self._time, lat, lon, self._nbins, tec=tec, **self._kwargs)
-        return (idx, iono)
+        return iono
 
     def _calc_glow_noprecip(self) -> xarray.Dataset:  # run glow model calculation
-        items = zip(self._locs, self._tec, list(range(len(self._locs))))
+        items = zip(self._locs, self._tec)
 
         if self._mpool is None:
             if self._show_prog:
@@ -208,8 +207,8 @@ class glow2d_geo:
             calcglow = partial(calc_glow_generic, self._time, self._nbins, self._kwargs)
             dss = self._mpool.starmap(calcglow, items)
 
-        dss.sort(key=lambda x: x[0])
-        dss = list(map(lambda x: x[1], dss))
+        # dss.sort(key=lambda x: x[0])
+        # dss = list(map(lambda x: x[1], dss))
         self._dss = dss
 
         tecscale = list(map(lambda x: float(x['tecscale'].values), dss))  # get iriscale

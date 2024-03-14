@@ -643,4 +643,4 @@ def main(serial: bool = False, show: bool = False, pt_distrib: bool = False) -> 
 
 # %%
 if __name__ == '__main__':
-    main(serial=True, pt_distrib=True)
+    main(serial=True, show=True, pt_distrib=True)
