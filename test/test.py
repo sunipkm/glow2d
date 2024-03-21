@@ -4,8 +4,9 @@ from scipy.signal import savgol_filter
 import multiprocessing as mp
 from ast import Tuple
 import sys
-from typing import Dict, Iterable, SupportsFloat as Numeric
+from typing import Dict, Iterable, List, SupportsFloat as Numeric
 import pylab as pl
+from tqdm import tqdm
 import xarray as xr
 import numpy as np
 import matplotlib.pyplot as plt
@@ -26,6 +27,9 @@ import pylab as pl
 from dateutil.parser import parse
 from tzlocal import get_localzone
 from pysolar.solar import get_hour_angle
+from functools import lru_cache
+from matplotlib import dates as mdates
+
 rc('font', **{'family': 'serif', 'serif': ['Times']})
 # for Palatino and other serif fonts use:
 # rc('font',**{'family':'serif','serif':['Palatino']})
@@ -117,8 +121,8 @@ def plot_geo(bds: xr.Dataset, wl: str, file_suffix: str, *, vmin: float = None, 
     ax.set_thetamax(ang.max()*180/np.pi)
 
     ax.scatter(0, 1, s=40, marker=r'$\odot$', facecolors='none', edgecolors='blue', clip_on=False)
-    ax.scatter(np.deg2rad(90), 0.272, s=40, marker=r'$\odot$', facecolors='none', edgecolors='blue', clip_on=False)
-    ax.text(np.deg2rad(75), 0.27, 'Observer', fontdict={'size': 12})
+    # ax.scatter(np.deg2rad(90), 0.272, s=40, marker=r'$\odot$', facecolors='none', edgecolors='blue', clip_on=False)
+    ax.text(np.deg2rad(2), 0.98, 'Observer', fontdict={'size': 10}, horizontalalignment='right')
 
     # the view cone
     ax.plot([0, tmin], [1, 1 + 1000/scale], ls='--', lw=0.5, color='k', clip_on=True)
@@ -391,6 +395,59 @@ def plot_brightness(tdict, num_pts: int, show: bool = False, mpool=None) -> None
         fig.show()
     else:
         plt.close(fig)
+# %%
+
+
+@lru_cache(maxsize=None)
+def eval_model(t0: datetime, t1: datetime, num: int, npts: int = 100, mpool=None) -> List[xr.Dataset]:
+    assert num > 1
+    times = np.linspace(t0.timestamp(), t1.timestamp(), num, endpoint=True)
+    times = [datetime.fromtimestamp(t) for t in times]
+    ionos = []
+    for time in tqdm(times):
+        iono = polar_model(time, 42.64981361744372, -71.31681056737486, 40, 0, n_pts=npts, show_progress=False, mpool=mpool)
+        ionos.append(iono)
+    return times, ionos
+# %%
+
+
+def plot_ratio(num_pts: int, show: bool = False, mpool=None, res=None) -> List[xr.Dataset]:
+    za_min = np.arange(10, 80, 0.25, dtype=float)
+    za_max = za_min + 0.25
+    za = (za_min + za_max) / 2
+    za_min = np.deg2rad(za_min)
+    za_max = np.deg2rad(za_max)
+    t0 = datetime(2022, 2, 15, 19, 0)
+    t1 = datetime(2022, 2, 16, 3, 0)
+    day: str = f'{t0:%Y-%m-%d}'
+    photonrat: List[np.ndarray] = []
+    factor = np.deg2rad(0.1)  # 0.1 deg equivalent for azimuth
+    if res is None:
+        times, ionos = eval_model(t0, t1, 133, npts=num_pts, mpool=mpool)
+        for idx, _ in tqdm(enumerate(times)):
+            iono = ionos[idx]
+            em5577 = glow2d_polar.get_emission(iono, feature='5577', za_min=za_min, za_max=za_max)
+            em6300 = glow2d_polar.get_emission(iono, feature='6300', za_min=za_min, za_max=za_max)
+            ratio = em5577 / em6300
+            photonrat.append(ratio)
+        vmin, vmax = get_all_minmax_list(photonrat)  # xmin, xmax
+        ds = xr.Dataset({'ratio': (('time', 'za'), photonrat)}, coords={'time': times, 'za': za})
+        vmax = 10**(np.round(np.log10(vmax)) + 1)
+    else:
+        times, ionos, ds = res
+        t0 = times[0]
+        t1 = times[-1]
+    # vmin = 10**(np.round(np.log10(vmin)) - 1)
+    fig, ax = plt.subplots(dpi=300, figsize=(6.4, 3.8))
+    ax.set_title(r'GLOW Intensity Ratio on %s' % (day))
+    # ax.plot(1e4/np.cos(np.deg2rad(90 - za)), za, ls = '--', color='orange', lw=0.75)
+    ds['ratio'].T.plot(ax=ax, cmap='bone', cbar_kwargs={'aspect': 100})
+    ax.xaxis.set_major_formatter(mdates.DateFormatter('%H:%M'))
+    # ax.text(1e9, 40, r'$\csc{\theta}$ \\ (midnight)', horizontalalignment='right', verticalalignment='center')
+    # ax.plot([1.1e9, 2966479394.84], [40]*2, ls='--', color='orange', lw=0.75)
+    fig.show()
+    return (times, ionos, ds)
+
 # %% Run model for parallel
 
 
@@ -407,7 +464,7 @@ def run_model(file_suffix: str, time: datetime, pos: int) -> Tuple[str, xr.Datas
 # %% Main function
 
 
-def main(serial: bool = False, show: bool = False, pt_distrib: bool = False) -> None:
+def main(serial: bool = False, show: bool = False, pt_distrib: bool = False, bdss = {}, ionos = {}) -> None:
     """## Main function to run the GLOW 2D model
 
     ### Args:
@@ -424,49 +481,48 @@ def main(serial: bool = False, show: bool = False, pt_distrib: bool = False) -> 
 
     lat, lon = 42.64981361744372, -71.31681056737486
 
-    bdss = {}
-    ionos = {}
-    # Serial
-    if serial:
-        sts = perf_counter_ns()
-        n_proc = mp.cpu_count()
-        with mp.Pool(processes=n_proc) as pool:
+    if len(bdss) + len(ionos) != 2*len(tdict):
+        # Serial
+        if serial:
+            sts = perf_counter_ns()
+            n_proc = mp.cpu_count()
+            with mp.Pool(processes=n_proc) as pool:
+                for file_suffix, time in tdict.items():
+                    grobj = glow2d_geo(time, lat, lon, 40, n_pts=100, mpool=pool)
+                    st = perf_counter_ns()
+                    bds = grobj.run_model()
+                    end = perf_counter_ns()
+                    print(f'Time to generate : {(end - st)*1e-6: 8.6f} ms')
+                    st = perf_counter_ns()
+                    grobj = glow2d_polar(bds, resamp=2)
+                    iono = grobj.transform_coord()
+                    end = perf_counter_ns()
+                    print(f'Time to convert  : {(end - st)*1e-6: 8.6f} ms')
+                    bdss[file_suffix] = bds
+                    ionos[file_suffix] = iono
+
+            ste = perf_counter_ns()
+
+            print(f'Total time to generate (serial): {(ste - sts)*1e-6: 8.6f} ms')
+        # Parallel
+        else:
+            fsfx = []
+            ftimes = []
             for file_suffix, time in tdict.items():
-                grobj = glow2d_geo(time, lat, lon, 40, n_pts=100, mpool=pool)
-                st = perf_counter_ns()
-                bds = grobj.run_model()
-                end = perf_counter_ns()
-                print(f'Time to generate : {(end - st)*1e-6: 8.6f} ms')
-                st = perf_counter_ns()
-                grobj = glow2d_polar(bds, resamp=2)
-                iono = grobj.transform_coord()
-                end = perf_counter_ns()
-                print(f'Time to convert  : {(end - st)*1e-6: 8.6f} ms')
-                bdss[file_suffix] = bds
-                ionos[file_suffix] = iono
+                fsfx.append(file_suffix)
+                ftimes.append(time)
 
-        ste = perf_counter_ns()
+            sts = perf_counter_ns()
+            n_proc = 4
+            n_items = len(fsfx)
+            with mp.Pool(processes=n_proc) as pool:
+                results = pool.starmap(run_model, zip(fsfx, ftimes, range(n_items)))
+                for result in results:
+                    bdss[result[0]] = result[1]
+                    ionos[result[0]] = result[2]
+            ste = perf_counter_ns()
 
-        print(f'Total time to generate (serial): {(ste - sts)*1e-6: 8.6f} ms')
-    # Parallel
-    else:
-        fsfx = []
-        ftimes = []
-        for file_suffix, time in tdict.items():
-            fsfx.append(file_suffix)
-            ftimes.append(time)
-
-        sts = perf_counter_ns()
-        n_proc = 4
-        n_items = len(fsfx)
-        with mp.Pool(processes=n_proc) as pool:
-            results = pool.starmap(run_model, zip(fsfx, ftimes, range(n_items)))
-            for result in results:
-                bdss[result[0]] = result[1]
-                ionos[result[0]] = result[2]
-        ste = perf_counter_ns()
-
-        print(f'Total time to generate (parallel): {(ste - sts)*1e-6: 8.6f} ms')
+            print(f'Total time to generate (parallel): {(ste - sts)*1e-6: 8.6f} ms')
     # Generate the time plots
     for file_suffix in bdss:
         bds = bdss[file_suffix]
@@ -474,9 +530,9 @@ def main(serial: bool = False, show: bool = False, pt_distrib: bool = False) -> 
         for wl in ('5577', '6300'):
             bds_minmax = get_all_minmax(bdss, 'ver', {'wavelength': wl}, True)
             iono_minmax = get_all_minmax(ionos, 'ver', {'wavelength': wl}, True)
-            plot_geo(bds, wl, file_suffix, vmin=1e-4, vmax=bds_minmax[1], show=show)
-            plot_geo_local(bds, wl, file_suffix, vmin=1e-4, vmax=bds_minmax[1], show=show)
-            plot_local(iono, wl, file_suffix, vmin=1e-4, vmax=iono_minmax[1], show=show)
+            plot_geo(bds, wl, file_suffix, vmin=1e-4, vmax=1e3, show=show)
+            plot_geo_local(bds, wl, file_suffix, vmin=1e-4, vmax=1e3, show=show)
+            plot_local(iono, wl, file_suffix, vmin=1e-4, vmax=1e3, show=show)
     # Generate the coordinate transform point distribution
     from matplotlib import ticker
     fig, ax = plt.subplots(dpi=300, subplot_kw=dict(projection='polar'), figsize=(6.4, 4.8))
@@ -640,7 +696,11 @@ def main(serial: bool = False, show: bool = False, pt_distrib: bool = False) -> 
         plot_brightness(tdict, 100, show=show, mpool=mpool)
         plot_brightness(tdict, 200, show=show, mpool=mpool)
 
-
+# %%
+res = None
 # %%
 if __name__ == '__main__':
-    main(serial=True, show=True, pt_distrib=True)
+    main(serial=True, show=True, pt_distrib=False)
+    # res = plot_ratio(100, mpool=mp.Pool(mp.cpu_count()), show=True, res = res)
+
+# %%
