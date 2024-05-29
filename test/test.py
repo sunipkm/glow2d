@@ -4,7 +4,7 @@ from scipy.signal import savgol_filter
 import multiprocessing as mp
 from ast import Tuple
 import sys
-from typing import Dict, Iterable, List, SupportsFloat as Numeric
+from typing import Collection, Dict, Iterable, List, Optional, SupportsFloat as Numeric
 import pylab as pl
 from tqdm import tqdm
 import xarray as xr
@@ -127,11 +127,11 @@ def plot_geo(bds: xr.Dataset, wl: str, file_suffix: str, *, vmin: float = None, 
     # the view cone
     ax.plot([0, tmin], [1, 1 + 1000/scale], ls='--', lw=0.5, color='k', clip_on=True)
     ax.plot([0, tmax], [1, 1 + 1000/scale], ls='--', lw=0.5, color='k', clip_on=True)
-    ax.text(np.deg2rad(11), 1 + 300/scale, r'HiT\&MIS View Cone', fontsize=8, color='k', rotation=45, ha='center', va='center')
+    ax.text(np.deg2rad(11), 1 + 300/scale, r'HiT\&MIS View Cone', fontsize=10, color='k', rotation=45, ha='center', va='center')
 
     # the horizon
     ax.plot([0, thor], [1, 1 + 1000/scale], ls='-.', lw=0.5, color='k', clip_on=True)
-    ax.text(np.deg2rad(14), 1.05, r'Horizon', fontsize=8, color='k', rotation=78, ha='center', va='center')
+    ax.text(np.deg2rad(14), 1.05, r'Horizon', fontsize=10, color='k', rotation=78, ha='center', va='center')
     print(np.rad2deg(thor))
     ax.set_ylim([0, (600 / scale) + 1])
 
@@ -208,10 +208,10 @@ def plot_geo_local(bds: xr.Dataset, wl: str, file_suffix: str, *, vmin: float = 
             rotation=0, ha='center', va='center', fontdict={'size': 8})
     fig.suptitle('GLOW 2D (Local Polar, %s)\n%s %s (SEA: %.0f deg)' %
                  (file_suffix.capitalize(), day, time_of_day, sza), fontsize=10)
-    ax.fill_between(np.deg2rad([12, 69]), 0, 10000, alpha=0.3, color='b')
-    ax.plot(np.deg2rad([12, 12]), [0, 10000], lw=0.5, color='k', ls='--')
-    ax.plot(np.deg2rad([69, 69]), [0, 10000], lw=0.5, color='k', ls='--')
-    ax.text(np.deg2rad(37), 1600, r'HiT\&MIS View Cone', fontsize=10, color='w', rotation=360-50)
+    ax.fill_between(np.deg2rad([22, 72]), 0, 10000, alpha=0.3, color='b')
+    ax.plot(np.deg2rad([22, 22]), [0, 10000], lw=0.5, color='k', ls='--')
+    ax.plot(np.deg2rad([72, 72]), [0, 10000], lw=0.5, color='k', ls='--')
+    ax.text(np.deg2rad(50), 1600, r'HiT\&MIS View Cone', fontsize=10, color='w', rotation=360-45)
     ax.tick_params(labelsize=10)
     # earth = pl.Circle((0, 0), 1, transform=ax.transData._b, color='k', alpha=0.4)
     # ax.add_artist(earth)
@@ -261,10 +261,10 @@ def plot_local(iono: xr.Dataset, wl: str, file_suffix: str, *, vmin: float = Non
             rotation=0, ha='center', va='center', fontdict={'size': 8})
     fig.suptitle('GLOW 2D (Local Polar, %s)\n%s %s (SEA: %.0f deg)' %
                  (file_suffix.capitalize(), day, time_of_day, sza), fontsize=10)
-    ax.fill_between(np.deg2rad([12, 69]), 0, 10000, alpha=0.3, color='b')
-    ax.plot(np.deg2rad([12, 12]), [0, 10000], lw=0.5, color='k', ls='--')
-    ax.plot(np.deg2rad([69, 69]), [0, 10000], lw=0.5, color='k', ls='--')
-    ax.text(np.deg2rad(37), 1600, r'HiT\&MIS View Cone', fontsize=10, color='w', rotation=360-50)
+    ax.fill_between(np.deg2rad([22, 72]), 0, 10000, alpha=0.3, color='b')
+    ax.plot(np.deg2rad([22, 22]), [0, 10000], lw=0.5, color='k', ls='--')
+    ax.plot(np.deg2rad([72, 72]), [0, 10000], lw=0.5, color='k', ls='--')
+    ax.text(np.deg2rad(50), 1600, r'HiT\&MIS View Cone', fontsize=10, color='w', rotation=360-45)
     ax.tick_params(labelsize=10)
     # earth = pl.Circle((0, 0), 1, transform=ax.transData._b, color='k', alpha=0.4)
     # ax.add_artist(earth)
@@ -273,6 +273,28 @@ def plot_local(iono: xr.Dataset, wl: str, file_suffix: str, *, vmin: float = Non
     # ax.set_rscale('symlog')
     ax.set_rorigin(-rr.min())
     plt.savefig(f'test_loc_{wl}_uniform_{file_suffix}.png', dpi=600)
+    if show:
+        plt.show()
+    else:
+        plt.close(fig)
+
+    fig, ax = plt.subplots(dpi=300, figsize=(2.2, 3.4))
+    fig.suptitle('GLOW 2D (Local Polar, %s)\n%s %s (SEA: %.0f deg)' %
+                 (file_suffix.capitalize(), day, time_of_day, sza), fontsize=10)
+    ax.tick_params(axis='both', which='minor', labelsize=8)
+    za_min = 90 - np.arange(22, 71, 2, dtype=float)
+    za_max = za_min + 2
+    za = (za_min + za_max) / 2
+    za_min = np.deg2rad(za_min)
+    za_max = np.deg2rad(za_max)
+    em = glow2d_polar.get_emission(iono, feature=wl, za_min=za_min, za_max=za_max)
+    em *= 4*np.pi*1e-6  # convert to Rayleigh
+    ax.set_xscale('log')
+    ax.plot(em, 90 - za, lw=0.75)
+    ax.set_ylim(za.min(), za.max())
+    ax.set_ylabel('Elevation Angle (deg)')
+    ax.set_xlabel(fr'{wl}\AA{{}} Intensity (R)')
+    fig.savefig(f'test_loc_{wl}_intensity_{file_suffix}.png', dpi=600, bbox_inches='tight')
     if show:
         plt.show()
     else:
@@ -448,6 +470,129 @@ def plot_ratio(num_pts: int, show: bool = False, mpool=None, res=None) -> List[x
     fig.show()
     return (times, ionos, ds)
 
+# %% Plot point distribution
+# Generate the coordinate transform point distribution
+
+
+def generate_pt_distrib(show: bool = True):
+    ofst = 1000
+    scale = 1000
+    fig = plt.figure(figsize=(3.2, 2.4), dpi=300, constrained_layout=True)
+    gspec = GridSpec(1, 1, figure=fig)
+    ax = fig.add_subplot(gspec[0, 0], projection='polar')
+    alt = np.linspace(60, 550, 5)
+    ang = np.linspace(np.deg2rad(2.5), np.deg2rad(27.5), 5)  # np.arccos(EARTH_RADIUS/(EARTH_RADIUS + 1000)), 5)
+    r = (alt + ofst) / scale
+    # , extent=[0, 0, 7400 / EARTH_RADIUS, ang.max()])
+    earth = pl.Circle((0, 0), 1, transform=ax.transData._b, color='k', alpha=0.4)
+    ax.add_artist(earth)
+    ax.set_thetamax(np.rad2deg(np.arccos(EARTH_RADIUS/(EARTH_RADIUS + 1000))))
+
+    thor, _ = glow2d_polar.get_global_coords(np.deg2rad(58), EARTH_RADIUS + 1000)
+    thor = float(thor)
+
+    cmap = matplotlib.cm.get_cmap('rainbow')
+
+    ttext = ('', '', '', '', '')
+    rtext = ('1', '2', '3', '4', '5')
+    markers = ('o', 's', 'D', 'p', 'H')
+
+    for tidx, t in enumerate(ang):
+        for ridx, dist in enumerate(r):
+            # col = cmap(1 - ((alt[ridx] - alt.min()) / alt.max()))
+            col = 'k'
+            p, _ = glow2d_polar.get_local_coords(t, alt[ridx] + EARTH_RADIUS)
+            p = np.pi/2 - p
+            ax.scatter(t, dist, s=80 if tidx < 3 else 120,
+                       marker=markers[tidx],
+                       facecolors=col if p > 0 else 'w',
+                       edgecolors=col, clip_on=False)
+            ax.annotate(ttext[tidx] + rtext[ridx], xy=(t - np.deg2rad(0.25), dist),
+                        color='w' if p > 0 else 'k',
+                        weight='heavy', horizontalalignment='center', verticalalignment='center', fontsize=8)
+
+    ax.set_ylim([0, (600 / scale) + 1])
+    locs = ax.get_yticks()
+
+    def get_loc_labels(locs, ofst, scale):
+        locs = np.asarray(locs)
+        locs = locs[np.where(locs > 1.0)]
+        labels = ['O', r'R$_{\mbox{\scriptsize E}}$']
+        for loc in locs:
+            labels.append('%.0f' % (loc*scale - ofst))
+        locs = np.concatenate((np.asarray([0, 1]), locs.copy()))
+        labels = labels
+        return locs, labels
+
+    locs, labels = get_loc_labels(locs, ofst, scale)
+    ax.set_yticks(locs)
+    ax.set_yticklabels(labels)
+    ax.set_axisbelow(True)
+    ax.tick_params(labelsize=10)
+
+    ax.plot([0, thor], [1, 1 + 1000/scale], ls='--', lw=0.5, color='k', clip_on=True, alpha=0.75)
+
+    # label_position=ax.get_rlabel_position()
+    ax.text(np.radians(-20), ax.get_rmax()/2, 'Distance from Earth center (km)',
+            rotation=0, ha='center', va='center')
+    ax.set_position([0.1, -0.45, 0.8, 2])
+    fig.suptitle('Distribution of points in geocentric coordinates')
+    # fig.suptitle('GLOW 2D Output (2D, geocentric) %s %s'%(day, time_of_day))
+    # ax.set_rscale('ofst_r_scale')
+    # ax.set_rscale('symlog')
+    # ax.set_rorigin(-1)
+    plt.savefig('pt_distrib_geo.png', dpi=600, bbox_inches='tight')
+    if show:
+        plt.show()
+    else:
+        plt.close(fig)
+    # Generate the coordinate transform point distribution
+    from matplotlib import ticker
+    fig, ax = plt.subplots(dpi=300, subplot_kw=dict(projection='polar'), figsize=(3.2, 3.6))
+
+    r, t = np.meshgrid(alt + EARTH_RADIUS, ang)
+    t, r = glow2d_polar.get_local_coords(t, r)
+    ax.set_ylim(60, r.max())
+    ax.text(np.radians(90), r.max()*1.02, '(Zenith)',
+            rotation=0, ha='center', va='center', fontdict={'size': 8})
+    ax.text(np.radians(-16), ax.get_rmax()/2, 'Distance from observation location (km)',
+            rotation=0, ha='center', va='center')
+    ax.fill_between(np.deg2rad([22, 72]), 0, 10000, alpha=0.3, color='b')
+    ax.plot(np.deg2rad([22, 22]), [0, 10000], lw=0.5, color='k', ls='--')
+    ax.plot(np.deg2rad([72, 72]), [0, 10000], lw=0.5, color='k', ls='--')
+    ax.text(np.deg2rad(50), 1600, r'HiT\&MIS View Cone', fontsize=10, color='w', rotation=360-45)
+
+    for tidx, t in enumerate(ang):
+        for ridx, dist in enumerate(alt):
+            # col = cmap(1 - ((dist - alt.min()) / alt.max()))
+            col = 'k'
+            p, r = glow2d_polar.get_local_coords(t, dist + EARTH_RADIUS)
+            p = np.pi/2 - p
+            ax.scatter(p, r, s=80 if tidx < 3 else 120,
+                       marker=markers[tidx],
+                       facecolors=col if p > 0 else 'w',
+                       edgecolors=col, clip_on=True)
+            ax.annotate(ttext[tidx] + rtext[ridx], xy=(p, r),
+                        color='w' if p > 0 else 'k',
+                        weight='heavy', horizontalalignment='center', verticalalignment='center', fontsize=8)
+
+    # np.meshgrid((alt + ofst) / ofst, ang)
+    ax.tick_params(labelsize=10)
+    # earth = pl.Circle((0, 0), 1, transform=ax.transData._b, color='k', alpha=0.4)
+    # ax.add_artist(earth)
+    ax.set_thetamax(90)
+    # ax.set_rscale('symlog')
+    ax.set_rorigin(-60)
+    ax.set_axisbelow(True)
+    ax.tick_params(labelsize=10)
+    fig.suptitle('Distribution of points in local polar coordinates')
+
+    plt.savefig('pt_distrib_local.png', dpi=600, bbox_inches='tight')
+    if show:
+        plt.show()
+    else:
+        plt.close(fig)
+
 # %% Run model for parallel
 
 
@@ -464,7 +609,7 @@ def run_model(file_suffix: str, time: datetime, pos: int) -> Tuple[str, xr.Datas
 # %% Main function
 
 
-def main(serial: bool = False, show: bool = False, pt_distrib: bool = False, bdss = {}, ionos = {}) -> None:
+def main(serial: bool = False, show: bool = False, plot_ratio: Optional[Collection] = None, bdss={}, ionos={}) -> None:
     """## Main function to run the GLOW 2D model
 
     ### Args:
@@ -563,10 +708,10 @@ def main(serial: bool = False, show: bool = False, pt_distrib: bool = False, bds
     ax.text(np.radians(-12), ax.get_rmax()/2, 'Distance from observation location (km)',
             rotation=0, ha='center', va='center')
     fig.suptitle('Area element scaling from geocentric to local polar coordinates')
-    ax.fill_between(np.deg2rad([12, 69]), 0, 10000, alpha=0.3, color='b')
-    ax.plot(np.deg2rad([12, 12]), [0, 10000], lw=0.5, color='k', ls='--')
-    ax.plot(np.deg2rad([69, 69]), [0, 10000], lw=0.5, color='k', ls='--')
-    ax.text(np.deg2rad(37), 1600, r'HiT\&MIS View Cone', fontsize=10, color='w', rotation=360-45)
+    ax.fill_between(np.deg2rad([22, 72]), 0, 10000, alpha=0.3, color='b')
+    ax.plot(np.deg2rad([22, 22]), [0, 10000], lw=0.5, color='k', ls='--')
+    ax.plot(np.deg2rad([72, 72]), [0, 10000], lw=0.5, color='k', ls='--')
+    ax.text(np.deg2rad(50), 1600, r'HiT\&MIS View Cone', fontsize=10, color='w', rotation=360-45)
     ax.tick_params(labelsize=10)
     ax.text(np.radians(90), r.max()*1.02, '(Zenith)',
             rotation=0, ha='center', va='center', fontdict={'size': 8})
@@ -581,126 +726,19 @@ def main(serial: bool = False, show: bool = False, pt_distrib: bool = False, bds
         plt.show()
     else:
         plt.close(fig)
-    # Generate the coordinate transform point distribution
-    ofst = 1000
-    scale = 1000
-    fig = plt.figure(figsize=(3.2, 2.4), dpi=300, constrained_layout=True)
-    gspec = GridSpec(1, 1, figure=fig)
-    ax = fig.add_subplot(gspec[0, 0], projection='polar')
-    alt = np.linspace(60, 550, 5)
-    ang = np.linspace(np.deg2rad(2.5), np.deg2rad(27.5), 5)  # np.arccos(EARTH_RADIUS/(EARTH_RADIUS + 1000)), 5)
-    r = (alt + ofst) / scale
-    # , extent=[0, 0, 7400 / EARTH_RADIUS, ang.max()])
-    earth = pl.Circle((0, 0), 1, transform=ax.transData._b, color='k', alpha=0.4)
-    ax.add_artist(earth)
-    ax.set_thetamax(np.rad2deg(np.arccos(EARTH_RADIUS/(EARTH_RADIUS + 1000))))
-
-    thor, _ = glow2d_polar.get_global_coords(np.deg2rad(58), EARTH_RADIUS + 1000)
-    thor = float(thor)
-
-    cmap = matplotlib.cm.get_cmap('rainbow')
-
-    ttext = ('A', 'B', 'C', 'D', 'E')
-    rtext = ('1', '2', '3', '4', '5')
-
-    for tidx, t in enumerate(ang):
-        for ridx, dist in enumerate(r):
-            col = cmap(1 - ((alt[ridx] - alt.min()) / alt.max()))
-            p, _ = glow2d_polar.get_local_coords(t, alt[ridx] + EARTH_RADIUS)
-            p = np.pi/2 - p
-            ax.scatter(t, dist, s=80, marker='o', facecolors=col if p > 0 else 'w', edgecolors=col, clip_on=False)
-            ax.annotate(ttext[tidx] + rtext[ridx], xy=(t - np.deg2rad(0.25), dist), color='w' if ridx == 4 and p >
-                        0 else 'k', weight='heavy', horizontalalignment='center', verticalalignment='center', fontsize='6')
-
-    ax.set_ylim([0, (600 / scale) + 1])
-    locs = ax.get_yticks()
-
-    def get_loc_labels(locs, ofst, scale):
-        locs = np.asarray(locs)
-        locs = locs[np.where(locs > 1.0)]
-        labels = ['O', r'R$_{\mbox{\scriptsize E}}$']
-        for loc in locs:
-            labels.append('%.0f' % (loc*scale - ofst))
-        locs = np.concatenate((np.asarray([0, 1]), locs.copy()))
-        labels = labels
-        return locs, labels
-
-    locs, labels = get_loc_labels(locs, ofst, scale)
-    ax.set_yticks(locs)
-    ax.set_yticklabels(labels)
-    ax.set_axisbelow(True)
-    ax.tick_params(labelsize=10)
-
-    ax.plot([0, thor], [1, 1 + 1000/scale], ls='--', lw=0.5, color='k', clip_on=True, alpha=0.75)
-
-    # label_position=ax.get_rlabel_position()
-    ax.text(np.radians(-20), ax.get_rmax()/2, 'Distance from Earth center (km)',
-            rotation=0, ha='center', va='center')
-    ax.set_position([0.1, -0.45, 0.8, 2])
-    fig.suptitle('Distribution of points in geocentric coordinates')
-    # fig.suptitle('GLOW 2D Output (2D, geocentric) %s %s'%(day, time_of_day))
-    # ax.set_rscale('ofst_r_scale')
-    # ax.set_rscale('symlog')
-    # ax.set_rorigin(-1)
-    plt.savefig('pt_distrib_geo.png', dpi=600)
-    if show:
-        plt.show()
-    else:
-        plt.close(fig)
-    # Generate the coordinate transform point distribution
-    from matplotlib import ticker
-    fig, ax = plt.subplots(dpi=300, subplot_kw=dict(projection='polar'), figsize=(3.2, 3.6))
-
-    r, t = np.meshgrid(alt + EARTH_RADIUS, ang)
-    t, r = glow2d_polar.get_local_coords(t, r)
-    ax.set_ylim(60, r.max())
-    ax.text(np.radians(90), r.max()*1.02, '(Zenith)',
-            rotation=0, ha='center', va='center', fontdict={'size': 8})
-    ax.text(np.radians(-16), ax.get_rmax()/2, 'Distance from observation location (km)',
-            rotation=0, ha='center', va='center')
-    ax.fill_between(np.deg2rad([12, 69]), 0, 10000, alpha=0.13, color='b')
-    ax.plot(np.deg2rad([12, 12]), [0, 10000], lw=0.5, color='k', ls='--', alpha=0.5)
-    ax.plot(np.deg2rad([69, 69]), [0, 10000], lw=0.5, color='k', ls='--', alpha=0.5)
-
-    for tidx, t in enumerate(ang):
-        for ridx, dist in enumerate(alt):
-            col = cmap(1 - ((dist - alt.min()) / alt.max()))
-            p, r = glow2d_polar.get_local_coords(t, dist + EARTH_RADIUS)
-            p = np.pi/2 - p
-            ax.scatter(p, r, s=80, marker='o', facecolors=col if p > 0 else 'w', edgecolors=col, clip_on=True)
-            ax.annotate(ttext[tidx] + rtext[ridx], xy=(p, r), color='black' if ridx < 4 else 'w',
-                        weight='heavy', horizontalalignment='center', verticalalignment='center', fontsize='6')
-
-    # np.meshgrid((alt + ofst) / ofst, ang)
-    ax.text(np.deg2rad(37), 1600, r'HiT\&MIS View Cone', fontsize=10, color='k', rotation=360-45)
-    ax.tick_params(labelsize=10)
-    # earth = pl.Circle((0, 0), 1, transform=ax.transData._b, color='k', alpha=0.4)
-    # ax.add_artist(earth)
-    ax.set_thetamax(90)
-    # ax.set_rscale('symlog')
-    ax.set_rorigin(-60)
-    ax.set_axisbelow(True)
-    ax.tick_params(labelsize=10)
-    fig.suptitle('Distribution of points in local polar coordinates')
-
-    plt.savefig('pt_distrib_local.png', dpi=600)
-    if show:
-        plt.show()
-    else:
-        plt.close(fig)
     # Plot the brightness comparisons for different number of points
-    if pt_distrib:
+    if plot_ratio is not None and len(plot_ratio) > 0:
         mpool = mp.Pool(processes=mp.cpu_count())
-        plot_brightness(tdict, 20, show=show, mpool=mpool)
-        plot_brightness(tdict, 50, show=show, mpool=mpool)
-        plot_brightness(tdict, 100, show=show, mpool=mpool)
-        plot_brightness(tdict, 200, show=show, mpool=mpool)
+        for num_pts in plot_ratio:
+            plot_brightness(tdict, num_pts, show=show, mpool=mpool)
+
 
 # %%
 res = None
 # %%
 if __name__ == '__main__':
-    main(serial=True, show=True, pt_distrib=False)
+    # main(serial=True, show=True, plot_ratio=(100,))
+    generate_pt_distrib(show=True)
     # res = plot_ratio(100, mpool=mp.Pool(mp.cpu_count()), show=True, res = res)
 
 # %%
