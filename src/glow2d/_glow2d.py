@@ -16,7 +16,7 @@ from haversine import haversine, Unit
 import pandas as pd
 from scipy.ndimage import geometric_transform
 from scipy.interpolate import interp2d, interp1d
-from scipy.integrate import simps
+from scipy.integrate import simpson
 from time import perf_counter_ns
 from multiprocessing.pool import Pool
 
@@ -568,7 +568,7 @@ class glow2d_polar:
         ver = interp2d(r, za, ver)(rr, zaxis)  # interpolate to integration axes
 
         ver = ver*np.sin(zaxis[:, None])  # integration is VER * sin(phi) * d(phi) * d(r)
-        return simps(simps(ver.T, zaxis), rr * 1e5)  # do the double integral
+        return simpson(simpson(ver.T, zaxis), rr * 1e5)  # do the double integral
 
     # get global coord index from local coord index, implemented as LUT
     def _global_from_local(self, pt: Tuple[int, int]) -> Tuple[Numeric, Numeric]:
