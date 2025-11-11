@@ -1,5 +1,5 @@
 import sys
-import glowpython as glow
+import glowpython2 as glow
 
 def calc_glow_generic(time, nbins, kwargs, *vars):
     try:

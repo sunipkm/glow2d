@@ -29,6 +29,7 @@ from tzlocal import get_localzone
 from pysolar.solar import get_hour_angle
 from functools import lru_cache
 from matplotlib import dates as mdates
+import warnings
 
 import glow2d
 
@@ -42,8 +43,10 @@ assert(glow2d.__version__ > '4.0')
 
 import warnings
 warnings.filterwarnings('ignore', category=RuntimeWarning)
+warnings.filterwarnings('ignore', category=UserWarning)
 
-EXTENSION = 'pdf'
+VERSION='MSIS21_IRI20'
+EXTENSION = 'png'
 if EXTENSION == 'png':
     BBOX = 'tight'
 else:
@@ -181,7 +184,7 @@ def plot_geo(bds: xr.Dataset, wl: str, file_suffix: str, *, vmin: float = None, 
     # ax.set_rscale('ofst_r_scale')
     # ax.set_rscale('symlog')
     # ax.set_rorigin(-1)
-    plt.savefig(f'test_geo_{wl}_{file_suffix}.{EXTENSION}', dpi=600)
+    plt.savefig(f'test_geo_{VERSION}_{wl}_{file_suffix}.{EXTENSION}', dpi=600)
     if show:
         plt.show()
     else:
@@ -234,7 +237,7 @@ def plot_geo_local(bds: xr.Dataset, wl: str, file_suffix: str, *, vmin: float = 
     # ax.plot([]) # has to be two-point arrow
     # ax.set_rscale('symlog')
     ax.set_rorigin(-rr.min())
-    plt.savefig(f'test_loc_{wl}_{file_suffix}.{EXTENSION}', dpi=600)
+    plt.savefig(f'test_loc_{VERSION}_{wl}_{file_suffix}.{EXTENSION}', dpi=600)
     if show:
         plt.show()
     else:
@@ -286,7 +289,7 @@ def plot_local(iono: xr.Dataset, wl: str, file_suffix: str, *, vmin: float = Non
     ax.set_ylim(rr.min(), rr.max())
     # ax.set_rscale('symlog')
     ax.set_rorigin(-rr.min())
-    plt.savefig(f'test_loc_{wl}_uniform_{file_suffix}.{EXTENSION}', dpi=600)
+    plt.savefig(f'test_loc_{VERSION}_{wl}_uniform_{file_suffix}.{EXTENSION}', dpi=600)
     if show:
         plt.show()
     else:
@@ -333,7 +336,7 @@ def plot_local_ratio(iono: xr.Dataset, wl: Iterable[str], file_suffix: str, *, c
     ax.set_ylabel('Elevation Angle (deg)')
     ax.set_xlabel(fr'Intensity (R)')
     ax.legend(frameon=False, loc='upper right', fontsize=8)
-    fig.savefig(f'test_loc_intensity_{file_suffix}.{EXTENSION}', dpi=600, bbox_inches=BBOX)
+    fig.savefig(f'test_loc_intensity_{VERSION}_{file_suffix}.{EXTENSION}', dpi=600, bbox_inches=BBOX)
     if show:
         plt.show()
     else:
@@ -403,7 +406,7 @@ def plot_brightness(tdict, num_pts: int, show: bool = False, mpool=None) -> None
     ax.plot([1.1e9*factor, 2966479394.84*factor], [50]*2, ls='-.', color=colors['dawn'], lw=0.75)
     ax.text(1e9*factor, 55, r'6300 \AA{}', fontdict={'size': 10}, horizontalalignment='right', verticalalignment='center')
     ax.plot([1.1e9*factor, 2966479394.84*factor], [55]*2, ls='-', color=colors['dawn'], lw=0.75)
-    fig.savefig(f'test_prate_{num_pts}.{EXTENSION}', dpi=600, bbox_inches=BBOX)
+    fig.savefig(f'test_prate_{VERSION}_{num_pts}.{EXTENSION}', dpi=600, bbox_inches=BBOX)
     if show:
         fig.show()
     else:
@@ -454,7 +457,7 @@ def plot_brightness(tdict, num_pts: int, show: bool = False, mpool=None) -> None
     # ax.plot([1.1e9, 2966479394.84], [50]*2, ls = '-.', color = colors['dawn'], lw = 0.75)
     # ax.text(1e9, 55, r'6300 \AA{}', fontdict={'size': 10}, horizontalalignment='right', verticalalignment='center')
     # ax.plot([1.1e9, 2966479394.84], [55]*2, ls = '-', color = colors['dawn'], lw = 0.75)
-    fig.savefig(f'test_pratio_{num_pts}.{EXTENSION}', dpi=600, bbox_inches=BBOX)
+    fig.savefig(f'test_pratio_{VERSION}_{num_pts}.{EXTENSION}', dpi=600, bbox_inches=BBOX)
     if show:
         fig.show()
     else:
@@ -676,7 +679,10 @@ def main(serial: bool = False, show: bool = False, plot_ratio: Optional[Collecti
             for file_suffix, time in tdict.items():
                 st = perf_counter_ns()
                 with mp.Pool(processes=n_proc) as pool: 
-                    grobj = glow2d_geo(time, lat, lon, 40, n_pts=100, mpool=pool, show_progress=True)
+                    grobj = glow2d_geo(time, lat, lon, 40, n_pts=100, mpool=pool, show_progress=True, 
+                    kwargs={'version': VERSION,
+                    'magmodel': 'IGRF14',}
+                )
                     bds = grobj.run_model()
                 end = perf_counter_ns()
                 print(f'Time to generate : {(end - st)*1e-6: 8.6f} ms')
