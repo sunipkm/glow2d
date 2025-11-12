@@ -1,6 +1,6 @@
 # GLOW2D
 
-This package builds off of the GLobal airglOW model. The GLOW model is evaluated on an altitude grid at a location. For non-zenith observation geometries, the model requires evaluation at multiple points along the line of sight. The `glow2d` library wraps the `glowpython.generic()` function to generate the output on a 2D grid in a geocentric (GEO) coordinate system and in a local (ZA, R) coordinate system.
+This package builds off of the GLobal airglOW model. The GLOW model is evaluated on an altitude grid at a location. For non-zenith observation geometries, the model requires evaluation at multiple points along the line of sight. The `glow2d` library wraps the [`glowpython2.generic()`](https://github.com/sunipkm/glowpython2) function to generate the output on a 2D grid in a geocentric (GEO) coordinate system and in a local (ZA, R) coordinate system.
 
 ## Installation
 Directly using `pip`:
@@ -16,7 +16,7 @@ $ pip install .
 
 ## Dependencies
 The following non-trivial dependencies are present:
-- [glowpython](https://github.com/sunipkm/glowpython)
+- [glowpython2](https://github.com/sunipkm/glowpython2)
 - [geomagdata](https://pypi.org/projects/geomagdata)
 - [geopy](https://pypi.org/project/geopy/)
 - [haversine](https://pypi.org/project/haversine/)

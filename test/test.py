@@ -2,7 +2,7 @@
 from __future__ import annotations
 from scipy.signal import savgol_filter
 import multiprocessing as mp
-from ast import Tuple
+from typing import Tuple
 import sys
 from typing import Collection, Dict, Iterable, List, Optional, SupportsFloat as Numeric
 import pylab as pl
@@ -15,12 +15,7 @@ from datetime import datetime
 import pytz
 from time import perf_counter_ns
 from glow2d import glow2d_geo, glow2d_polar, polar_model
-from matplotlib.patches import Rectangle
-from mpl_toolkits.axes_grid1 import make_axes_locatable
-from matplotlib import rc, rcParams
 import matplotlib
-from matplotlib.ticker import AutoMinorLocator, MultipleLocator, LogLocator, FormatStrFormatter
-import matplotlib.ticker as mticker
 from matplotlib.gridspec import GridSpec
 import matplotlib.pyplot as plt
 import pylab as pl
@@ -33,20 +28,22 @@ import warnings
 
 import glow2d
 
-rc('font', **{'family': 'serif', 'serif': ['Times']})
-# for Palatino and other serif fonts use:
-# rc('font',**{'family':'serif','serif':['Palatino']})
-rc('text', usetex=True)
+matplotlib.rcParams.update({'mathtext.fontset': 'cm'})
 
-assert(glow2d.__version__ < '4.1')
-assert(glow2d.__version__ > '4.0')
+matplotlib.rc(
+    'font', **{
+        'family': 'serif',
+        'serif': ['Times New Roman']
+    }
+)
 
-import warnings
+assert (glow2d.__version__ >= '6.0')
+
 warnings.filterwarnings('ignore', category=RuntimeWarning)
 warnings.filterwarnings('ignore', category=UserWarning)
 
-VERSION='MSIS21_IRI20'
-EXTENSION = 'png'
+VERSION = 'MSIS21_IRI20'
+EXTENSION = 'pdf'
 if EXTENSION == 'png':
     BBOX = 'tight'
 else:
@@ -54,7 +51,7 @@ else:
 # %%
 
 
-def get_minmax(iono: xr.Dataset, feature: str = 'Tn', subfeature: dict = None, minPositive: bool = True) -> Tuple[Numeric, Numeric]:
+def get_minmax(iono: xr.Dataset, feature: str = 'Tn', subfeature: Optional[dict] = None, minPositive: bool = True) -> Tuple[Numeric, Numeric]:
     if subfeature is None:
         val = iono[feature].values
     else:
@@ -66,7 +63,7 @@ def get_minmax(iono: xr.Dataset, feature: str = 'Tn', subfeature: dict = None, m
     return (minval, val.max())
 
 
-def get_all_minmax(ionos: dict[str, xr.Dataset], feature: str = 'Tn', subfeature: dict = None, minPositive: bool = True) -> Tuple[Numeric, Numeric]:
+def get_all_minmax(ionos: dict[str, xr.Dataset], feature: str = 'Tn', subfeature: Optional[dict] = None, minPositive: bool = True) -> Tuple[Numeric, Numeric]:
     minmax = []
     for _, iono in ionos.items():
         minmax.append(get_minmax(iono, feature, subfeature, minPositive))
@@ -90,7 +87,7 @@ def get_all_minmax_list(inp: Iterable, minPositive: bool = True) -> Tuple[Numeri
 # %% 5577
 
 
-def plot_geo(bds: xr.Dataset, wl: str, file_suffix: str, *, vmin: float = None, vmax: float = None, decimals: int = 0, num_levels: int = 1000, show: bool = False) -> None:
+def plot_geo(bds: xr.Dataset, wl: str, file_suffix: str, *, vmin: Optional[float] = None, vmax: Optional[float] = None, decimals: int = 0, num_levels: int = 1000, show: bool = False) -> None:
     ofst = 1000
     scale = 1000
     fig = plt.figure(figsize=(4.8, 3.8), dpi=300, constrained_layout=True)
@@ -129,13 +126,13 @@ def plot_geo(bds: xr.Dataset, wl: str, file_suffix: str, *, vmin: float = None, 
     im = ax.contourf(t, r, np.log10(tn.T), cmap='gist_ncar_r', levels=levels)
     cbar = fig.colorbar(im, cax=cax, shrink=0.6, orientation='horizontal', ticks=ticks)
     if ticks is not None:
-        cbar.ax.set_xticklabels([r'$10^{%d}$' % (tval) for tval in ticks])
+        cbar.ax.set_xticklabels([f'$10^{tval}$' for tval in ticks])
     cbar.ax.tick_params(labelsize=10)
     # cbar.formatter.set_useMathText(True)
-    cbar.set_label(r'%s \AA{} VER ($%s$)' % (wl, bds.ver.attrs['units']), fontsize=12)
-    earth = pl.Circle((0, 0), 1, transform=ax.transData._b, color='k', alpha=0.4)
+    cbar.set_label(f'{wl}Å VER (${bds.ver.attrs["units"]}$)', fontsize=12)
+    earth = pl.Circle((0, 0), 1, transform=ax.transData._b, color='k', alpha=0.4)  # type: ignore
     ax.add_artist(earth)
-    ax.set_thetamax(ang.max()*180/np.pi)
+    ax.set_thetamax(ang.max()*180/np.pi)  # type: ignore
 
     ax.scatter(0, 1, s=40, marker=r'$\odot$', facecolors='none', edgecolors='blue', clip_on=False)
     # ax.scatter(np.deg2rad(90), 0.272, s=40, marker=r'$\odot$', facecolors='none', edgecolors='blue', clip_on=False)
@@ -144,13 +141,21 @@ def plot_geo(bds: xr.Dataset, wl: str, file_suffix: str, *, vmin: float = None, 
     # the view cone
     ax.plot([0, tmin], [1, 1 + 1000/scale], ls='--', lw=0.5, color='k', clip_on=True)
     ax.plot([0, tmax], [1, 1 + 1000/scale], ls='--', lw=0.5, color='k', clip_on=True)
-    ax.text(np.deg2rad(9), 1 + 300/scale, r'HiT\&MIS FoV', fontsize=10, color='k', rotation=35, ha='center', va='center')
+    ax.text(
+        np.deg2rad(9), 1 + 300/scale,
+        'HiT&MIS FoV', fontsize=10, color='k',
+        rotation=35, ha='center', va='center'
+    )
 
     # the horizon
     ax.plot([0, thor], [1, 1 + 1000/scale], ls='-.', lw=0.5, color='k', clip_on=True)
-    ax.text(np.deg2rad(14), 1.05, r'Horizon', fontsize=10, color='k', rotation=78, ha='center', va='center')
+    ax.text(
+        np.deg2rad(14), 1.05, 'Horizon',
+        fontsize=10, color='k', rotation=78,
+        ha='center', va='center'
+    )
     # print(np.rad2deg(thor))
-    ax.set_ylim([0, (600 / scale) + 1])
+    ax.set_ylim(0, (600 / scale) + 1)
 
     arrline = np.deg2rad(np.linspace(14, 27, 100, endpoint=True))
     ax.plot(arrline, [(750 / scale) + 1]*len(arrline), lw=0.5, color='k', ls='--', clip_on=False)
@@ -164,7 +169,7 @@ def plot_geo(bds: xr.Dataset, wl: str, file_suffix: str, *, vmin: float = None, 
     def get_loc_labels(locs, ofst, scale):
         locs = np.asarray(locs)
         locs = locs[np.where(locs > 1.0)]
-        labels = ['O', r'R$_{\mbox{\scriptsize E}}$']
+        labels = ['O', 'R$_E$']
         for loc in locs:
             labels.append('%.0f' % (loc*scale - ofst))
         locs = np.concatenate((np.asarray([0, 1]), locs.copy()))
@@ -176,11 +181,17 @@ def plot_geo(bds: xr.Dataset, wl: str, file_suffix: str, *, vmin: float = None, 
     ax.set_yticklabels(labels)
 
     # label_position=ax.get_rlabel_position()
-    ax.text(np.radians(-12), ax.get_rmax()/2, 'Distance from Earth center (km)',
-            rotation=0, ha='center', va='center', fontdict={'size': 12})
-    ax.set_position([0.1, -0.45, 0.8, 2])
+    ax.text(
+        np.radians(-12), ax.get_rmax()/2,  # type: ignore
+        'Distance from Earth center (km)',
+        rotation=0, ha='center', va='center', fontdict={'size': 12}
+    )
+    ax.set_position((0.1, -0.45, 0.8, 2))
     # fig.suptitle('GLOW 2D (Geocentric, %s) %s %s'%(file_suffix.capitalize(), day, time_of_day))
-    fig.suptitle('GLOW 2D (Geocentric, %s) %s %s (SEA: %.0f deg)' % (file_suffix.capitalize(), day, time_of_day, sza), fontsize=10)
+    fig.suptitle(
+        f'GLOW 2D (Geocentric, {file_suffix.capitalize()}) {day} {time_of_day} (SEA: {sza:.0f} deg)',
+        fontsize=10
+    )
     # ax.set_rscale('ofst_r_scale')
     # ax.set_rscale('symlog')
     # ax.set_rorigin(-1)
@@ -192,7 +203,7 @@ def plot_geo(bds: xr.Dataset, wl: str, file_suffix: str, *, vmin: float = None, 
 # %%
 
 
-def plot_geo_local(bds: xr.Dataset, wl: str, file_suffix: str, *, vmin: float = None, vmax: float = None, decimals: int = 0, num_levels: int = 1000, show: bool = False) -> None:
+def plot_geo_local(bds: xr.Dataset, wl: str, file_suffix: str, *, vmin: Optional[float] = None, vmax: Optional[float] = None, decimals: int = 0, num_levels: int = 1000, show: bool = False) -> None:
     dtime = parse(bds.time).astimezone(get_localzone())
     _, lon = bds.glatlon
     # sza = get_altitude(lat, lon, dtime)
@@ -215,20 +226,24 @@ def plot_geo_local(bds: xr.Dataset, wl: str, file_suffix: str, *, vmin: float = 
     im = ax.contourf(tt, rr, np.log10(tn), 100, cmap='gist_ncar_r', levels=levels)
     cbar = fig.colorbar(im, shrink=0.6, ticks=ticks)
     if ticks is not None:
-        cbar.ax.set_yticklabels([r'$10^{%d}$' % (tval) for tval in ticks])
+        cbar.ax.set_yticklabels([f'$10^{{{tval}}}$' for tval in ticks])
     cbar.ax.tick_params(labelsize=8)
-    cbar.set_label(r'\begin{center}%s \AA{} VER ($%s$)\end{center}' % (wl, bds.ver.attrs['units']), fontsize=10)
-    ax.set_thetamax(90)
-    ax.text(np.radians(-20), ax.get_rmax()/2, 'Distance from observation location (km)\n',
-            rotation=0, ha='center', va='center')
-    ax.text(np.radians(90), ax.get_rmax()*1.02, '(Zenith)',
-            rotation=0, ha='center', va='center', fontdict={'size': 8})
-    fig.suptitle('GLOW 2D (Local Polar, %s)\n%s %s (SEA: %.0f deg)' %
-                 (file_suffix.capitalize(), day, time_of_day, sza), fontsize=10)
+    cbar.set_label(f'{wl}Å VER (${bds.ver.attrs["units"]}$)', fontsize=10)
+    ax.set_thetamax(90)  # type: ignore
+    ax.text(
+        np.radians(-20), ax.get_rmax()/2,   # type: ignore
+        'Distance from observation location (km)',
+        rotation=0, ha='center', va='center'
+    )
+    ax.text(
+        np.radians(90), ax.get_rmax()*1.02, '(Zenith)',  # type: ignore
+        rotation=0, ha='center', va='center', fontdict={'size': 8}
+    )
+    fig.suptitle(f'GLOW 2D (Local Polar, {file_suffix.capitalize()})\n{day} {time_of_day} (SEA: {sza:.0f} deg)', fontsize=10)
     ax.fill_between(np.deg2rad([28, 43]), 0, 10000, alpha=0.3, color='b')
     ax.plot(np.deg2rad([28, 28]), [0, 10000], lw=0.5, color='k', ls='--')
     ax.plot(np.deg2rad([43, 43]), [0, 10000], lw=0.5, color='k', ls='--')
-    ax.text(np.deg2rad(50), 1600, r'HiT\&MIS FoV', fontsize=10, color='w', rotation=360-45)
+    ax.text(np.deg2rad(35), 1600, 'HiT&MIS FoV', fontsize=10, color='k', rotation=40)
     ax.tick_params(labelsize=10)
     # earth = pl.Circle((0, 0), 1, transform=ax.transData._b, color='k', alpha=0.4)
     # ax.add_artist(earth)
@@ -236,7 +251,7 @@ def plot_geo_local(bds: xr.Dataset, wl: str, file_suffix: str, *, vmin: float = 
     ax.set_ylim(rr.min(), rr.max())
     # ax.plot([]) # has to be two-point arrow
     # ax.set_rscale('symlog')
-    ax.set_rorigin(-rr.min())
+    ax.set_rorigin(-rr.min())  # type: ignore
     plt.savefig(f'test_loc_{VERSION}_{wl}_{file_suffix}.{EXTENSION}', dpi=600)
     if show:
         plt.show()
@@ -246,7 +261,7 @@ def plot_geo_local(bds: xr.Dataset, wl: str, file_suffix: str, *, vmin: float = 
 # %%
 
 
-def plot_local(iono: xr.Dataset, wl: str, file_suffix: str, *, vmin: float = None, vmax: float = None, decimals: int = 0, num_levels: int = 1000, show: bool = False) -> None:
+def plot_local(iono: xr.Dataset, wl: str, file_suffix: str, *, vmin: Optional[float] = None, vmax: Optional[float] = None, decimals: int = 0, num_levels: int = 1000, show: bool = False) -> None:
     dtime = parse(iono.time).astimezone(get_localzone())
     _, lon = iono.glatlon
     # sza = get_altitude(lat, lon, dtime)
@@ -268,27 +283,33 @@ def plot_local(iono: xr.Dataset, wl: str, file_suffix: str, *, vmin: float = Non
     im = ax.contourf(tt, rr, np.log10(tn), cmap='gist_ncar_r', levels=levels)
     cbar = fig.colorbar(im, shrink=0.6, ticks=ticks)
     if ticks is not None:
-        cbar.ax.set_yticklabels([r'$10^{%d}$' % (tval) for tval in ticks])
+        cbar.ax.set_yticklabels([f'$10^{{{tval}}}$' for tval in ticks])
     cbar.ax.tick_params(labelsize=8)
-    cbar.set_label(r'\begin{center}%s \AA{} VER ($%s$)\end{center}' % (wl, iono.ver.attrs['units']), fontsize=10)
-    ax.set_thetamax(90)
-    ax.text(np.radians(-20), ax.get_rmax()/2, 'Distance from observation location (km)\nTowards NE',
-            rotation=0, ha='center', va='center')
-    ax.text(np.radians(90), ax.get_rmax()*1.02, '(Zenith)',
-            rotation=0, ha='center', va='center', fontdict={'size': 8})
-    fig.suptitle('GLOW 2D (Local Polar, %s)\n%s %s (SEA: %.0f deg)' %
-                 (file_suffix.capitalize(), day, time_of_day, sza), fontsize=10)
+    cbar.set_label(f'{wl}Å VER (${iono.ver.attrs["units"]}$)', fontsize=10)
+    ax.set_thetamax(90)  # type: ignore
+    ax.text(
+        np.radians(-20), ax.get_rmax()/2,  # type: ignore
+        'Distance from observation location (km)\nTowards NE',
+        rotation=0, ha='center', va='center'
+    )
+    ax.text(
+        np.radians(90), ax.get_rmax()*1.02,  # type: ignore
+        '(Zenith)',
+        rotation=0, ha='center', va='center',
+        fontdict={'size': 8}
+    )
+    fig.suptitle(f'GLOW 2D (Local Polar, {file_suffix.capitalize()})\n{day} {time_of_day} (SEA: {sza:.0f} deg)', fontsize=10)
     ax.fill_between(np.deg2rad([28, 43]), 0, 10000, alpha=0.3, color='b')
     ax.plot(np.deg2rad([28, 28]), [0, 10000], lw=0.5, color='k', ls='--')
     ax.plot(np.deg2rad([43, 43]), [0, 10000], lw=0.5, color='k', ls='--')
-    ax.text(np.deg2rad(35), 1600, r'HiT\&MIS FoV', fontsize=10, color='w', rotation=40)
+    ax.text(np.deg2rad(35), 1600, 'HiT&MIS FoV', fontsize=10, color='k', rotation=40)
     ax.tick_params(labelsize=10)
     # earth = pl.Circle((0, 0), 1, transform=ax.transData._b, color='k', alpha=0.4)
     # ax.add_artist(earth)
     # ax.set_thetamax(ang.max()*180/np.pi)
     ax.set_ylim(rr.min(), rr.max())
     # ax.set_rscale('symlog')
-    ax.set_rorigin(-rr.min())
+    ax.set_rorigin(-rr.min())  # type: ignore
     plt.savefig(f'test_loc_{VERSION}_{wl}_uniform_{file_suffix}.{EXTENSION}', dpi=600)
     if show:
         plt.show()
@@ -298,14 +319,14 @@ def plot_local(iono: xr.Dataset, wl: str, file_suffix: str, *, vmin: float = Non
 # %%
 
 
-def plot_local_ratio(iono: xr.Dataset, wl: Iterable[str], file_suffix: str, *, colors:Iterable = None, show: bool = False):
+def plot_local_ratio(iono: xr.Dataset, wl: Iterable[str], file_suffix: str, *, colors: Optional[Iterable] = None, show: bool = False):
     if not isinstance(wl, Iterable):
         raise ValueError('wl should be an iterable')
     elif isinstance(wl, str):
         raise ValueError('wl should be an iterable of strings')
-    elif len(wl) < 2:
+    elif len(wl) < 2:  # type: ignore
         raise ValueError('wl should have at least two elements')
-    if colors is not None and len(colors) != len(wl):
+    if colors is not None and len(colors) != len(wl):  # type: ignore
         raise ValueError('colors should have the same length as wl')
     dtime = parse(iono.time).astimezone(get_localzone())
     _, lon = iono.glatlon
@@ -314,22 +335,21 @@ def plot_local_ratio(iono: xr.Dataset, wl: Iterable[str], file_suffix: str, *, c
     day = dtime.strftime('%Y-%m-%d')
     time_of_day = dtime.strftime('%H:%M hrs')
     fig, ax = plt.subplots(dpi=300, figsize=(2.2, 3.4))
-    fig.suptitle('GLOW 2D (Local Polar, %s)\n%s %s (SEA: %.0f deg)' %
-                 (file_suffix.capitalize(), day, time_of_day, sza), fontsize=10)
+    fig.suptitle(f'GLOW 2D (Local Polar, {file_suffix.capitalize()})\n{day} {time_of_day} (SEA: {sza:.0f} deg)', fontsize=10)
     ax.tick_params(axis='both', which='minor', labelsize=8)
     za_min = 90 - np.arange(22, 71, 2, dtype=float)
     za_max = za_min + 2
     za = (za_min + za_max) / 2
     za_min = np.deg2rad(za_min)
     za_max = np.deg2rad(za_max)
-    
+
     for idx, w in enumerate(wl):
         em = glow2d_polar.get_emission(iono, feature=w, za_min=za_min, za_max=za_max)
         em *= 4*np.pi*1e-6  # convert to Rayleigh
         if colors is not None:
-            ax.plot(em, 90 - za, lw=0.75, label=fr'{w} \AA{{}}', color=colors[idx])
+            ax.plot(em, 90 - za, lw=0.75, label=fr'{w}Å', color=colors[idx])  # type: ignore
         else:
-            ax.plot(em, 90 - za, lw=0.75, label=fr'{w} \AA{{}}')
+            ax.plot(em, 90 - za, lw=0.75, label=fr'{w}Å')
 
     ax.set_xscale('log')
     ax.set_ylim(za.min(), za.max())
@@ -359,33 +379,33 @@ def plot_brightness(tdict, num_pts: int, show: bool = False, mpool=None) -> None
     factor = np.deg2rad(0.1)  # 0.1 deg equivalent for azimuth
     for key, time in tdict.items():
         iono = polar_model(time, 42.64981361744372, -71.31681056737486, 40, 0, n_pts=num_pts, mpool=mpool)
-        dtime = parse(iono.time).astimezone(get_localzone())
+        dtime = parse(iono.time).astimezone(get_localzone())  # type: ignore
         day = dtime.strftime('%Y-%m-%d')
         time_of_day[key] = dtime.strftime('%H:%M hrs')
-        ionos[key] = iono
+        ionos[key] = iono  # type: ignore
     for key in tdict.keys():
         photonrate[key] = {}
         for wl in wls:
             em = glow2d_polar.get_emission(ionos[key], feature=wl, za_min=za_min, za_max=za_max)
             photonrate[key][wl] = em*factor
-            photonrate_a.append(em.copy()*factor)
+            photonrate_a.append(em.copy()*factor)  # type: ignore
     vmin, vmax = get_all_minmax_list(photonrate_a)  # xmin, xmax
     # vmin = 10**(np.round(np.log10(vmin)) - 1)
-    vmax = 10**(np.round(np.log10(vmax)) + 1)
+    vmax = 10**(np.round(np.log10(float(vmax))) + 1)
 
     fig, ax = plt.subplots(dpi=300, figsize=(6.4, 3.6))
     colors = {'dawn': 'k', 'noon': 'r', 'dusk': 'b', 'midnight': 'g'}
     lstyles = {'5577': '-.', '6300': '-'}
-    ax.set_title(r'GLOW Intensity on %s' % (day))
+    ax.set_title(f'GLOW Intensity on {day}')
     ax.set_xscale('log')
     for key in tdict.keys():  # wish python 3.9 had switch-case
         for wl in wls:
             ax.plot(photonrate[key][wl], za[::-1], ls=lstyles[wl], color=colors[key], lw=0.75)
     # ax.plot(1e4/np.cos(np.deg2rad(90 - za)), za, ls = '--', color='orange', lw=0.75)
-    ax.set_xlim(vmin, vmax)
+    ax.set_xlim(float(vmin), float(vmax))
     ax.set_ylim(za.min(), za.max())
     ax.set_ylabel('Elevation Angle (deg)')
-    ax.set_xlabel(r'Intensity ($cm^{-2} s^{-1}$)')
+    ax.set_xlabel('Intensity ($cm^{-2} s^{-1}$)')
     ax.text(1e9*factor, 80, 'Dawn', fontdict={'size': 10}, horizontalalignment='right', verticalalignment='center')
     ax.text(1e9*factor, 75, 'Noon', fontdict={'size': 10}, horizontalalignment='right', verticalalignment='center')
     ax.text(1e9*factor, 70, 'Dusk', fontdict={'size': 10}, horizontalalignment='right', verticalalignment='center')
@@ -402,9 +422,9 @@ def plot_brightness(tdict, num_pts: int, show: bool = False, mpool=None) -> None
     # ax.text(1e9, 40, r'$\csc{\theta}$ \\ (midnight)', horizontalalignment='right', verticalalignment='center')
     # ax.plot([1.1e9, 2966479394.84], [40]*2, ls='--', color='orange', lw=0.75)
 
-    ax.text(1e9*factor, 50, r'5577 \AA{}', fontdict={'size': 10}, horizontalalignment='right', verticalalignment='center')
+    ax.text(1e9*factor, 50, '5577Å', fontdict={'size': 10}, horizontalalignment='right', verticalalignment='center')
     ax.plot([1.1e9*factor, 2966479394.84*factor], [50]*2, ls='-.', color=colors['dawn'], lw=0.75)
-    ax.text(1e9*factor, 55, r'6300 \AA{}', fontdict={'size': 10}, horizontalalignment='right', verticalalignment='center')
+    ax.text(1e9*factor, 55, '6300Å', fontdict={'size': 10}, horizontalalignment='right', verticalalignment='center')
     ax.plot([1.1e9*factor, 2966479394.84*factor], [55]*2, ls='-', color=colors['dawn'], lw=0.75)
     fig.savefig(f'test_prate_{VERSION}_{num_pts}.{EXTENSION}', dpi=600, bbox_inches=BBOX)
     if show:
@@ -415,17 +435,26 @@ def plot_brightness(tdict, num_pts: int, show: bool = False, mpool=None) -> None
     fig, ax = plt.subplots(dpi=300, figsize=(6.4, 3.6))
     colors = {'dawn': 'k', 'noon': 'r', 'dusk': 'b', 'midnight': 'g'}
     lstyles = {'5577': '-.', '6300': '-'}
-    ax.set_title(r'GLOW Intensity Ratio for 5577 \AA{} and 6300 \AA{} on %s' % (day))
+    ax.set_title(f'GLOW Intensity Ratio for 5577Å and 6300Å on {day}')
     ax.set_xscale('log')
     for key in tdict.keys():  # wish python 3.9 had switch-case
         mval = np.median(photonrate[key]['5577'] / photonrate[key]['6300'])
         if key == 'noon':
-            ax.text(10**(np.log10(mval) - 0.015), 15, f'{mval:.2f}', fontdict={'size': 10},
-                    horizontalalignment='right', verticalalignment='center', rotation=0, color=colors[key])
+            ax.text(
+                10**(np.log10(mval) - 0.015), 15, f'{mval:.2f}', fontdict={'size': 10},
+                horizontalalignment='right', verticalalignment='center',
+                rotation=0, color=colors[key]
+            )
         else:
-            ax.text(mval*10**0.09, 15, f'{mval:.2f}', fontdict={'size': 10},
-                    horizontalalignment='right', verticalalignment='center', rotation=0, color=colors[key])
-        ax.axvline(mval, ls=':', color=colors[key], lw=0.65, label='Median Values' if key == 'dawn' else None)
+            ax.text(
+                float(mval)*10**0.09, 15, f'{mval:.2f}', fontdict={'size': 10},
+                horizontalalignment='right', verticalalignment='center',
+                rotation=0, color=colors[key]
+            )
+        ax.axvline(
+            float(mval), ls=':', color=colors[key], lw=0.65,
+            label='Median Values' if key == 'dawn' else None
+        )
         ax.plot(photonrate[key]['5577'] / photonrate[key]['6300'], za[::-1],
                 ls=lstyles['6300'], color=colors[key], lw=0.75, label=f'{key.capitalize()}')
     ax.set_ylim(za.min(), za.max())
@@ -436,7 +465,7 @@ def plot_brightness(tdict, num_pts: int, show: bool = False, mpool=None) -> None
     # ax.plot(1e4/np.cos(np.deg2rad(90 - za)), za, ls = '--', color='orange', lw=0.75)
     # ax.set_xlim(None, 20)
     ax.set_ylabel('Elevation Angle (deg)')
-    ax.set_xlabel(r'Intensity Ratio (dimensionless)')
+    ax.set_xlabel('Intensity Ratio (dimensionless)')
     # ax.text(1e9, 80, 'Dawn', fontdict={'size': 10}, horizontalalignment='right', verticalalignment='center')
     # ax.text(1e9, 75, 'Noon', fontdict={'size': 10}, horizontalalignment='right', verticalalignment='center')
     # ax.text(1e9, 70, 'Dusk', fontdict={'size': 10}, horizontalalignment='right', verticalalignment='center')
@@ -466,7 +495,7 @@ def plot_brightness(tdict, num_pts: int, show: bool = False, mpool=None) -> None
 
 
 @lru_cache(maxsize=None)
-def eval_model(t0: datetime, t1: datetime, num: int, npts: int = 100, mpool=None) -> List[xr.Dataset]:
+def eval_model(t0: datetime, t1: datetime, num: int, npts: int = 100, mpool=None) -> Tuple[List[datetime], List[xr.Dataset]]:
     assert num > 1
     times = np.linspace(t0.timestamp(), t1.timestamp(), num, endpoint=True)
     times = [datetime.fromtimestamp(t) for t in times]
@@ -478,7 +507,7 @@ def eval_model(t0: datetime, t1: datetime, num: int, npts: int = 100, mpool=None
 # %%
 
 
-def plot_ratio(num_pts: int, show: bool = False, mpool=None, res=None) -> List[xr.Dataset]:
+def plot_ratio(num_pts: int, show: bool = False, mpool=None, res=None) -> Tuple[List[datetime], List[xr.Dataset], xr.Dataset]:
     za_min = np.arange(10, 80, 0.25, dtype=float)
     za_max = za_min + 0.25
     za = (za_min + za_max) / 2
@@ -487,7 +516,7 @@ def plot_ratio(num_pts: int, show: bool = False, mpool=None, res=None) -> List[x
     t0 = datetime(2022, 2, 15, 19, 0)
     t1 = datetime(2022, 2, 16, 3, 0)
     day: str = f'{t0:%Y-%m-%d}'
-    photonrat: List[np.ndarray] = []
+    photonrat: List[float | np.ndarray] = []
     factor = np.deg2rad(0.1)  # 0.1 deg equivalent for azimuth
     if res is None:
         times, ionos = eval_model(t0, t1, 133, npts=num_pts, mpool=mpool)
@@ -499,16 +528,16 @@ def plot_ratio(num_pts: int, show: bool = False, mpool=None, res=None) -> List[x
             photonrat.append(ratio)
         vmin, vmax = get_all_minmax_list(photonrat)  # xmin, xmax
         ds = xr.Dataset({'ratio': (('time', 'za'), photonrat)}, coords={'time': times, 'za': za})
-        vmax = 10**(np.round(np.log10(vmax)) + 1)
+        vmax = 10**(np.round(np.log10(float(vmax))) + 1)
     else:
         times, ionos, ds = res
         t0 = times[0]
         t1 = times[-1]
     # vmin = 10**(np.round(np.log10(vmin)) - 1)
     fig, ax = plt.subplots(dpi=300, figsize=(6.4, 3.8))
-    ax.set_title(r'GLOW Intensity Ratio on %s' % (day))
+    ax.set_title(f'GLOW Intensity Ratio on {day}')
     # ax.plot(1e4/np.cos(np.deg2rad(90 - za)), za, ls = '--', color='orange', lw=0.75)
-    ds['ratio'].T.plot(ax=ax, cmap='bone', cbar_kwargs={'aspect': 100})
+    ds['ratio'].T.plot(ax=ax, cmap='bone', cbar_kwargs={'aspect': 100})  # type: ignore
     ax.xaxis.set_major_formatter(mdates.DateFormatter('%H:%M'))
     # ax.text(1e9, 40, r'$\csc{\theta}$ \\ (midnight)', horizontalalignment='right', verticalalignment='center')
     # ax.plot([1.1e9, 2966479394.84], [40]*2, ls='--', color='orange', lw=0.75)
@@ -533,14 +562,14 @@ def generate_pt_distrib(show: bool = True):
     ang = np.linspace(np.deg2rad(2.5), np.deg2rad(27.5), len(markers))  # np.arccos(EARTH_RADIUS/(EARTH_RADIUS + 1000)), 5)
     r = (alt + ofst) / scale
     # , extent=[0, 0, 7400 / EARTH_RADIUS, ang.max()])
-    earth = pl.Circle((0, 0), 1, transform=ax.transData._b, color='k', alpha=0.4)
+    earth = pl.Circle((0, 0), 1, transform=ax.transData._b, color='k', alpha=0.4)  # type: ignore
     ax.add_artist(earth)
-    ax.set_thetamax(np.rad2deg(np.arccos(EARTH_RADIUS/(EARTH_RADIUS + 1000))))
+    ax.set_thetamax(np.rad2deg(np.arccos(EARTH_RADIUS/(EARTH_RADIUS + 1000))))  # type: ignore
 
     thor, _ = glow2d_polar.get_global_coords(np.deg2rad(58), EARTH_RADIUS + 1000)
     thor = float(thor.flatten()[0])
 
-    cmap = matplotlib.cm.get_cmap('rainbow')
+    cmap = matplotlib.cm.get_cmap('rainbow')  # type: ignore
 
     for tidx, t in enumerate(ang):
         for ridx, dist in enumerate(r):
@@ -548,21 +577,25 @@ def generate_pt_distrib(show: bool = True):
             col = 'k'
             p, _ = glow2d_polar.get_local_coords(t, alt[ridx] + EARTH_RADIUS)
             p = np.pi/2 - p
-            ax.scatter(t, dist, s=80 if tidx < 3 else 120,
-                       marker=markers[tidx],
-                       facecolors='w' if p > 0 else col,
-                       edgecolors=col, clip_on=False)
-            ax.annotate(ttext[tidx] + rtext[ridx], xy=(t - np.deg2rad(0.25), dist),
-                        color='k' if p > 0 else 'w',
-                        weight='heavy', horizontalalignment='center', verticalalignment='center', fontsize=8)
+            ax.scatter(
+                t, dist, s=80 if tidx < 3 else 120,
+                marker=markers[tidx],
+                facecolors='w' if p > 0 else col,
+                edgecolors=col, clip_on=False
+            )
+            ax.annotate(
+                ttext[tidx] + rtext[ridx], xy=(t - np.deg2rad(0.25), dist),
+                color='k' if p > 0 else 'w',
+                weight='heavy', horizontalalignment='center', verticalalignment='center', fontsize=8
+            )
 
-    ax.set_ylim([0, (600 / scale) + 1])
+    ax.set_ylim(0, (600 / scale) + 1)
     locs = ax.get_yticks()
 
     def get_loc_labels(locs, ofst, scale):
         locs = np.asarray(locs)
         locs = locs[np.where(locs > 1.0)]
-        labels = ['O', r'R$_{\mbox{\scriptsize E}}$']
+        labels = ['O', 'R$_E$']
         for loc in locs:
             labels.append('%.0f' % (loc*scale - ofst))
         locs = np.concatenate((np.asarray([0, 1]), locs.copy()))
@@ -578,9 +611,12 @@ def generate_pt_distrib(show: bool = True):
     ax.plot([0, thor], [1, 1 + 1000/scale], ls='-.', lw=0.5, color='k', clip_on=True, alpha=0.75)
 
     # label_position=ax.get_rlabel_position()
-    ax.text(np.radians(-20), ax.get_rmax()/2, 'Distance from Earth center (km)',
-            rotation=0, ha='center', va='center')
-    ax.set_position([0.1, -0.45, 0.8, 2])
+    ax.text(
+        np.radians(-20), ax.get_rmax()/2,  # type: ignore
+        'Distance from Earth center (km)',
+        rotation=0, ha='center', va='center'
+    )
+    ax.set_position((0.1, -0.45, 0.8, 2))
     fig.suptitle('Distribution of points in geocentric coordinates')
     # fig.suptitle('GLOW 2D Output (2D, geocentric) %s %s'%(day, time_of_day))
     # ax.set_rscale('ofst_r_scale')
@@ -598,14 +634,20 @@ def generate_pt_distrib(show: bool = True):
     r, t = np.meshgrid(alt + EARTH_RADIUS, ang)
     t, r = glow2d_polar.get_local_coords(t, r)
     ax.set_ylim(60, r.max())
-    ax.text(np.radians(90), r.max()*1.02, '(Zenith)',
-            rotation=0, ha='center', va='center', fontdict={'size': 8})
-    ax.text(np.radians(-16), ax.get_rmax()/2, 'Distance from observation location (km)',
-            rotation=0, ha='center', va='center')
+    ax.text(
+        np.radians(90), r.max()*1.02, '(Zenith)',
+        rotation=0, ha='center', va='center',
+        fontdict={'size': 8}
+    )
+    ax.text(
+        np.radians(-16), ax.get_rmax()/2,  # type: ignore
+        'Distance from observation location (km)',
+        rotation=0, ha='center', va='center'
+    )
     ax.fill_between(np.deg2rad([22, 72]), 0, 10000, alpha=0.3, color='b')
     ax.plot(np.deg2rad([22, 22]), [0, 10000], lw=0.5, color='k', ls='--')
     ax.plot(np.deg2rad([72, 72]), [0, 10000], lw=0.5, color='k', ls='--')
-    ax.text(np.deg2rad(35), 1600, r'HiT\&MIS FoV', fontsize=10, color='w', rotation=40)
+    ax.text(np.deg2rad(35), 1600, 'HiT&MIS FoV', fontsize=10, color='k', rotation=40)
 
     for tidx, t in enumerate(ang):
         for ridx, dist in enumerate(alt):
@@ -613,21 +655,25 @@ def generate_pt_distrib(show: bool = True):
             col = 'k'
             p, r = glow2d_polar.get_local_coords(t, dist + EARTH_RADIUS)
             p = np.pi/2 - p
-            ax.scatter(p, r, s=80 if tidx < 3 else 120,
-                       marker=markers[tidx],
-                       facecolors='w' if p > 0 else col,
-                       edgecolors=col, clip_on=True)
-            ax.annotate(ttext[tidx] + rtext[ridx], xy=(p, r),
-                        color='k' if p > 0 else 'w',
-                        weight='heavy', horizontalalignment='center', verticalalignment='center', fontsize=8)
+            ax.scatter(
+                p, r, s=80 if tidx < 3 else 120,
+                marker=markers[tidx],
+                facecolors='w' if p > 0 else col,
+                edgecolors=col, clip_on=True
+            )
+            ax.annotate(
+                ttext[tidx] + rtext[ridx], xy=(float(p), float(r)),
+                color='k' if p > 0 else 'w',
+                weight='heavy', horizontalalignment='center', verticalalignment='center', fontsize=8
+            )
 
     # np.meshgrid((alt + ofst) / ofst, ang)
     ax.tick_params(labelsize=10)
     # earth = pl.Circle((0, 0), 1, transform=ax.transData._b, color='k', alpha=0.4)
     # ax.add_artist(earth)
-    ax.set_thetamax(90)
+    ax.set_thetamax(90)  # type: ignore
     # ax.set_rscale('symlog')
-    ax.set_rorigin(-60)
+    ax.set_rorigin(-60)  # type: ignore
     ax.set_axisbelow(True)
     ax.tick_params(labelsize=10)
     fig.suptitle('Distribution of points in local polar coordinates')
@@ -645,8 +691,18 @@ def run_model(file_suffix: str, time: datetime, pos: int) -> Tuple[str, xr.Datas
     lat, lon = 42.64981361744372, -71.31681056737486
     currrent = mp.current_process()
     tid = currrent._identity[0]
-    grobj = glow2d_geo(time, lat, lon, 40, n_pts=100, show_progress=True, tqdm_kwargs={
-                       'position': tid, 'desc': f'{pos}: {file_suffix.capitalize()}'})
+    grobj = glow2d_geo(
+        time, lat, lon, 40,
+        n_pts=100, show_progress=True,
+        tqdm_kwargs={
+            'position': tid,
+            'desc': f'{pos}: {file_suffix.capitalize()}'
+        },
+        kwargs={
+            'version': VERSION,
+            'magmodel': 'IGRF14',
+        }
+    )
     bds = grobj.run_model()
     grobj = glow2d_polar(bds, resamp=2)
     iono = grobj.transform_coord()
@@ -654,7 +710,7 @@ def run_model(file_suffix: str, time: datetime, pos: int) -> Tuple[str, xr.Datas
 # %% Main function
 
 
-def main(serial: bool = False, show: bool = False, plot_ratio: Optional[Collection] = None, bdss={}, ionos={}, pt_distrib: bool=False) -> None:
+def main(serial: bool = False, show: bool = False, plot_ratio: Optional[Collection] = None, bdss={}, ionos={}, pt_distrib: bool = False) -> None:
     """## Main function to run the GLOW 2D model
 
     ### Args:
@@ -678,11 +734,15 @@ def main(serial: bool = False, show: bool = False, plot_ratio: Optional[Collecti
             n_proc = mp.cpu_count()
             for file_suffix, time in tdict.items():
                 st = perf_counter_ns()
-                with mp.Pool(processes=n_proc) as pool: 
-                    grobj = glow2d_geo(time, lat, lon, 40, n_pts=100, mpool=pool, show_progress=True, 
-                    kwargs={'version': VERSION,
-                    'magmodel': 'IGRF14',}
-                )
+                with mp.Pool(processes=n_proc) as pool:
+                    grobj = glow2d_geo(
+                        time, lat, lon, 40,
+                        n_pts=100, mpool=pool, show_progress=True,
+                        kwargs={
+                            'version': VERSION,
+                            'magmodel': 'IGRF14',
+                        }
+                    )
                     bds = grobj.run_model()
                 end = perf_counter_ns()
                 print(f'Time to generate : {(end - st)*1e-6: 8.6f} ms')
@@ -734,13 +794,13 @@ def main(serial: bool = False, show: bool = False, plot_ratio: Optional[Collecti
             print('LOC')
         plot_local_ratio(iono, ('5577', '6300'), file_suffix, show=show, colors=('forestgreen', 'r'))
         print('Plotted local ratios.')
-    
+
     if pt_distrib:
         # Generate the coordinate transform point distribution
         from matplotlib import ticker
         fig, ax = plt.subplots(dpi=300, subplot_kw=dict(projection='polar'), figsize=(6.4, 4.8))
         # np.meshgrid((alt + ofst) / ofst, ang)
-        r, t = iono.r.values, iono.za.values
+        r, t = iono.r.values, iono.za.values  # type: ignore
         # print(r.shape, t.shape)
         r, t = np.meshgrid(r, t)
         grobj = glow2d_geo(tdict['dawn'], lat, lon, 40, n_pts=100)
@@ -761,15 +821,18 @@ def main(serial: bool = False, show: bool = False, plot_ratio: Optional[Collecti
         cbar.set_label('Area Scale', fontsize=10)
         cbar.ax.tick_params(labelsize=8)
         if ticks is not None:
-            cbar.ax.set_yticklabels([r'$10^{%.1f}$' % (tval) for tval in ticks])
-        ax.set_thetamax(90)
-        ax.text(np.radians(-12), ax.get_rmax()/2, 'Distance from observation location (km)',
-                rotation=0, ha='center', va='center')
+            cbar.ax.set_yticklabels([f'$10^{{{tval:.1f}}}$' for tval in ticks])
+        ax.set_thetamax(90)  # type: ignore
+        ax.text(
+            np.radians(-12), ax.get_rmax()/2,  # type: ignore
+            'Distance from observation location (km)',
+            rotation=0, ha='center', va='center'
+        )
         fig.suptitle('Area element scaling from geocentric to local polar coordinates')
         ax.fill_between(np.deg2rad([22, 72]), 0, 10000, alpha=0.3, color='b')
         ax.plot(np.deg2rad([22, 22]), [0, 10000], lw=0.5, color='k', ls='--')
         ax.plot(np.deg2rad([72, 72]), [0, 10000], lw=0.5, color='k', ls='--')
-        ax.text(np.deg2rad(35), 1600, r'HiT\&MIS FoV', fontsize=10, color='w', rotation=40)
+        ax.text(np.deg2rad(35), 1600, 'HiT&MIS FoV', fontsize=10, color='k', rotation=40)
         ax.tick_params(labelsize=10)
         ax.text(np.radians(90), r.max()*1.02, '(Zenith)',
                 rotation=0, ha='center', va='center', fontdict={'size': 8})
@@ -778,7 +841,7 @@ def main(serial: bool = False, show: bool = False, plot_ratio: Optional[Collecti
         # ax.set_thetamax(ang.max()*180/np.pi)
         ax.set_ylim(r.min(), r.max())
         # ax.set_rscale('symlog')
-        ax.set_rorigin(-60)
+        ax.set_rorigin(-60)  # type: ignore
         plt.savefig(f'test_loc_geo_distrib.{EXTENSION}', dpi=600)
         if show:
             plt.show()
@@ -797,7 +860,7 @@ def main(serial: bool = False, show: bool = False, plot_ratio: Optional[Collecti
 res = None
 # %%
 if __name__ == '__main__':
-    main(serial=True, show=False, plot_ratio=(100,))
+    main(serial=False, show=False, plot_ratio=(100,))
     # generate_pt_distrib(show=True)
     # res = plot_ratio(100, mpool=mp.Pool(mp.cpu_count()), show=True, res = res)
 

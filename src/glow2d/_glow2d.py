@@ -2,7 +2,6 @@
 from __future__ import annotations
 from functools import partial
 from typing import Iterable, List, SupportsFloat as Numeric, Optional, Tuple
-import warnings
 from pyparsing import Sequence
 from tqdm import tqdm
 import xarray
@@ -117,7 +116,7 @@ class glow2d_geo:
                 tmax = float(tec['timestamps'].max())
                 if not (tmin <= time.timestamp() <= tmax):
                     raise ValueError('TEC dataset does not contain the time %s' % time)
-                gdlat = glow.geocent_to_geodet([l[0] for l in self._locs])  # convert to geodetic
+                gdlat = glow.utils.geocent_to_geodet([l[0] for l in self._locs])  # convert to geodetic
                 if not isinstance(gdlat, np.ndarray):
                     gdlat = np.asarray(gdlat)
                 glon = [l[1] for l in self._locs]  # get longitudes
@@ -134,7 +133,7 @@ class glow2d_geo:
                 if not tec_interp_nan:
                     tec[np.where(np.isnan(tec))] = 1  # replace NaNs with 1
                 else:
-                    tec = glow.interpolate_nan(tec)  # interpolate NaNs
+                    tec = glow.utils.interpolate_nan(tec)  # interpolate NaNs
                 self._tec = tec.tolist()  # store the tec
             elif isinstance(tec, Numeric):  # do things if number
                 self._tec = np.full(len(self._locs), tec).tolist()  # fill with the number
@@ -213,13 +212,19 @@ class glow2d_geo:
 
     def _calc_glow_noprecip(self) -> xarray.Dataset:  # run glow model calculation
         items = zip(self._locs, self._tec)
-
+        itemlen = len(self._locs)
         if self._mpool is None:
             if self._show_prog:
                 if self._tqdm_kwargs is None:
-                    self._tqdm_kwargs = {'dynamic_ncols': True}
+                    self._tqdm_kwargs = {
+                        'dynamic_ncols': True,
+                        'total': itemlen,
+                    }
                 else:
-                    self._tqdm_kwargs.update({'dynamic_ncols': True})
+                    self._tqdm_kwargs.update({
+                        'dynamic_ncols': True,
+                        'total': itemlen
+                    })
                 pbar = tqdm(items, **self._tqdm_kwargs)  # type: ignore
                 dss = list(map(self._calg_glow_generic, pbar))
             else:
@@ -539,7 +544,7 @@ class glow2d_polar:
         num_zapts: int = 10, *,
         rmin: Optional[Numeric] = None, rmax: Optional[Numeric] = None,
         num_rpts: int = 100
-    ) -> Numeric | np.ndarray:
+    ) -> float | np.ndarray:
         """## Calculate line-of-sight intensity.
         Calculate number of photons per azimuth angle (radians) per unit area per second coming from a region of (`rmin`, `rmax`, `za_min`, `za_max`).
 
