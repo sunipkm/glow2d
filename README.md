@@ -1,3 +1,4 @@
+[![DOI](https://zenodo.org/badge/588038657.svg)](https://zenodo.org/badge/latestdoi/588038657)
 # GLOW2D
 
 This package builds off of the GLobal airglOW model. The GLOW model is evaluated on an altitude grid at a location. For non-zenith observation geometries, the model requires evaluation at multiple points along the line of sight. The `glow2d` library wraps the [`glowpython2.generic()`](https://github.com/sunipkm/glowpython2) function to generate the output on a 2D grid in a geocentric (GEO) coordinate system and in a local (ZA, R) coordinate system.
@@ -5,13 +6,13 @@ This package builds off of the GLobal airglOW model. The GLOW model is evaluated
 ## Installation
 Directly using `pip`:
 ```sh
-$ pip install glow2d
+pip install glow2d
 ```
 
 Indirectly by `git clone`:
 ```sh
-$ git clone https://github.com/sunipkm/glow2d && cd glow2d
-$ pip install .
+git clone https://github.com/sunipkm/glow2d && cd glow2d
+pip install .
 ```
 
 ## Dependencies
@@ -110,3 +111,18 @@ The output datasets are [xarray](https://pypi.org/project/xarray/) Datasets with
     - `kchem`: GLOW chemistry level.
 
 All angles are in radians, and distances in km. Due to the nature of the coordinate transformation, local coordinate outputs do not contain any `NaN` values.
+
+## Citation
+If you use this package, please cite the code as:
+```bibtex
+@software{sunipkm_glow2d_2025,
+  author       = {Sunip K. Mukherjee},
+  title        = {{glow2d}: A 2D wrapper for the GLOW model in geocentric and local polar coordinates},
+  month        = nov,
+  year         = 2025,
+  publisher    = {GitHub},
+  version      = {v6.0.0},
+  doi          = {https://zenodo.org/badge/latestdoi/588038657},
+  url          = {https://github.com/sunipkm/glow2d},
+}
+```

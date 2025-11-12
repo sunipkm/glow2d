@@ -1,5 +1,41 @@
 [build-system]
-requires = ["setuptools >= 40.6", "wheel"]
+requires = ["setuptools >= 68"]
+build-backend = "setuptools.build_meta"
 
-[tool.black]
-line-length = 100
+[project]
+name = "glow2d"
+version = "6.0.0"
+description = "NCAR GLOW model for 2D observation geometry"
+authors = [{ name = "Sunip K. Mukherjee", email = "sunipkmukherjee@gmail.com" }]
+keywords = ["GLOW", "Ionosphere", "Atmosphere", "Modeling", "Simulation"]
+classifiers = [
+    'Development Status :: 5 - Production/Stable',
+    'Environment :: Console',
+    'Intended Audience :: Science/Research',
+    'Operating System :: OS Independent',
+    'Programming Language :: Fortran',
+    'Programming Language :: Python :: 3',
+    'Topic :: Scientific/Engineering :: Atmospheric Science',
+]
+
+license = { file = "LICENSE.txt" }
+readme = "README.md"
+requires-python = ">=3.9"
+
+dependencies = [
+    "numpy >= 1.10",
+    "geopy",
+    "haversine",
+    "scipy >= 1.14",
+    "netcdf4",
+    "pandas",
+    "dask",
+    "tqdm",
+    "scipy",
+    "geomagdata",
+    "glowpython2",
+]
+
+[project.urls]
+homepage = "https://sunipkm.github.io/glow2d"
+repository = "https://github.com/sunipkm/glow2d"
